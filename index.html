@@ -657,6 +657,55 @@
             box-shadow: 0 5px 15px rgba(216, 17, 89, 0.3);
         }
 
+        /* Music Controls */
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(216, 17, 89, 0.4);
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        .music-control:hover {
+            transform: scale(1.1);
+        }
+
+        .music-control i {
+            font-size: 1.2rem;
+        }
+
+        .music-info {
+            position: fixed;
+            bottom: 20px;
+            right: 80px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background-color: rgba(45, 36, 59, 0.8);
+            color: white;
+            font-size: 0.8rem;
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 99;
+        }
+
+        .music-control:hover + .music-info {
+            opacity: 1;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 968px) {
             .photo-gallery {
@@ -699,6 +748,17 @@
 <body>
     <!-- Floating Hearts Background -->
     <div class="floating-hearts" id="floating-hearts"></div>
+
+    <!-- Audio Element - Background Music -->
+    <audio id="background-music" loop>
+        <source src="music/background.mp3" type="audio/mp3">
+    </audio>
+
+    <!-- Music Controls -->
+    <div class="music-control" id="music-control">
+        <i class="fas fa-play" id="music-icon"></i>
+    </div>
+    <div class="music-info" id="music-info">Achtergrondmuziek - Klik om af te spelen</div>
 
     <!-- Landing Page -->
     <div id="landing-page" class="page active">
@@ -792,9 +852,9 @@
             <div class="quote">"Ik heb lekker weer 2 nieuwe aanmeldingen!! :) En wil jou kussen! Met vriendelijke groet, Marleen"</div>
             
             <div class="memory-text">
-                <p>De ‘quote’ hierboven vat goed samen hoe we bij elkaar zijn gekomen 😊 Jij iets verder in je promotie, ik net begonnen, en tussen de aanmeldingen en andere onderzoekswerkzaamheden door, is onze liefde begonnen…</p>
+                <p>De 'quote' hierboven vat goed samen hoe we bij elkaar zijn gekomen 😊 Jij iets verder in je promotie, ik net begonnen, en tussen de aanmeldingen en andere onderzoekswerkzaamheden door, is onze liefde begonnen…</p>
                 <p>We hebben regelmatig herinneringen naar boven gehaald, hoe jij een eerste bezoekje bracht aan mijn werk op de VU. Dat we elkaar meteen wel leuk (en aantrekkelijk!) vonden, maar dat het bijna een jaar duurde voordat onze gezamenlijke reis echt begon.</p>
-                <p>In de tussentijd af en toe een mailtje, een bezoekje van mij aan jouw werkadres. Weer een goed gevoel, we vonden elkaar wel leuk, maar daar bleef het bij. Vervolgens een ‘werk’ bezoek aan Amsterdam. We moesten natuurlijk wel met elkaar neurofeedbacken, niks romantischer…</p>
+                <p>In de tussentijd af en toe een mailtje, een bezoekje van mij aan jouw werkadres. Weer een goed gevoel, we vonden elkaar wel leuk, maar daar bleef het bij. Vervolgens een 'werk' bezoek aan Amsterdam. We moesten natuurlijk wel met elkaar neurofeedbacken, niks romantischer…</p>
                 <p>… of toch wel, want mijn met voorbedachte rade geplande afronding van het werkbezoek in het Vondelpark, hartje Amsterdam, compleet met kleedje en flessen rosé, was misschien nog het missende ingrediënt om ons samen te krijgen.</p>
                 <p>Het blijft een bizar gegeven hoe je leven, je liefde, je gezin, door toevalligheden en keuzes vorm krijgt. Ik had geen enkele andere stap willen zetten, want waar we nu zijn, daar wilde ik komen.</p>
             </div>
@@ -837,74 +897,74 @@
         </div>
     </div>
 
- <!-- Leiden Page - FIXED -->
-<div id="leiden-page" class="page">
-    <div class="memory-page-container">
-        <h1 class="memory-page-title">Leiden periode</h1>
-        
-        <div class="photo-gallery">
-            <div class="photo-container">
-                <div class="memory-photo">
-                    <span class="memory-photo-placeholder">Wandelen in het park</span>
+    <!-- Leiden Page -->
+    <div id="leiden-page" class="page">
+        <div class="memory-page-container">
+            <h1 class="memory-page-title">Leiden periode</h1>
+            
+            <div class="photo-gallery">
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Wandelen in het park</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Onze favoriete koffieplek</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Samen bij de stadsmuur</span>
+                    </div>
                 </div>
             </div>
-            <div class="photo-container">
-                <div class="memory-photo">
-                    <span class="memory-photo-placeholder">Onze favoriete koffieplek</span>
-                </div>
+            
+            <div class="quote">"In de rustige straten van Leiden vonden we de melodie van ons nieuwe leven."</div>
+            
+            <div class="memory-text">
+                <p>Na een jaar samenleven in Amsterdam, zochten we rust aan de prachte Vliet in Leiden. We verhuisden bijna op die ene bijzondere datum, maar net een dagje eerder, namelijk 4 mei 2014 (herkansing in 2015 😊). Bijna 3 jaar samen (min een dag)! We genoten van deze oude stad, wijntjes drinken aan de gracht, kajakken door de stad, speciaalbiertjes bij Olivier.</p>
+                <p>Een heerlijk leventje samen, maar nu was het Tieme die niet kon wachten op de volgende stap. Nog geen vier maanden later was het raak, in verwachting… En ~9 maanden later, jawel, op 5 mei! 2015 kwam onze prachtige Diede op de wereld. Bevrijdingsdag! 😊</p>
             </div>
-            <div class="photo-container">
-                <div class="memory-photo">
-                    <span class="memory-photo-placeholder">Samen bij de stadsmuur</span>
-                </div>
-            </div>
+            
+            <a class="back-button" onclick="showPage('memories-page')">Terug naar Herinneringen</a>
         </div>
-        
-        <div class="quote">"In de rustige straten van Leiden vonden we de melodie van ons nieuwe leven."</div>
-        
-        <div class="memory-text">
-            <p>Na een jaar samenleven in Amsterdam, zochten we rust aan de prachte Vliet in Leiden. We verhuisden bijna op die ene bijzondere datum, maar net een dagje eerder, namelijk 4 mei 2014 (herkansing in 2015 😊). Bijna 3 jaar samen (min een dag)! We genoten van deze oude stad, wijntjes drinken aan de gracht, kajakken door de stad, speciaalbiertjes bij Olivier.</p>
-            <p>Een heerlijk leventje samen, maar nu was het Tieme die niet kon wachten op de volgende stap. Nog geen vier maanden later was het raak, in verwachting… En ~9 maanden later, jawel, op 5 mei! 2015 kwam onze prachtige Diede op de wereld. Bevrijdingsdag! 😊</p>
-        </div>
-        
-        <a class="back-button" onclick="showPage('memories-page')">Terug naar Herinneringen</a>
     </div>
-</div>
 
-<!-- Gouda Page - FIXED -->
-<div id="gouda-page" class="page">
-    <div class="memory-page-container">
-        <h1 class="memory-page-title">Gouda periode</h1>
-        
-        <div class="photo-gallery">
-            <div class="photo-container">
-                <div class="memory-photo">
-                    <span class="memory-photo-placeholder">Ons huis</span>
+    <!-- Gouda Page -->
+    <div id="gouda-page" class="page">
+        <div class="memory-page-container">
+            <h1 class="memory-page-title">Gouda periode</h1>
+            
+            <div class="photo-gallery">
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Ons huis</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Marktplein</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Samen op vakantie</span>
+                    </div>
                 </div>
             </div>
-            <div class="photo-container">
-                <div class="memory-photo">
-                    <span class="memory-photo-placeholder">Marktplein</span>
-                </div>
+            
+            <div class="quote">"In Gouda ontdekten we dat thuis niet een plaats is, maar een gevoel dat we samen creëren."</div>
+            
+            <div class="memory-text">
+                <p>Het is inmiddels 1.5 jaar later, Marleen is 7 maanden zwanger van de tweede, en het is tijd voor een groter nest. Op 4 november 2016 verhuizen we naar ons eerste koophuis in Gouda, aan de Spieringstraat. We scheuren nog dezelfde dag het lelijke behang van de muren en maken er ons eigen plekje van. Twee maanden later op 9 januari 2017 wordt onze prachtige Lara geboren.</p>
+                <p>Dit is duidelijk een periode van vele life events binnen een korte tijd! Ondanks de jungle jaren, genieten we ook van de kleine dingen. Met de buren en de kids een drankje en pizza aan de straat, Lara die leert lopen en praten, Diede groeit als kool, oma die komt oppassen en die heerlijk eten klaar heeft staan als we thuiskomen, koffie in de stad, wandelen door lege straten tijdens Corona, maar vooral veel liefde voor elkaar.</p>
+                <p>En dan is het ineens 30 april 2021, een kleine 4.5 jaar later, als we de sleutel in de voordeur van ons nieuwe huis steken aan de Crabethstraat! Wederom scheuren we als eerste ceremonieel wat behang van de muren 😊 Een nieuw avontuur, wonen in een verbouwing met een jong gezin 😊 We hebben er een prachtig plekje van gemaakt, maar nog belangrijker, ons thuis!</p>
             </div>
-            <div class="photo-container">
-                <div class="memory-photo">
-                    <span class="memory-photo-placeholder">Samen op vakantie</span>
-                </div>
-            </div>
+            
+            <a class="back-button" onclick="showPage('memories-page')">Terug naar Herinneringen</a>
         </div>
-        
-        <div class="quote">"In Gouda ontdekten we dat thuis niet een plaats is, maar een gevoel dat we samen creëren."</div>
-        
-        <div class="memory-text">
-            <p>Het is inmiddels 1.5 jaar later, Marleen is 7 maanden zwanger van de tweede, en het is tijd voor een groter nest. Op 4 november 2016 verhuizen we naar ons eerste koophuis in Gouda, aan de Spieringstraat. We scheuren nog dezelfde dag het lelijke behang van de muren en maken er ons eigen plekje van. Twee maanden later op 9 januari 2017 wordt onze prachtige Lara geboren.</p>
-            <p>Dit is duidelijk een periode van vele life events binnen een korte tijd! Ondanks de jungle jaren, genieten we ook van de kleine dingen. Met de buren en de kids een drankje en pizza aan de straat, Lara die leert lopen en praten, Diede groeit als kool, oma die komt oppassen en die heerlijk eten klaar heeft staan als we thuiskomen, koffie in de stad, wandelen door lege straten tijdens Corona, maar vooral veel liefde voor elkaar.</p>
-            <p>En dan is het ineens 30 april 2021, een kleine 4.5 jaar later, als we de sleutel in de voordeur van ons nieuwe huis steken aan de Crabethstraat! Wederom scheuren we als eerste ceremonieel wat behang van de muren 😊 Een nieuw avontuur, wonen in een verbouwing met een jong gezin 😊 We hebben er een prachtig plekje van gemaakt, maar nog belangrijker, ons thuis!</p>
-        </div>
-        
-        <a class="back-button" onclick="showPage('memories-page')">Terug naar Herinneringen</a>
     </div>
-</div>
 
     <!-- De Toekomst Page -->
     <div id="toekomst-page" class="page">
@@ -936,6 +996,9 @@
 
     <!-- JavaScript for navigation and effects -->
     <script>
+        // Global variables for music control
+        let musicPlaying = false;
+        
         // Navigation between pages
         function showPage(pageId) {
             // Hide all pages
@@ -948,6 +1011,32 @@
             
             // Scroll to top
             window.scrollTo(0, 0);
+        }
+
+        // Function to toggle music play/pause
+        function toggleMusic() {
+            const audioElement = document.getElementById('background-music');
+            const musicIcon = document.getElementById('music-icon');
+            const musicInfo = document.getElementById('music-info');
+            
+            if (musicPlaying) {
+                audioElement.pause();
+                musicIcon.className = 'fas fa-play';
+                musicInfo.textContent = 'Achtergrondmuziek - Klik om af te spelen';
+                musicPlaying = false;
+            } else {
+                audioElement.play()
+                    .then(() => {
+                        musicIcon.className = 'fas fa-pause';
+                        musicInfo.textContent = 'Achtergrondmuziek - Klik om te pauzeren';
+                        musicPlaying = true;
+                    })
+                    .catch(error => {
+                        console.error('Failed to play audio:', error);
+                        // Show error in music info if playback fails
+                        musicInfo.textContent = 'Kon muziek niet afspelen';
+                    });
+            }
         }
 
         // Create floating hearts
@@ -1070,6 +1159,13 @@
         window.onload = function() {
             createFloatingHearts();
             loadImages();
+            
+            // Set up music control
+            document.getElementById('music-control').addEventListener('click', toggleMusic);
+            
+            // Preload the audio file
+            const audioElement = document.getElementById('background-music');
+            audioElement.load();
         };
     </script>
 </body>
