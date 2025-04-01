@@ -750,7 +750,7 @@
     <div class="floating-hearts" id="floating-hearts"></div>
 
     <!-- Audio Element - Background Music -->
-    <audio id="background-music" loop>
+    <audio id="background-music" loop autoplay>
         <source src="music/background.mp3" type="audio/mp3">
     </audio>
 
@@ -1163,9 +1163,30 @@
             // Set up music control
             document.getElementById('music-control').addEventListener('click', toggleMusic);
             
-            // Preload the audio file
+            // Try to autoplay music
             const audioElement = document.getElementById('background-music');
+            
+            // First load the audio
             audioElement.load();
+            
+            // Try to play automatically (may be blocked by browser)
+            const playPromise = audioElement.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    // Autoplay started successfully
+                    musicPlaying = true;
+                    document.getElementById('music-icon').className = 'fas fa-pause';
+                    document.getElementById('music-info').textContent = 'Achtergrondmuziek - Klik om te pauzeren';
+                    
+                    // Add a visual indication that music is playing
+                    document.querySelector('.music-control').classList.add('pulse-animation');
+                }).catch(error => {
+                    // Autoplay was prevented by the browser
+                    console.log("Autoplay prevented by browser:", error);
+                    // Keep the play button showing - user will need to click to play
+                });
+            }
         };
     </script>
 </body>
