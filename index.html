@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10 Jaar Samen - Onze Liefdesreis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500&display=swap');
+
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #f5b0cd;
+            --secondary-color: #f8d0e0;
+            --accent-color: #d81159;
+            --text-color: #4a4a4a;
+            --light-text: #ffffff;
+            --dark-background: #2d243b;
+            --light-background: #fff8fa;
+            --gold-color: #d4af37;
+        }
+
+        body {
+            color: var(--text-color);
+            line-height: 1.8;
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--light-background);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 20px;
+            color: var(--dark-background);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+        }
+
+        p {
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        /* Floating Hearts Animation */
+        .floating-hearts {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .heart {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f5b0cd' width='24px' height='24px'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E") no-repeat center center;
+            opacity: 0.6;
+            animation: float-up 15s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(100vh) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Page Container and Navigation */
+        .page {
+            display: none;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Decorative Elements */
+        .decorative-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 40px 0;
+            color: var(--accent-color);
+            font-size: 1.5rem;
+        }
+
+        .decorative-divider::before,
+        .decorative-divider::after {
+            content: "";
+            flex-grow: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--accent-color), transparent);
+            margin: 0 15px;
+        }
+
+        .quote {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            text-align: center;
+            color: var(--accent-color);
+            margin: 30px auto;
+            max-width: 800px;
+            line-height: 1.6;
+            padding: 0 20px;
+        }
+
+        /* Buttons and Interactive Elements */
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, var(--accent-color), #ff6b99);
+            color: white;
+            border-radius: 50px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(216, 17, 89, 0.3);
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            z-index: 1;
+        }
+
+        .button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+            z-index: -1;
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(216, 17, 89, 0.4);
+        }
+
+        .button:hover:before {
+            left: 100%;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 30px;
+            padding: 12px 24px;
+            background-color: rgba(45, 36, 59, 0.8);
+            color: white;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button:before {
+            content: '←';
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .back-button:hover {
+            background-color: var(--dark-background);
+            transform: translateX(-5px);
+        }
+
+        /* Landing Page Styles */
+        .landing-container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%23f8d0e0"/><path d="M30,50 Q40,30 50,50 T70,50" stroke="%23ffffff" stroke-width="0.5" fill="none" /></svg>');
+            background-size: cover;
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+            color: white;
+        }
+
+        .landing-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to right, #2d243b, #8e44ad);
+            opacity: 0.9;
+            z-index: -1;
+        }
+
+        .landing-content {
+            max-width: 800px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .landing-photo-frame {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            padding: 10px;
+            margin: 0 auto 40px;
+            background: linear-gradient(45deg, var(--accent-color), var(--gold-color));
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: pulse 3s infinite;
+            position: relative;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        .landing-photo-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            background-color: #fcf7f9;
+        }
+
+        .landing-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            background-color: #fcf7f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .landing-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 6rem;
+            margin-bottom: 10px;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1.5s;
+        }
+
+        .landing-subtitle {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 2px;
+            animation: fadeInUp 1.5s 0.3s backwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Memories Overview Page Styles */
+        .memories-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .memories-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%23fff8fa"/><circle cx="20" cy="20" r="2" fill="%23f5b0cd" opacity="0.3" /><circle cx="60" cy="60" r="2" fill="%23f5b0cd" opacity="0.3" /><circle cx="20" cy="60" r="2" fill="%23f5b0cd" opacity="0.3" /><circle cx="60" cy="20" r="2" fill="%23f5b0cd" opacity="0.3" /></svg>');
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        .memories-title {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: var(--dark-background);
+            position: relative;
+            display: inline-block;
+        }
+
+        .memories-title::after {
+            content: '';
+            position: absolute;
+            left: 25%;
+            bottom: -10px;
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--accent-color), transparent);
+        }
+
+        .memory-tiles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .memory-tile {
+            height: 280px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.5s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .memory-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(216, 17, 89, 0.7), rgba(142, 68, 173, 0.7));
+            opacity: 0;
+            transition: all 0.5s;
+            z-index: 1;
+        }
+
+        .memory-tile:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .memory-tile:hover::before {
+            opacity: 0.7;
+        }
+
+        .tile-content {
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            transition: all 0.5s;
+            color: var(--dark-background);
+        }
+
+        .memory-tile:hover .tile-content {
+            color: white;
+            transform: translateZ(30px);
+        }
+
+        .tile-content h2 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2rem;
+            margin-bottom: 0;
+            transition: all 0.5s;
+        }
+
+        .future-tile {
+            background: linear-gradient(135deg, #fdf9f0, #f9e7d2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .future-tile::after {
+            content: '♥';
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 2rem;
+            color: rgba(216, 17, 89, 0.3);
+        }
+
+        /* Memory Pages Styles */
+        .memory-page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .memory-page-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 4rem;
+            margin-bottom: 40px;
+            color: var(--dark-background);
+            position: relative;
+            display: inline-block;
+        }
+
+        .memory-page-title::after {
+            content: '';
+            position: absolute;
+            left: 25%;
+            bottom: -10px;
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--accent-color), transparent);
+        }
+
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 50px 0;
+        }
+
+        .photo-container {
+            height: 300px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transform: rotate(0deg);
+            transition: all 0.5s;
+            cursor: pointer;
+            background-color: white;
+        }
+
+        .photo-container:nth-child(odd) {
+            transform: rotate(-2deg);
+        }
+
+        .photo-container:nth-child(even) {
+            transform: rotate(2deg);
+        }
+
+        .photo-container:hover {
+            transform: scale(1.05) rotate(0);
+            z-index: 1;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .memory-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.5s;
+            background-color: #fcf7f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .memory-photo-placeholder {
+            color: #999;
+            font-size: 14px;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .memory-text {
+            background-color: white;
+            padding: 40px 50px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            margin: 40px 0;
+            text-align: left;
+            position: relative;
+        }
+
+        .memory-text::before {
+            content: '"';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: 'Playfair Display', serif;
+            font-size: 5rem;
+            color: rgba(216, 17, 89, 0.1);
+            line-height: 1;
+        }
+
+        .memory-text::after {
+            content: '"';
+            position: absolute;
+            bottom: 0;
+            right: 20px;
+            font-family: 'Playfair Display', serif;
+            font-size: 5rem;
+            color: rgba(216, 17, 89, 0.1);
+            line-height: 1;
+        }
+
+        .memory-text p {
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Future Page Styles */
+        .future-page-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .future-page-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%23fff8fa"/><path d="M20,20 Q30,5 40,20 T60,20" stroke="%23f5b0cd" stroke-width="0.5" fill="none" opacity="0.5" /></svg>');
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .future-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .letter-envelope {
+            max-width: 650px;
+            background: linear-gradient(45deg, #f8f8f8, white);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transform: rotateX(5deg);
+            transition: all 0.5s;
+        }
+
+        .letter-envelope:hover {
+            transform: rotateX(0deg);
+        }
+
+        .letter-envelope::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(45deg, var(--gold-color), #f5b0cd);
+            z-index: -1;
+            border-radius: 25px;
+            opacity: 0.7;
+        }
+
+        .future-message {
+            position: relative;
+            text-align: left;
+            line-height: 2;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .future-message::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><rect width="100%" height="100%" fill="none"/><path d="M15,5 Q20,0 25,5 T15,15 T5,5 T15,5" stroke="%23f5b0cd" stroke-width="0.5" fill="none" opacity="0.3" /></svg>');
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .future-message p {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .future-message p:first-of-type {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 30px;
+        }
+
+        .future-message p:last-of-type {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            text-align: right;
+            margin-top: 30px;
+            color: var(--accent-color);
+        }
+
+        .heart-seal {
+            position: absolute;
+            top: -25px;
+            right: -25px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2rem;
+            box-shadow: 0 5px 15px rgba(216, 17, 89, 0.3);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 968px) {
+            .photo-gallery {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .landing-title {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .landing-title {
+                font-size: 3.5rem;
+            }
+            
+            .photo-gallery {
+                grid-template-columns: 1fr;
+            }
+            
+            .memory-tiles {
+                grid-template-columns: 1fr;
+            }
+
+            .memory-text, 
+            .future-message {
+                padding: 30px;
+            }
+            
+            .letter-envelope {
+                padding: 30px;
+            }
+            
+            .quote {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Hearts Background -->
+    <div class="floating-hearts" id="floating-hearts"></div>
+
+    <!-- Landing Page -->
+    <div id="landing-page" class="page active">
+        <div class="landing-container">
+            <div class="landing-content">
+                <div class="landing-photo-frame">
+                    <div class="landing-photo-container">
+                        <div class="landing-photo">
+                            <span class="memory-photo-placeholder">Jullie samen</span>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="landing-title">10 Jaar Samen</h1>
+                <p class="landing-subtitle">EEN DECENNIUM VOL LIEFDE, AVONTUUR EN HERINNERINGEN</p>
+                <button class="button" onclick="showPage('memories-page')">
+                    Trip down memory lane... <i class="fas fa-heart" style="margin-left: 10px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memories Overview -->
+    <div id="memories-page" class="page">
+        <div class="memories-container">
+            <h1 class="memories-title">Onze Liefdesreis</h1>
+            <p class="quote">"Als ik de afgelopen tien jaar opnieuw mocht beleven, zou ik elke stap weer precies hetzelfde doen, als dat betekent dat ik bij jou uitkom."</p>
+            
+            <div class="memory-tiles">
+                <a class="memory-tile" onclick="showPage('hoe-het-begon-page')">
+                    <div class="tile-content">
+                        <h2>Hoe het begon</h2>
+                    </div>
+                </a>
+                
+                <a class="memory-tile" onclick="showPage('amsterdam-page')">
+                    <div class="tile-content">
+                        <h2>Amsterdam periode</h2>
+                    </div>
+                </a>
+                
+                <a class="memory-tile" onclick="showPage('leiden-page')">
+                    <div class="tile-content">
+                        <h2>Leiden periode</h2>
+                    </div>
+                </a>
+                
+                <a class="memory-tile" onclick="showPage('gouda-page')">
+                    <div class="tile-content">
+                        <h2>Gouda periode</h2>
+                    </div>
+                </a>
+                
+                <a class="memory-tile future-tile" onclick="showPage('toekomst-page')">
+                    <div class="tile-content">
+                        <h2>De toekomst...</h2>
+                    </div>
+                </a>
+            </div>
+
+            <div class="decorative-divider">
+                <i class="fas fa-heart"></i>
+            </div>
+            
+            <a class="back-button" onclick="showPage('landing-page')">Terug naar Home</a>
+        </div>
+    </div>
+
+    <!-- Hoe Het Begon Page -->
+    <div id="hoe-het-begon-page" class="page">
+        <div class="memory-page-container">
+            <h1 class="memory-page-title">Hoe het begon</h1>
+            
+            <div class="photo-gallery">
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Onze eerste ontmoeting</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Eerste date</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Samen op avontuur</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quote">"Sommige mensen geloven in liefde op het eerste gezicht. Ik geloof in liefde op het eerste moment dat je lachte."</div>
+            
+            <div class="memory-text">
+                <p>Het verhaal van ons begon op een onverwacht moment, zoals de mooiste verhalen vaak beginnen. Wie had gedacht dat een toevallige ontmoeting zou uitgroeien tot een liefde van tien jaar?</p>
+                <p>Jouw lach was het eerste dat me opviel. Die lach die de hele ruimte verlichtte. Die lach die nu, tien jaar later, nog steeds mijn hart laat overslaan. We spraken, we lachten, en ergens in die eerste momenten, wist ik dat er iets bijzonders was tussen ons.</p>
+                <p>Onze eerste date was niet perfect - de reservering die kwijt was, de regen die plotseling neerviel. Maar jouw hand in de mijne voelde als thuiskomen. We liepen door de regen, lachend om onze doorweekte kleren, en dat moment zal ik nooit vergeten.</p>
+            </div>
+            
+            <a class="back-button" onclick="showPage('memories-page')">Terug naar Herinneringen</a>
+        </div>
+    </div>
+
+    <!-- Amsterdam Page -->
+    <div id="amsterdam-page" class="page">
+        <div class="memory-page-container">
+            <h1 class="memory-page-title">Amsterdam periode</h1>
+            
+            <div class="photo-gallery">
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Ons appartement</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Wandelen langs de grachten</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Samen op de fiets</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quote">"De stad van lichten en liefde, waar we samen droomden en groeiden."</div>
+            
+            <div class="memory-text">
+                <p>Amsterdam, de stad die ons samenbracht en ons hielp groeien. Ons kleine appartement met het schuine dak en de krakende vloer was misschien niet veel, maar het was ons eerste thuis samen.</p>
+                <p>Herinner je je onze avondwandelingen langs de grachten nog? Hoe we plannen maakten voor de toekomst, droomden over wat we zouden bereiken? Die avonden werden de fundering waarop we verder bouwden.</p>
+                <p>En dan de momenten van uitdaging - ons eerste grote meningsverschil, de zorgen over werk, de lange dagen apart. Maar zelfs toen vonden we elkaar weer, sterker dan ooit. Amsterdam leerde ons dat liefde niet alleen bestaat in de perfecte momenten, maar juist bloeit in de uitdagingen die we samen overwinnen.</p>
+            </div>
+            
+            <a class="back-button" onclick="showPage('memories-page')">Terug naar Herinneringen</a>
+        </div>
+    </div>
+
+    <!-- Leiden Page -->
+    <div id="leiden-page" class="page">
+        <div class="memory-page-container">
+            <h1 class="memory-page-title">Leiden periode</h1>
+            
+            <div class="photo-gallery">
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Wandelen in het park</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Onze favoriete koffieplek</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Samen bij de stadsmuur</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quote">"In de rustige straten van Leiden vonden we de melodie van ons eigen leven."</div>
+            
+            <div class="memory-text">
+                <p>Leiden bracht rust na de drukte van Amsterdam. De smalle straatjes, de historische gebouwen, de rustige kanalen - een nieuwe omgeving die perfect paste bij waar we waren in ons leven samen.</p>
+                <p>Dit was waar we echt in onszelf begonnen te geloven. Waar jij die grote stap in je carrière nam en ik mijn passie vond. We groeiden als individuen, maar nog meer als partners. Ik was nog nooit zo trots op je als tijdens deze periode.</p>
+                <p>Onze zondagochtenden in dat kleine koffietentje op de hoek, waar we de krant deelden en droomden over de toekomst. De avondwandelingen langs de stadsmuren, hand in hand, in comfortabele stilte. Leiden was niet alleen een plaats, het was een gevoel - het gevoel van vertrouwen, groei en diepe verbinding tussen ons.</p>
+            </div>
+            
+            <a class="back-button" onclick="showPage('memories-page')">Terug naar Herinneringen</a>
+        </div>
+    </div>
+
+    <!-- Gouda Page -->
+    <div id="gouda-page" class="page">
+        <div class="memory-page-container">
+            <h1 class="memory-page-title">Gouda periode</h1>
+            
+            <div class="photo-gallery">
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Ons huis</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Marktplein</span>
+                    </div>
+                </div>
+                <div class="photo-container">
+                    <div class="memory-photo">
+                        <span class="memory-photo-placeholder">Samen op vakantie</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quote">"In Gouda ontdekten we dat thuis niet een plaats is, maar een gevoel dat we samen creëren."</div>
+            
+            <div class="memory-text">
+                <p>Gouda werd ons echte thuis. Het huis waar we samen aan werkten, kamer voor kamer, om het van ons te maken. De tuin die we plantten, het hout dat we samen schilderden, de eerste meubels die we echt zelf uitkozen.</p>
+                <p>Deze jaren hebben ons geleerd wat het betekent om echt een team te zijn. Het waren niet alleen de grote momenten, maar juist de kleine dingen: jouw koffie die 's ochtends klaarstaat, mijn hand op je schouder na een lange dag, de spontane knuffels in de keuken.</p>
+                <p>We hebben gelachen, gehuild, gedanst en gedroomd in dit huis. En terwijl de seizoenen buiten veranderden, bleef één ding constant: mijn liefde voor jou, die met elke dag alleen maar sterker werd. Gouda is niet alleen waar we woonden, het is waar onze liefde volwassen werd.</p>
+            </div>
+            
+            <a class="back-button" onclick="showPage('memories-page')">Terug naar Herinneringen</a>
+        </div>
+    </div>
+
+    <!-- De Toekomst Page -->
+    <div id="toekomst-page" class="page">
+        <div class="future-page-container">
+            <h1 class="memory-page-title">De toekomst...</h1>
+            
+            <div class="future-content">
+                <div class="letter-envelope">
+                    <div class="heart-seal">♥</div>
+                    <div class="future-message">
+                        <p>Mijn liefste,</p>
+                        
+                        <p>Tien jaar samen, en toch voelt het alsof onze reis nog maar net begonnen is. Elk moment met jou is een geschenk dat ik koester, een herinnering die ik bewaar in mijn hart.</p>
+                        
+                        <p>Als ik terugkijk op onze jaren samen, ben ik overweldigd door hoe we samen zijn gegroeid, hoe we elkaar hebben geholpen worden wie we nu zijn. Jij maakt me elke dag een beter mens.</p>
+                        
+                        <p>De toekomst ligt voor ons als een onbeschreven boek, klaar om samen ingevuld te worden met nieuwe avonturen, nieuwe dromen en nieuwe herinneringen. Ik beloof je dat ik naast je zal staan bij elke stap, hand in hand.</p>
+                        
+                        <p>Ik droom van meer ochtenden waarop ik wakker word naast je, meer avonden waarin we samen lachen, meer momenten waarin we elkaar aankijken en weten dat we precies waar we horen zijn.</p>
+                        
+                        <p>Laten we samen blijven dansen, zelfs als er geen muziek speelt. Laten we samen blijven dromen, zelfs als het pad onduidelijk is. Laten we samen blijven groeien, in liefde en begrip.</p>
+                        
+                        <p>Want als deze tien jaar me iets hebben geleerd, is het dat jij de liefde van mijn leven bent, en dat er niets mooiers is dan de belofte van nog eens tien jaar, en nog eens tien, en nog eens...</p>
+                        
+                        <p>Voor altijd de jouwe,</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="decorative-divider">
+                <i class="fas fa-heart"></i>
+            </div>
+            
+            <a class="back-button" onclick="showPage('memories-page')">Terug naar Herinneringen</a>
+        </div>
+    </div>
+
+    <!-- JavaScript for navigation and effects -->
+    <script>
+        // Navigation between pages
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Create floating hearts
+        function createFloatingHearts() {
+            const container = document.getElementById('floating-hearts');
+            const heartCount = 20;
+            
+            for (let i = 0; i < heartCount; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                
+                // Random position
+                heart.style.left = `${Math.random() * 100}%`;
+                
+                // Random size
+                const size = Math.random() * 15 + 10;
+                heart.style.width = `${size}px`;
+                heart.style.height = `${size}px`;
+                
+                // Random animation duration
+                const duration = Math.random() * 15 + 10;
+                heart.style.animationDuration = `${duration}s`;
+                
+                // Random delay
+                heart.style.animationDelay = `${Math.random() * 10}s`;
+                
+                // Random opacity
+                heart.style.opacity = Math.random() * 0.5 + 0.1;
+                
+                container.appendChild(heart);
+            }
+        }
+
+        // Initialize when the page loads
+        window.onload = function() {
+            createFloatingHearts();
+            
+            // You can replace the placeholder divs with actual images when you have them
+            // For example:
+            // document.querySelectorAll('.landing-photo').forEach(placeholder => {
+            //     const img = document.createElement('img');
+            //     img.src = 'landing-photo.jpg';
+            //     img.alt = 'Ons samen';
+            //     placeholder.replaceWith(img);
+            // });
+        };
+    </script>
+</body>
+</html>
