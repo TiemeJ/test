@@ -674,6 +674,8 @@
             box-shadow: 0 4px 12px rgba(216, 17, 89, 0.4);
             z-index: 100;
             transition: all 0.3s;
+            opacity: 0; /* Start hidden */
+            visibility: hidden; /* Start fully hidden */
         }
 
         .music-control:hover {
@@ -711,6 +713,7 @@
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 99;
+            visibility: hidden; /* Start fully hidden */
         }
 
         .music-control:hover + .music-info {
@@ -1010,6 +1013,24 @@
         // Global variables for music control
         let musicPlaying = false;
         
+        // Show music controls when not on landing page
+        function showMusicControls(show) {
+            const musicControl = document.querySelector('.music-control');
+            const musicInfo = document.getElementById('music-info');
+            
+            if (show) {
+                // Show music controls with animation
+                musicControl.style.visibility = 'visible';
+                musicControl.style.opacity = '1';
+                musicInfo.style.visibility = 'visible';
+            } else {
+                // Hide music controls
+                musicControl.style.visibility = 'hidden';
+                musicControl.style.opacity = '0';
+                musicInfo.style.visibility = 'hidden';
+            }
+        }
+        
         // Navigation between pages
         function showPage(pageId) {
             // Hide all pages
@@ -1019,6 +1040,9 @@
             
             // Show selected page
             document.getElementById(pageId).classList.add('active');
+            
+            // Show/hide music controls based on the page
+            showMusicControls(pageId !== 'landing-page');
             
             // Scroll to top
             window.scrollTo(0, 0);
@@ -1173,6 +1197,9 @@
         window.onload = function() {
             createFloatingHearts();
             loadImages();
+            
+            // Keep music controls hidden on landing page at start
+            showMusicControls(false);
             
             // Set up music control
             document.getElementById('music-control').addEventListener('click', toggleMusic);
