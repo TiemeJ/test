@@ -989,18 +989,95 @@
             }
         }
 
+        // Load images function - using img folder
+        function loadImages() {
+            // Landing page photo
+            document.querySelectorAll('.landing-photo').forEach(placeholder => {
+                const img = new Image();
+                img.onload = function() {
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '50%';
+                    placeholder.innerHTML = '';
+                    placeholder.appendChild(img);
+                };
+                
+                img.onerror = function() {
+                    console.log("Landing photo not found");
+                };
+                
+                img.src = 'img/landing-photo.jpg';
+                img.alt = 'Ons samen';
+            });
+            
+            // Hoe het begon photos
+            const hoeHetBegonImages = [
+                { selector: '#hoe-het-begon-page .photo-container:nth-child(1) .memory-photo', src: 'img/hoe-het-begon-1.jpg', alt: 'Onze eerste ontmoeting' },
+                { selector: '#hoe-het-begon-page .photo-container:nth-child(2) .memory-photo', src: 'img/hoe-het-begon-2.jpg', alt: 'Eerste date' },
+                { selector: '#hoe-het-begon-page .photo-container:nth-child(3) .memory-photo', src: 'img/hoe-het-begon-3.jpg', alt: 'Samen op avontuur' }
+            ];
+            
+            loadPhotoSet(hoeHetBegonImages);
+            
+            // Amsterdam photos
+            const amsterdamImages = [
+                { selector: '#amsterdam-page .photo-container:nth-child(1) .memory-photo', src: 'img/amsterdam-1.jpg', alt: 'Ons appartement' },
+                { selector: '#amsterdam-page .photo-container:nth-child(2) .memory-photo', src: 'img/amsterdam-2.jpg', alt: 'Wandelen langs de grachten' },
+                { selector: '#amsterdam-page .photo-container:nth-child(3) .memory-photo', src: 'img/amsterdam-3.jpg', alt: 'Samen op de fiets' }
+            ];
+            
+            loadPhotoSet(amsterdamImages);
+            
+            // Leiden photos
+            const leidenImages = [
+                { selector: '#leiden-page .photo-container:nth-child(1) .memory-photo', src: 'img/leiden-1.jpg', alt: 'Wandelen in het park' },
+                { selector: '#leiden-page .photo-container:nth-child(2) .memory-photo', src: 'img/leiden-2.jpg', alt: 'Onze favoriete koffieplek' },
+                { selector: '#leiden-page .photo-container:nth-child(3) .memory-photo', src: 'img/leiden-3.jpg', alt: 'Samen bij de stadsmuur' }
+            ];
+            
+            loadPhotoSet(leidenImages);
+            
+            // Gouda photos
+            const goudaImages = [
+                { selector: '#gouda-page .photo-container:nth-child(1) .memory-photo', src: 'img/gouda-1.jpg', alt: 'Ons huis' },
+                { selector: '#gouda-page .photo-container:nth-child(2) .memory-photo', src: 'img/gouda-2.jpg', alt: 'Marktplein' },
+                { selector: '#gouda-page .photo-container:nth-child(3) .memory-photo', src: 'img/gouda-3.jpg', alt: 'Samen op vakantie' }
+            ];
+            
+            loadPhotoSet(goudaImages);
+        }
+
+        // Helper function to load a set of photos
+        function loadPhotoSet(photoSet) {
+            photoSet.forEach(photo => {
+                const element = document.querySelector(photo.selector);
+                
+                // Check if the file exists
+                const img = new Image();
+                img.onload = function() {
+                    // File exists, replace placeholder
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    element.innerHTML = '';
+                    element.appendChild(img);
+                };
+                
+                img.onerror = function() {
+                    // File doesn't exist yet, keep placeholder
+                    console.log(`Image ${photo.src} not found`);
+                };
+                
+                img.src = photo.src;
+                img.alt = photo.alt;
+            });
+        }
+
         // Initialize when the page loads
         window.onload = function() {
             createFloatingHearts();
-            
-            // You can replace the placeholder divs with actual images when you have them
-            // For example:
-            // document.querySelectorAll('.landing-photo').forEach(placeholder => {
-            //     const img = document.createElement('img');
-            //     img.src = 'landing-photo.jpg';
-            //     img.alt = 'Ons samen';
-            //     placeholder.replaceWith(img);
-            // });
+            loadImages();
         };
     </script>
 </body>
