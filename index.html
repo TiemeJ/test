@@ -660,7 +660,7 @@
         /* Music Controls */
         .music-control {
             position: fixed;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
             width: 50px;
             height: 50px;
@@ -679,6 +679,17 @@
         .music-control:hover {
             transform: scale(1.1);
         }
+        
+        /* Animation for music control when playing */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(216, 17, 89, 0.6); }
+            70% { box-shadow: 0 0 0 10px rgba(216, 17, 89, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(216, 17, 89, 0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
 
         .music-control i {
             font-size: 1.2rem;
@@ -686,7 +697,7 @@
 
         .music-info {
             position: fixed;
-            bottom: 20px;
+            top: 20px;
             right: 80px;
             padding: 8px 15px;
             border-radius: 20px;
@@ -750,7 +761,7 @@
     <div class="floating-hearts" id="floating-hearts"></div>
 
     <!-- Audio Element - Background Music -->
-    <audio id="background-music" loop autoplay>
+    <audio id="background-music" loop preload="auto" playsinline>
         <source src="music/background.mp3" type="audio/mp3">
     </audio>
 
@@ -1018,18 +1029,21 @@
             const audioElement = document.getElementById('background-music');
             const musicIcon = document.getElementById('music-icon');
             const musicInfo = document.getElementById('music-info');
+            const musicControl = document.querySelector('.music-control');
             
             if (musicPlaying) {
                 audioElement.pause();
                 musicIcon.className = 'fas fa-play';
                 musicInfo.textContent = 'Achtergrondmuziek - Klik om af te spelen';
                 musicPlaying = false;
+                musicControl.classList.remove('pulse-animation');
             } else {
                 audioElement.play()
                     .then(() => {
                         musicIcon.className = 'fas fa-pause';
                         musicInfo.textContent = 'Achtergrondmuziek - Klik om te pauzeren';
                         musicPlaying = true;
+                        musicControl.classList.add('pulse-animation');
                     })
                     .catch(error => {
                         console.error('Failed to play audio:', error);
@@ -1163,30 +1177,74 @@
             // Set up music control
             document.getElementById('music-control').addEventListener('click', toggleMusic);
             
-            // Try to autoplay music
+            // Get audio element and prepare for autoplay
             const audioElement = document.getElementById('background-music');
-            
-            // First load the audio
             audioElement.load();
             
-            // Try to play automatically (may be blocked by browser)
-            const playPromise = audioElement.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    // Autoplay started successfully
-                    musicPlaying = true;
-                    document.getElementById('music-icon').className = 'fas fa-pause';
-                    document.getElementById('music-info').textContent = 'Achtergrondmuziek - Klik om te pauzeren';
-                    
-                    // Add a visual indication that music is playing
-                    document.querySelector('.music-control').classList.add('pulse-animation');
-                }).catch(error => {
-                    // Autoplay was prevented by the browser
-                    console.log("Autoplay prevented by browser:", error);
-                    // Keep the play button showing - user will need to click to play
-                });
+            // Function to attempt autoplay
+            function attemptAutoplay() {
+                const playPromise = audioElement.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        // Autoplay started successfully
+                        musicPlaying = true;
+                        document.getElementById('music-icon').className = 'fas fa-pause';
+                        document.getElementById('music-info').textContent = 'Achtergrondmuziek - Klik om te pauzeren';
+                        document.querySelector('.music-control').classList.add('pulse-animation');
+                    }).catch(error => {
+                        console.log("Autoplay prevented:", error);
+                        // Will try other methods to autoplay
+                    });
+                }
             }
+            
+            // Try autoplay with multiple strategies
+            attemptAutoplay();
+            
+            // Try autoplay after a slight delay
+            setTimeout(attemptAutoplay, 1000);
+            
+            // Try autoplay on user interaction with the document
+            document.addEventListener('click', function() {
+                if (!musicPlaying) {
+                    attemptAutoplay();
+                }
+            }, { once: true });
+            
+            // Try autoplay on scroll
+            document.addEventListener('scroll', function() {
+                if (!musicPlaying) {
+                    attemptAutoplay();
+                }
+            }, { once: true });
+            
+            // Create a helper invisible button that tries to get user interaction
+            const autoplayHelper = document.createElement('button');
+            autoplayHelper.style.position = 'fixed';
+            autoplayHelper.style.top = '0';
+            autoplayHelper.style.left = '0';
+            autoplayHelper.style.width = '100%';
+            autoplayHelper.style.height = '100%';
+            autoplayHelper.style.opacity = '0';
+            autoplayHelper.style.cursor = 'default';
+            autoplayHelper.style.zIndex = '1000';
+            document.body.appendChild(autoplayHelper);
+            
+            autoplayHelper.addEventListener('click', function() {
+                if (!musicPlaying) {
+                    attemptAutoplay();
+                }
+                // Remove helper after click
+                this.remove();
+            });
+            
+            // Remove helper after 3 seconds regardless
+            setTimeout(() => {
+                if (document.body.contains(autoplayHelper)) {
+                    autoplayHelper.remove();
+                }
+            }, 3000);
         };
     </script>
 </body>
