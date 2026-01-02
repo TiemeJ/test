@@ -71,9 +71,6 @@
                     <!-- Friends injected here -->
                 </select>
             </div>
-            <button id="addBrewBtn" onclick="toggleForm(true); window.scrollTo({top:0,behavior:'smooth'})" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] dark:hover:bg-[#44403c] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-all flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> New Brew
-            </button>
         </div>
 
         <!-- Add/Edit Form (Only visible on My Brews) -->
@@ -379,11 +376,15 @@
         });
 
         async function initUserData(user) {
-            // Check public status
+            // Check public status and update display name if needed
             const userDocRef = doc(db, 'users', user.uid);
             const snap = await getDoc(userDocRef);
             if (snap.exists()) {
                 isPublic = snap.data().isPublic || false;
+                // Update display name if it changed
+                if(snap.data().displayName !== user.displayName) {
+                     await updateDoc(userDocRef, { displayName: user.displayName });
+                }
             } else {
                 // Initialize doc
                 await setDoc(userDocRef, { isPublic: false, displayName: user.displayName });
@@ -401,17 +402,16 @@
             const targetUid = uid === 'mine' ? currentUser.uid : uid;
             const isMine = uid === 'mine';
 
-            // Show/Hide Add Button
-            document.getElementById('addBrewBtn').classList.toggle('hidden', !isMine);
+            // Show/Hide Add Button not needed anymore as per request
             
             // Manage Form Container Visibility
             const formContainer = document.getElementById('formContainer');
             if (isMine) {
                 formContainer.classList.remove('hidden');
-                // We keep the form collapsed by default, but header is visible
+                toggleForm(false); // Ensure collapsed when returning to mine
             } else {
                 formContainer.classList.add('hidden');
-                toggleForm(false); // Collapse form if viewing friend
+                toggleForm(false); // Ensure collapsed when viewing friend
             }
 
             // Start Listener
@@ -513,13 +513,21 @@
             if(!uid || uid === currentUser.uid) return alert("Invalid ID");
             
             try {
+                // Look up user name first
+                const friendDoc = await getDoc(doc(db, 'users', uid));
+                let friendName = 'Friend';
+                if(friendDoc.exists() && friendDoc.data().displayName) {
+                    friendName = friendDoc.data().displayName;
+                }
+
                 await setDoc(doc(db, 'users', currentUser.uid, 'following', uid), { 
                     uid: uid, 
+                    name: friendName,
                     addedAt: new Date().toISOString() 
                 });
                 input.value = '';
                 loadFollowingList(); // Refresh list
-            } catch(e) { console.error(e); alert("Could not follow user."); }
+            } catch(e) { console.error(e); alert("Could not follow user. Check ID."); }
         }
 
         window.unfollowUser = async (uid) => {
@@ -544,7 +552,7 @@
             following.forEach(f => {
                 const d = document.createElement('div');
                 d.className = "flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";
-                d.innerHTML = `<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate w-40">${f.uid}</span> <button onclick="unfollowUser('${f.uid}')" class="text-xs text-red-500 hover:text-red-700">Unfollow</button>`;
+                d.innerHTML = `<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate w-40">${f.name || f.uid}</span> <button onclick="unfollowUser('${f.uid}')" class="text-xs text-red-500 hover:text-red-700">Unfollow</button>`;
                 list.appendChild(d);
             });
 
@@ -555,7 +563,7 @@
             following.forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f.uid;
-                opt.text = `Friend (${f.uid.substr(0,5)}...)`;
+                opt.text = f.name || `Friend (${f.uid.substr(0,5)}...)`;
                 select.appendChild(opt);
             });
             // Restore selection if viewing friend
