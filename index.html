@@ -19,13 +19,15 @@
         .dark .dragging { background-color: #44403c; border-color: #a8a29e; }
         input:focus, select:focus, textarea:focus { outline: none; ring: 2px; border-color: #b08968; box-shadow: 0 0 0 3px rgba(176, 137, 104, 0.2); }
         .editing-mode { border: 2px solid #ea580c !important; }
-        th.filterable { position: relative; }
+        th.filterable { position: relative; cursor: context-menu; }
         th.filterable:hover::after { content: '\f0b0'; font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 0.7em; margin-left: 6px; opacity: 0.5; }
         #filterDropdown { z-index: 50; animation: fadeIn 0.1s ease-out; }
         #modalOverlay { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .chevron-rotate { transition: transform 0.3s ease; }
         .group[aria-expanded="true"] .chevron-rotate { transform: rotate(180deg); }
+        .cursor-grab { cursor: grab; }
+        .cursor-grabbing { cursor: grabbing; }
     </style>
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { colors: { coffee: { 50: '#fdf8f6', 100: '#f2e8e5', 200: '#eaddd7', 300: '#e0ccbb', 400: '#d2bab0', 500: '#a18e84', 600: '#8c7365', 700: '#7f5539', 800: '#9c6644', 900: '#4a3b32', } } } } }
@@ -209,7 +211,7 @@
         <!-- Info Hint -->
         <div class="mb-2 text-xs text-coffee-500 dark:text-[#78716c] italic flex flex-col gap-1">
             <span><i class="fa-solid fa-hand-pointer mr-1"></i> Double tap Headers (Roast, Method, Temp) to filter.</span>
-            <span><i class="fa-solid fa-info-circle mr-1"></i> Drag rows to reorder.</span>
+            <span><i class="fa-solid fa-info-circle mr-1"></i> Drag rows to reorder (only when signed in).</span>
         </div>
 
         <!-- Table Container -->
@@ -336,7 +338,7 @@
 
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, onSnapshot, query } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, onSnapshot, query, writeBatch } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -346,9 +348,10 @@
         let currentUser = null;
         let currentView = 'mine'; // 'mine' or uid of friend
         let coffees = [];
-        let following = []; // List of objects { uid: '...', name: '...' }
-        let unsubscribeData = null; // To stop listeners when switching views
+        let following = []; 
+        let unsubscribeData = null; 
         let isPublic = false;
+        let dragSrcEl = null;
 
         // --- Auth ---
         window.googleLogin = () => signInWithPopup(auth, provider).catch(e => alert(e.message));
@@ -378,17 +381,12 @@
         });
 
         async function initUserData(user) {
-            // Check public status and update display name if needed
             const userDocRef = doc(db, 'users', user.uid);
             const snap = await getDoc(userDocRef);
             if (snap.exists()) {
                 isPublic = snap.data().isPublic || false;
-                // Update display name if it changed
-                if(snap.data().displayName !== user.displayName) {
-                     await updateDoc(userDocRef, { displayName: user.displayName });
-                }
+                if(snap.data().displayName !== user.displayName) await updateDoc(userDocRef, { displayName: user.displayName });
             } else {
-                // Initialize doc
                 await setDoc(userDocRef, { isPublic: false, displayName: user.displayName });
             }
             updatePublicToggleUI();
@@ -396,10 +394,9 @@
         }
 
         // --- Data Logic ---
-        
         window.changeView = (uid) => {
             currentView = uid;
-            if(unsubscribeData) unsubscribeData(); // Stop previous listener
+            if(unsubscribeData) unsubscribeData(); 
             
             const targetUid = uid === 'mine' ? currentUser.uid : uid;
             const isMine = uid === 'mine';
@@ -408,24 +405,24 @@
             const formContent = document.getElementById('formContent');
 
             if (isMine) {
-                // Show container, but collapse content
                 formContainer.classList.remove('hidden');
                 formContainer.setAttribute('aria-expanded', 'false');
                 formContent.classList.add('hidden');
             } else {
-                // Hide everything
                 formContainer.classList.add('hidden');
                 formContainer.setAttribute('aria-expanded', 'false');
                 formContent.classList.add('hidden');
             }
 
-            // Start Listener
             const q = collection(db, 'users', targetUid, 'coffees');
             unsubscribeData = onSnapshot(q, (snapshot) => {
                 coffees = [];
                 snapshot.forEach(doc => coffees.push({ id: doc.id, ...doc.data() }));
-                // Default sort
-                coffees.sort((a,b) => (a.name||"").localeCompare(b.name||""));
+                
+                // Sort Logic: Priority customOrder, then creation
+                if (!currentSort.key) {
+                    coffees.sort((a,b) => (a.customOrder || 0) - (b.customOrder || 0));
+                }
                 renderTable();
             }, (error) => {
                 console.error(error);
@@ -440,186 +437,182 @@
         async function handleFormSubmit(e) {
             e.preventDefault();
             if(currentView !== 'mine') return;
-            // (Same submit logic as before, just ensuring we only save to own UID)
             const f = new FormData(e.target); const eid = f.get('editId');
             const tMode = f.get('tempMode'); const finalTemp = tMode === 'profile' ? f.get('tempProfile') : (f.get('tempNumeric') || "M");
-            const d = { name: f.get('name'), beanType: f.get('beanType'), roastType: f.get('roastType'), method: f.get('method'), grind: parseFloat(f.get('grind')), weight: parseFloat(f.get('weight')), ratio: parseFloat(f.get('ratio')), time: parseFloat(f.get('time')), temp: finalTemp, notes: f.get('notes'), updatedAt: new Date().toISOString() };
+            
+            // Calc new order: Top of list = min existing order - 1
+            let newOrder = 0;
+            if (coffees.length > 0) {
+                 const minOrder = Math.min(...coffees.map(c => c.customOrder || 0));
+                 newOrder = minOrder - 1;
+            }
+
+            const d = { 
+                name: f.get('name'), 
+                beanType: f.get('beanType'), 
+                roastType: f.get('roastType'), 
+                method: f.get('method'), 
+                grind: parseFloat(f.get('grind')), 
+                weight: parseFloat(f.get('weight')), 
+                ratio: parseFloat(f.get('ratio')), 
+                time: parseFloat(f.get('time')), 
+                temp: finalTemp, 
+                notes: f.get('notes'), 
+                updatedAt: new Date().toISOString() 
+            };
             
             try {
                 const col = collection(db, 'users', currentUser.uid, 'coffees');
-                if(eid) await updateDoc(doc(col, eid), d);
-                else await addDoc(col, { ...d, createdAt: new Date().toISOString() });
+                if(eid) {
+                    await updateDoc(doc(col, eid), d);
+                } else {
+                    d.customOrder = newOrder;
+                    d.createdAt = new Date().toISOString();
+                    await addDoc(col, d);
+                }
                 resetFormState();
             } catch(err){ alert(err.message); }
         }
         window.handleFormSubmit = handleFormSubmit;
 
-        // --- Friends Logic ---
-
-        window.openFriendsModal = () => {
-            document.getElementById('modalOverlay').classList.remove('hidden');
-            switchModalTab('profile');
-        }
-        window.closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
+        // --- Drag & Drop Logic ---
         
-        window.switchModalTab = (tab) => {
-            const tProf = document.getElementById('tabProfile');
-            const tFoll = document.getElementById('tabFollowing');
-            const cProf = document.getElementById('contentProfile');
-            const cFoll = document.getElementById('contentFollowing');
+        window.handleDragStart = (e) => {
+            dragSrcEl = e.target.closest('tr');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', dragSrcEl.innerHTML);
+            dragSrcEl.classList.add('opacity-50');
+        }
 
+        window.handleDragOver = (e) => {
+            if (e.preventDefault) e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        window.handleDrop = async (e) => {
+            if (e.stopPropagation) e.stopPropagation();
+            const targetRow = e.target.closest('tr');
+            if (dragSrcEl !== targetRow && targetRow) {
+                // Get indices
+                const oldIndex = parseInt(dragSrcEl.getAttribute('data-index'));
+                const newIndex = parseInt(targetRow.getAttribute('data-index'));
+                
+                // Reorder array locally first for snapiness
+                const movedItem = coffees.splice(oldIndex, 1)[0];
+                coffees.splice(newIndex, 0, movedItem);
+                
+                // Re-assign customOrder based on new array index
+                // We just use 0, 1, 2... for simplicity to reset any weird gaps
+                coffees.forEach((c, idx) => c.customOrder = idx);
+                
+                renderTable(); // Re-render immediately
+
+                // Sync to Firebase
+                try {
+                    const batch = writeBatch(db);
+                    coffees.forEach((c) => {
+                        const ref = doc(db, 'users', currentUser.uid, 'coffees', c.id);
+                        batch.update(ref, { customOrder: c.customOrder });
+                    });
+                    await batch.commit();
+                } catch(err) { console.error("Reorder failed", err); }
+            }
+            return false;
+        }
+
+        window.handleDragEnd = (e) => {
+            if(dragSrcEl) dragSrcEl.classList.remove('opacity-50');
+        }
+
+
+        // --- Friends Logic ---
+        // (Same as before)
+        window.openFriendsModal = () => { document.getElementById('modalOverlay').classList.remove('hidden'); switchModalTab('profile'); }
+        window.closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
+        window.switchModalTab = (tab) => {
+            const tProf = document.getElementById('tabProfile'); const tFoll = document.getElementById('tabFollowing');
+            const cProf = document.getElementById('contentProfile'); const cFoll = document.getElementById('contentFollowing');
             if (tab === 'profile') {
-                tProf.classList.add('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
-                tProf.classList.remove('text-coffee-500','dark:text-[#78716c]');
-                tFoll.classList.remove('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
-                tFoll.classList.add('text-coffee-500','dark:text-[#78716c]');
+                tProf.classList.add('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]'); tProf.classList.remove('text-coffee-500','dark:text-[#78716c]');
+                tFoll.classList.remove('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]'); tFoll.classList.add('text-coffee-500','dark:text-[#78716c]');
                 cProf.classList.remove('hidden'); cFoll.classList.add('hidden');
             } else {
-                tFoll.classList.add('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
-                tFoll.classList.remove('text-coffee-500','dark:text-[#78716c]');
-                tProf.classList.remove('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
-                tProf.classList.add('text-coffee-500','dark:text-[#78716c]');
+                tFoll.classList.add('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]'); tFoll.classList.remove('text-coffee-500','dark:text-[#78716c]');
+                tProf.classList.remove('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]'); tProf.classList.add('text-coffee-500','dark:text-[#78716c]');
                 cFoll.classList.remove('hidden'); cProf.classList.add('hidden');
             }
         }
-
-        window.togglePublicProfile = async () => {
-            if(!currentUser) return;
-            isPublic = !isPublic;
-            updatePublicToggleUI();
-            await updateDoc(doc(db, 'users', currentUser.uid), { isPublic: isPublic });
-        }
-
+        window.togglePublicProfile = async () => { if(!currentUser) return; isPublic = !isPublic; updatePublicToggleUI(); await updateDoc(doc(db, 'users', currentUser.uid), { isPublic: isPublic }); }
         function updatePublicToggleUI() {
-            const btn = document.getElementById('togglePublicBtn');
-            const dot = btn.firstElementChild;
-            const container = document.getElementById('shareIdContainer');
-            if (isPublic) {
-                btn.className = "bg-green-500 w-12 h-6 rounded-full p-1 transition-colors relative";
-                dot.className = "bg-white w-4 h-4 rounded-full shadow-md transform translate-x-6 transition-transform";
-                container.classList.remove('hidden');
-            } else {
-                btn.className = "bg-gray-300 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 transition-colors relative";
-                dot.className = "bg-white w-4 h-4 rounded-full shadow-md transform translate-x-0 transition-transform";
-                container.classList.add('hidden');
-            }
+            const btn = document.getElementById('togglePublicBtn'); const dot = btn.firstElementChild; const container = document.getElementById('shareIdContainer');
+            if (isPublic) { btn.className = "bg-green-500 w-12 h-6 rounded-full p-1 transition-colors relative"; dot.className = "bg-white w-4 h-4 rounded-full shadow-md transform translate-x-6 transition-transform"; container.classList.remove('hidden'); } 
+            else { btn.className = "bg-gray-300 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 transition-colors relative"; dot.className = "bg-white w-4 h-4 rounded-full shadow-md transform translate-x-0 transition-transform"; container.classList.add('hidden'); }
         }
-
-        window.copyShareId = () => {
-            const input = document.getElementById('myShareId');
-            input.select();
-            document.execCommand('copy'); // Legacy but reliable
-            alert("ID Copied!");
-        }
-
+        window.copyShareId = () => { document.getElementById('myShareId').select(); document.execCommand('copy'); alert("ID Copied!"); }
         window.followUser = async () => {
-            const input = document.getElementById('friendIdInput');
-            const uid = input.value.trim();
-            if(!uid || uid === currentUser.uid) return alert("Invalid ID");
-            
+            const input = document.getElementById('friendIdInput'); const uid = input.value.trim(); if(!uid || uid === currentUser.uid) return alert("Invalid ID");
             try {
-                // Look up user name first
                 const friendDoc = await getDoc(doc(db, 'users', uid));
-                let friendName = 'Friend';
-                if(friendDoc.exists() && friendDoc.data().displayName) {
-                    friendName = friendDoc.data().displayName;
-                }
-
-                await setDoc(doc(db, 'users', currentUser.uid, 'following', uid), { 
-                    uid: uid, 
-                    name: friendName,
-                    addedAt: new Date().toISOString() 
-                });
-                input.value = '';
-                loadFollowingList(); // Refresh list
+                let friendName = 'Friend'; if(friendDoc.exists() && friendDoc.data().displayName) friendName = friendDoc.data().displayName;
+                await setDoc(doc(db, 'users', currentUser.uid, 'following', uid), { uid: uid, name: friendName, addedAt: new Date().toISOString() });
+                input.value = ''; loadFollowingList();
             } catch(e) { console.error(e); alert("Could not follow user. Check ID."); }
         }
-
-        window.unfollowUser = async (uid) => {
-            if(!confirm("Unfollow this user?")) return;
-            await deleteDoc(doc(db, 'users', currentUser.uid, 'following', uid));
-            loadFollowingList();
-            if (currentView === uid) {
-                document.getElementById('viewSelect').value = 'mine';
-                changeView('mine');
-            }
-        }
-
+        window.unfollowUser = async (uid) => { if(!confirm("Unfollow?")) return; await deleteDoc(doc(db, 'users', currentUser.uid, 'following', uid)); loadFollowingList(); if(currentView===uid){document.getElementById('viewSelect').value='mine';changeView('mine');} }
         async function loadFollowingList() {
             if(!currentUser) return;
             const snap = await getDocs(collection(db, 'users', currentUser.uid, 'following'));
-            following = [];
-            snap.forEach(doc => following.push(doc.data()));
-            
-            // Render Modal List
-            const list = document.getElementById('followingList');
-            list.innerHTML = '';
+            following = []; snap.forEach(doc => following.push(doc.data()));
+            const list = document.getElementById('followingList'); list.innerHTML = '';
             following.forEach(f => {
-                const d = document.createElement('div');
-                d.className = "flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";
+                const d = document.createElement('div'); d.className = "flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";
                 d.innerHTML = `<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate w-40">${f.name || f.uid}</span> <button onclick="unfollowUser('${f.uid}')" class="text-xs text-red-500 hover:text-red-700">Unfollow</button>`;
                 list.appendChild(d);
             });
-
-            // Render Dropdown
-            const select = document.getElementById('viewSelect');
-            // Keep "My Brews"
-            select.innerHTML = '<option value="mine">My Brews</option>';
-            following.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f.uid;
-                opt.text = f.name || `Friend (${f.uid.substr(0,5)}...)`;
-                select.appendChild(opt);
-            });
-            // Restore selection if viewing friend
+            const select = document.getElementById('viewSelect'); select.innerHTML = '<option value="mine">My Brews</option>';
+            following.forEach(f => { const opt = document.createElement('option'); opt.value = f.uid; opt.text = f.name || `Friend (${f.uid.substr(0,5)}...)`; select.appendChild(opt); });
             select.value = currentView;
         }
 
-        // --- Standard UI Stuff ---
-        // (Include all previous helpers like formatTime, getRoastBadge, editCoffee, etc here)
-        // Re-pasting standard helpers for completeness:
-        window.handleRecipeInput = (s) => {
-            const w=document.getElementById('inputWeight'),r=document.getElementById('inputRatio'),y=document.getElementById('inputYield');
-            const wv=parseFloat(w.value)||0,rv=parseFloat(r.value)||0,yv=parseFloat(y.value)||0; if(!wv)return;
-            if(s==='weight'){ if(rv>0)y.value=(wv*rv).toFixed(1); else if(yv>0)r.value=(yv/wv).toFixed(1); }
-            else if(s==='ratio')y.value=(wv*rv).toFixed(1); else if(s==='yield'){ if(wv>0)r.value=(yv/wv).toFixed(2); }
-        }
+        // --- UI ---
+        window.handleRecipeInput = (s) => { const w=document.getElementById('inputWeight'),r=document.getElementById('inputRatio'),y=document.getElementById('inputYield'); const wv=parseFloat(w.value)||0,rv=parseFloat(r.value)||0,yv=parseFloat(y.value)||0; if(!wv)return; if(s==='weight'){ if(rv>0)y.value=(wv*rv).toFixed(1); else if(yv>0)r.value=(yv/wv).toFixed(1); } else if(s==='ratio')y.value=(wv*rv).toFixed(1); else if(s==='yield'){ if(wv>0)r.value=(yv/wv).toFixed(2); } }
         window.setTempMode = (m) => { document.getElementById('tempMode').value=m; if(m==='profile'){document.getElementById('tempProfileContainer').classList.remove('hidden');document.getElementById('tempNumericContainer').classList.add('hidden');}else{document.getElementById('tempNumericContainer').classList.remove('hidden');document.getElementById('tempProfileContainer').classList.add('hidden');} }
-        window.toggleForm = (f=null) => { 
-            const c=document.getElementById('formContainer');
-            const o=document.getElementById('formContent');
-            const isHidden = c.classList.contains('hidden');
-            
-            if (isHidden) {
-                c.classList.remove('hidden');
-                c.setAttribute('aria-expanded', 'true');
-                o.classList.remove('hidden');
-                return;
-            }
-
-            const e=c.getAttribute('aria-expanded')==='true';
-            const s=f!==null?f:!e; 
-            c.setAttribute('aria-expanded',s?'true':'false'); 
-            if(s)o.classList.remove('hidden'); else o.classList.add('hidden'); 
-        }
-        
-        window.editCoffee = (id) => {
-            const c=coffees.find(x=>x.id===id); if(!c)return; document.getElementById('editId').value=c.id; document.getElementById('name').value=c.name; document.getElementById('beanType').value=c.beanType; document.getElementById('roastType').value=c.roastType; document.getElementById('method').value=c.method; document.getElementById('grind').value=c.grind; document.getElementById('inputWeight').value=c.weight; document.getElementById('inputRatio').value=c.ratio; document.getElementById('inputYield').value=(c.weight*c.ratio).toFixed(1); document.getElementById('time').value=c.time; document.getElementById('notes').value=c.notes; if(!isNaN(parseFloat(c.temp))&&isFinite(c.temp)){ setTempMode('numeric'); document.getElementById('tempNumeric').value=c.temp; } else { setTempMode('profile'); document.getElementById('tempProfile').value=c.temp; } document.getElementById('formContainer').classList.add('editing-mode'); toggleForm(true); document.getElementById('formTitle').innerHTML='<span class="text-orange-500">Edit Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Update</span>'; document.getElementById('submitBtn').className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); 
-        }
+        window.toggleForm = (f=null) => { const c=document.getElementById('formContainer'),o=document.getElementById('formContent'),e=c.getAttribute('aria-expanded')==='true',s=f!==null?f:!e; c.setAttribute('aria-expanded',s?'true':'false'); if(s)o.classList.remove('hidden'); else o.classList.add('hidden'); }
+        window.editCoffee = (id) => { const c=coffees.find(x=>x.id===id); if(!c)return; document.getElementById('editId').value=c.id; document.getElementById('name').value=c.name; document.getElementById('beanType').value=c.beanType; document.getElementById('roastType').value=c.roastType; document.getElementById('method').value=c.method; document.getElementById('grind').value=c.grind; document.getElementById('inputWeight').value=c.weight; document.getElementById('inputRatio').value=c.ratio; document.getElementById('inputYield').value=(c.weight*c.ratio).toFixed(1); document.getElementById('time').value=c.time; document.getElementById('notes').value=c.notes; if(!isNaN(parseFloat(c.temp))&&isFinite(c.temp)){ setTempMode('numeric'); document.getElementById('tempNumeric').value=c.temp; } else { setTempMode('profile'); document.getElementById('tempProfile').value=c.temp; } document.getElementById('formContainer').classList.add('editing-mode'); toggleForm(true); document.getElementById('formTitle').innerHTML='<span class="text-orange-500">Edit Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Update</span>'; document.getElementById('submitBtn').className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); }
         window.deleteCoffee = async (id, ev) => { if(ev)ev.stopPropagation(); if(currentView!=='mine')return; if(!confirm('Delete?'))return; await deleteDoc(doc(db,'users',currentUser.uid,'coffees',id)); if(document.getElementById('editId').value==id)resetFormState(); }
         window.resetFormState = (e) => { if(e)e.stopPropagation(); document.getElementById('coffeeForm').reset(); document.getElementById('editId').value=''; setTempMode('profile'); document.getElementById('formContainer').classList.remove('editing-mode'); document.getElementById('formTitle').innerHTML='<span>Add New Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Save Brew</span>'; document.getElementById('submitBtn').className="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] dark:hover:bg-[#44403c] text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.add('hidden'); }
         
-        window.renderTable = () => { const t=document.getElementById('coffeeTableBody'); const e=document.getElementById('emptyState'); t.innerHTML=''; if(coffees.length===0){e.classList.remove('hidden'); return;} e.classList.add('hidden');
-            coffees.forEach(c => {
-                const w=(c.weight*c.ratio).toFixed(1);
-                const r=document.createElement('tr'); r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0';
-                // Only show actions if 'mine'
-                const actions = currentView==='mine' ? `<button onclick="editCoffee('${c.id}')" class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i class="fa-solid fa-pencil"></i></button><button onclick="deleteCoffee('${c.id}',event)" class="text-red-500 hover:bg-red-50 p-2 rounded"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-xs text-gray-400">Read Only</span>`;
-                
-                // Richer Recipe Column
-                const recipeCol = `<div class="flex flex-col items-center"><span class="text-xs text-coffee-500 dark:text-[#78716c] mb-1">1:${c.ratio}</span><div class="font-mono text-coffee-900 dark:text-[#e7e5e4] bg-coffee-50 dark:bg-[#1c1917] px-2 py-1 rounded border border-coffee-100 dark:border-[#44403c]"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight}g</span><i class="fa-solid fa-arrow-right text-[10px] text-coffee-400 dark:text-[#57534e] mx-1"></i><span class="font-bold text-coffee-900 dark:text-white">${w.endsWith('.0')?parseInt(w):w}g</span></div></div>`;
+        window.renderTable = () => { 
+            const t=document.getElementById('coffeeTableBody'); const e=document.getElementById('emptyState'); t.innerHTML=''; 
+            if(coffees.length===0){e.classList.remove('hidden'); return;} e.classList.add('hidden');
+            
+            // Check if dragging should be allowed (only if mine, no sort/filter)
+            const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !activeFilters.temp && !activeFilters.roastType;
 
-                r.innerHTML=`<td class="px-4 py-4 text-center"><i class="fa-solid fa-cloud text-xs opacity-50"></i></td><td class="px-4 py-4 font-semibold text-coffee-900 dark:text-[#e7e5e4]">${c.name}<div class="text-xs font-normal text-coffee-500">${c.beanType}</div></td><td class="px-4 py-4 pointer-events-auto" ondblclick="openFilterMenu(event,'roastType')">${getRoastBadge(c.roastType)}</td><td class="px-4 py-4 pointer-events-auto" ondblclick="openFilterMenu(event,'method')"><span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method}</span></td><td class="px-4 py-4 text-right font-mono text-coffee-700 dark:text-[#d6ccc2]">${c.grind}</td><td class="px-4 py-4 text-center">${recipeCol}</td><td class="px-4 py-4 text-right">${Math.floor(c.time/60)}m ${c.time%60}s</td><td class="px-4 py-4 text-center pointer-events-auto" ondblclick="openFilterMenu(event,'temp')">${getTempBadge(c.temp)}</td><td class="px-4 py-4 text-sm max-w-xs truncate" title="${c.notes}">${c.notes}</td><td class="px-4 py-4 text-center flex justify-center gap-2">${actions}</td>`;
+            coffees.forEach((c, index) => {
+                const w=(c.weight*c.ratio).toFixed(1);
+                const r=document.createElement('tr'); 
+                r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0';
+                
+                if (isDraggable) {
+                    r.setAttribute('draggable', 'true');
+                    r.setAttribute('data-index', index);
+                    r.classList.add('cursor-grab');
+                    // Add listeners
+                    r.addEventListener('dragstart', window.handleDragStart);
+                    r.addEventListener('dragover', window.handleDragOver);
+                    r.addEventListener('drop', window.handleDrop);
+                    r.addEventListener('dragend', window.handleDragEnd);
+                }
+
+                const actions = currentView==='mine' ? `<button onclick="editCoffee('${c.id}')" class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i class="fa-solid fa-pencil"></i></button><button onclick="deleteCoffee('${c.id}',event)" class="text-red-500 hover:bg-red-50 p-2 rounded"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-xs text-gray-400">Read Only</span>`;
+                const recipeCol = `<div class="flex flex-col items-center"><span class="text-xs text-coffee-500 dark:text-[#78716c] mb-1">1:${c.ratio}</span><div class="font-mono text-coffee-900 dark:text-[#e7e5e4] bg-coffee-50 dark:bg-[#1c1917] px-2 py-1 rounded border border-coffee-100 dark:border-[#44403c]"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight}g</span><i class="fa-solid fa-arrow-right text-[10px] text-coffee-400 dark:text-[#57534e] mx-1"></i><span class="font-bold text-coffee-900 dark:text-white">${w.endsWith('.0')?parseInt(w):w}g</span></div></div>`;
+                
+                // Icon changes based on draggable state
+                const gripIcon = isDraggable ? 'fa-grip-vertical cursor-grab' : 'fa-lock opacity-30';
+
+                r.innerHTML=`<td class="px-4 py-4 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td><td class="px-4 py-4 font-semibold text-coffee-900 dark:text-[#e7e5e4]">${c.name}<div class="text-xs font-normal text-coffee-500">${c.beanType}</div></td><td class="px-4 py-4 pointer-events-auto" ondblclick="openFilterMenu(event,'roastType')">${getRoastBadge(c.roastType)}</td><td class="px-4 py-4 pointer-events-auto" ondblclick="openFilterMenu(event,'method')"><span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method}</span></td><td class="px-4 py-4 text-right font-mono text-coffee-700 dark:text-[#d6ccc2]">${c.grind}</td><td class="px-4 py-4 text-center">${recipeCol}</td><td class="px-4 py-4 text-right">${Math.floor(c.time/60)}m ${c.time%60}s</td><td class="px-4 py-4 text-center pointer-events-auto" ondblclick="openFilterMenu(event,'temp')">${getTempBadge(c.temp)}</td><td class="px-4 py-4 text-sm max-w-xs truncate" title="${c.notes}">${c.notes}</td><td class="px-4 py-4 text-center flex justify-center gap-2">${actions}</td>`;
                 t.appendChild(r);
             });
         }
