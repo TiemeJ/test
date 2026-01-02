@@ -403,17 +403,20 @@
             
             const targetUid = uid === 'mine' ? currentUser.uid : uid;
             const isMine = uid === 'mine';
-
-            // Show/Hide Add Button not needed anymore as per request
             
-            // Manage Form Container Visibility
             const formContainer = document.getElementById('formContainer');
+            const formContent = document.getElementById('formContent');
+
             if (isMine) {
+                // Show container, but collapse content
                 formContainer.classList.remove('hidden');
-                toggleForm(false); // Ensure collapsed when returning to mine
+                formContainer.setAttribute('aria-expanded', 'false');
+                formContent.classList.add('hidden');
             } else {
+                // Hide everything
                 formContainer.classList.add('hidden');
-                toggleForm(false); // Ensure collapsed when viewing friend
+                formContainer.setAttribute('aria-expanded', 'false');
+                formContent.classList.add('hidden');
             }
 
             // Start Listener
