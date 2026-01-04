@@ -285,8 +285,6 @@
                     <thead class="text-xs text-coffee-700 dark:text-[#a8a29e] uppercase bg-coffee-100/50 dark:bg-[#1c1917] border-b border-coffee-200 dark:border-[#44403c]">
                         <tr>
                             <th scope="col" class="px-4 py-4 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>
-                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('rating')">Rating <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 whitespace-nowrap" onclick="sortBy('createdAt')">Date <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('roaster')">Roaster <i class="fa-solid fa-sort text-coffee-400 dark:text-[#57534e] ml-1"></i></th>
                             <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('farmer')" ondblclick="openFilterMenu(event, 'farmer')">Farmer <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
@@ -299,6 +297,8 @@
                             <th scope="col" class="px-4 py-4 text-right whitespace-nowrap" onclick="sortBy('time')">Time <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4 text-center filterable whitespace-nowrap" onclick="sortBy('temp')" ondblclick="openFilterMenu(event, 'temp')">Temp <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4 whitespace-nowrap">Notes</th>
+                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('rating')">Rating <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 whitespace-nowrap" onclick="sortBy('createdAt')">Date <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4 text-center w-28 whitespace-nowrap">Actions</th>
                         </tr>
                     </thead>
@@ -642,13 +642,13 @@
                 const term = searchInput.value.toLowerCase();
                 f = f.filter(c => {
                     const searchable = [
-                        c.roaster || c.name, 
-                        c.origin || c.beanType,
-                        c.farmer, 
-                        c.variety, 
-                        c.processing, 
-                        c.method, 
-                        c.notes
+                        c.roaster || c.name || '', 
+                        c.origin || c.beanType || '',
+                        c.farmer || '', 
+                        c.variety || '', 
+                        c.processing || '', 
+                        c.method || '', 
+                        c.notes || ''
                     ].join(' ').toLowerCase();
                     return searchable.includes(term);
                 });
@@ -736,8 +736,6 @@
 
                 r.innerHTML=`
                     <td class="px-4 py-4 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td>
-                    <td class="px-4 py-4 text-center">${getStarDisplay(c.rating)}</td>
-                    <td class="px-4 py-4 text-xs font-mono text-coffee-500">${displayDate}</td>
                     <td class="px-4 py-4 font-semibold text-coffee-900 dark:text-[#e7e5e4] filterable pointer-events-auto" ondblclick="openFilterMenu(event,'roaster')">${displayRoaster}</td>
                     <td class="px-4 py-4 text-sm filterable pointer-events-auto" ondblclick="openFilterMenu(event,'origin')">${displayOrigin}</td>
                     <td class="px-4 py-4 text-sm filterable pointer-events-auto" ondblclick="openFilterMenu(event, 'farmer')">${c.farmer || '-'}</td>
@@ -750,6 +748,8 @@
                     <td class="px-4 py-4 text-right">${formatTime(c.time)}</td>
                     <td class="px-4 py-4 text-center pointer-events-auto" ondblclick="openFilterMenu(event,'temp')">${getTempBadge(c.temp)}</td>
                     <td class="px-4 py-4 text-sm max-w-xs truncate" title="${c.notes}">${c.notes || '-'}</td>
+                    <td class="px-4 py-4 text-center">${getStarDisplay(c.rating)}</td>
+                    <td class="px-4 py-4 text-xs font-mono text-coffee-500">${displayDate}</td>
                     <td class="px-4 py-4 text-center flex justify-center gap-2">${actions}</td>
                 `;
                 t.appendChild(r);
