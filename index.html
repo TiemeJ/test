@@ -25,7 +25,16 @@
             cursor: context-menu; 
             touch-action: manipulation; 
         }
-        th.filterable:hover::after { content: '\f0b0'; font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 0.7em; margin-left: 6px; opacity: 0.5; }
+        /* Adjusted filter icon positioning */
+        th.filterable:hover::after { 
+            content: '\f0b0'; 
+            font-family: "Font Awesome 6 Free"; 
+            font-weight: 900; 
+            font-size: 0.7em; 
+            margin-left: 6px; 
+            opacity: 0.5; 
+            display: inline-block;
+        }
         
         #filterDropdown { z-index: 50; animation: fadeIn 0.1s ease-out; }
         #modalOverlay { animation: fadeIn 0.2s ease-out; }
@@ -240,21 +249,21 @@
                 <table class="w-full text-sm text-left text-coffee-900 dark:text-[#e7e5e4]">
                     <thead class="text-xs text-coffee-700 dark:text-[#a8a29e] uppercase bg-coffee-100/50 dark:bg-[#1c1917] border-b border-coffee-200 dark:border-[#44403c]">
                         <tr>
-                            <th scope="col" class="px-4 py-4 w-10 text-center"><i class="fa-solid fa-grip-vertical"></i></th>
-                            <th scope="col" class="px-4 py-4" onclick="sortBy('createdAt')">Date <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group" onclick="sortBy('roaster')">Roaster <i class="fa-solid fa-sort text-coffee-400 dark:text-[#57534e] ml-1"></i></th>
-                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable" onclick="sortBy('farmer')" ondblclick="openFilterMenu(event, 'farmer')">Farmer <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable" onclick="sortBy('variety')" ondblclick="openFilterMenu(event, 'variety')">Variety <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable" onclick="sortBy('processing')" ondblclick="openFilterMenu(event, 'processing')">Process <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable" onclick="sortBy('roastType')" ondblclick="openFilterMenu(event, 'roastType')">Roast <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable" onclick="sortBy('method')" ondblclick="openFilterMenu(event, 'method')">Method <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 text-right" onclick="sortBy('grind')">Grind <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 text-center">Recipe</th>
-                            <th scope="col" class="px-4 py-4 text-right" onclick="sortBy('time')">Time <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4 text-center filterable" onclick="sortBy('temp')" ondblclick="openFilterMenu(event, 'temp')">Temp <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th scope="col" class="px-4 py-4">Notes</th>
-                            <th scope="col" class="px-4 py-4 text-center w-28">Actions</th>
+                            <th scope="col" class="px-4 py-4 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>
+                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('roaster')">Roaster <i class="fa-solid fa-sort text-coffee-400 dark:text-[#57534e] ml-1"></i></th>
+                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('farmer')" ondblclick="openFilterMenu(event, 'farmer')">Farmer <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('variety')" ondblclick="openFilterMenu(event, 'variety')">Variety <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('processing')" ondblclick="openFilterMenu(event, 'processing')">Process <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('roastType')" ondblclick="openFilterMenu(event, 'roastType')">Roast <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('method')" ondblclick="openFilterMenu(event, 'method')">Method <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 text-right whitespace-nowrap" onclick="sortBy('grind')">Grind <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 text-center whitespace-nowrap">Recipe</th>
+                            <th scope="col" class="px-4 py-4 text-right whitespace-nowrap" onclick="sortBy('time')">Time <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 text-center filterable whitespace-nowrap" onclick="sortBy('temp')" ondblclick="openFilterMenu(event, 'temp')">Temp <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 whitespace-nowrap">Notes</th>
+                            <th scope="col" class="px-4 py-4 whitespace-nowrap" onclick="sortBy('createdAt')">Date <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 text-center w-28 whitespace-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="coffeeTableBody" class="divide-y divide-coffee-50 dark:divide-[#1c1917]"></tbody>
@@ -578,7 +587,6 @@
 
                 r.innerHTML=`
                     <td class="px-4 py-4 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td>
-                    <td class="px-4 py-4 text-xs font-mono text-coffee-500">${displayDate}</td>
                     <td class="px-4 py-4 font-semibold text-coffee-900 dark:text-[#e7e5e4] filterable pointer-events-auto" ondblclick="openFilterMenu(event,'roaster')">${displayRoaster}</td>
                     <td class="px-4 py-4 text-sm filterable pointer-events-auto" ondblclick="openFilterMenu(event,'origin')">${displayOrigin}</td>
                     <td class="px-4 py-4 text-sm filterable pointer-events-auto" ondblclick="openFilterMenu(event, 'farmer')">${c.farmer || '-'}</td>
@@ -591,6 +599,7 @@
                     <td class="px-4 py-4 text-right">${formatTime(c.time)}</td>
                     <td class="px-4 py-4 text-center pointer-events-auto" ondblclick="openFilterMenu(event,'temp')">${getTempBadge(c.temp)}</td>
                     <td class="px-4 py-4 text-sm max-w-xs truncate" title="${c.notes}">${c.notes || '-'}</td>
+                    <td class="px-4 py-4 text-xs font-mono text-coffee-500">${displayDate}</td>
                     <td class="px-4 py-4 text-center flex justify-center gap-2">${actions}</td>
                 `;
                 t.appendChild(r);
