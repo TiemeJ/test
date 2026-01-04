@@ -68,7 +68,7 @@
         </div>
     </header>
 
-    <main class="max-w-[95%] mx-auto px-2 sm:px-6 lg:px-8 py-8 relative">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         
         <!-- View Selector -->
         <div id="viewSelectorContainer" class="hidden mb-6 flex justify-between items-center">
@@ -101,7 +101,7 @@
                     <!-- Row 1: Bean Info -->
                     <div>
                         <label class="block text-xs font-medium text-coffee-600 dark:text-[#a8a29e] mb-1 uppercase tracking-wide">Roaster</label>
-                        <input type="text" id="roaster" name="roaster" required placeholder="e.g. La Cabra" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white placeholder-coffee-400 dark:placeholder-[#57534e] focus:bg-white dark:focus:bg-[#0c0a09] transition-colors">
+                        <input type="text" id="roaster" name="roaster" placeholder="e.g. La Cabra" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white placeholder-coffee-400 dark:placeholder-[#57534e] focus:bg-white dark:focus:bg-[#0c0a09] transition-colors">
                     </div>
                     
                     <div>
@@ -128,8 +128,9 @@
                     <div>
                         <label class="block text-xs font-medium text-coffee-600 dark:text-[#a8a29e] mb-1 uppercase tracking-wide">Roast Type</label>
                         <select id="roastType" name="roastType" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white focus:bg-white dark:focus:bg-[#0c0a09] cursor-pointer">
+                            <option value="" disabled selected>Select Roast</option>
                             <option value="Light">Light</option>
-                            <option value="Medium" selected>Medium</option>
+                            <option value="Medium">Medium</option>
                             <option value="Medium-Dark">Medium-Dark</option>
                             <option value="Dark">Dark</option>
                         </select>
@@ -137,7 +138,8 @@
 
                     <div>
                         <label class="block text-xs font-medium text-coffee-600 dark:text-[#a8a29e] mb-1 uppercase tracking-wide">Brewing Method</label>
-                        <select id="method" name="method" required class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white focus:bg-white dark:focus:bg-[#0c0a09] cursor-pointer">
+                        <select id="method" name="method" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white focus:bg-white dark:focus:bg-[#0c0a09] cursor-pointer">
+                            <option value="" disabled selected>Select Method</option>
                             <option value="Espresso">Espresso</option>
                             <option value="V60">V60</option>
                             <option value="Clever Dripper">Clever Dripper</option>
@@ -150,18 +152,18 @@
                     
                     <div>
                         <label class="block text-xs font-medium text-coffee-600 dark:text-[#a8a29e] mb-1 uppercase tracking-wide">Grind Size</label>
-                        <input type="number" step="any" id="grind" name="grind" required placeholder="e.g. 14" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white focus:bg-white dark:focus:bg-[#0c0a09]">
+                        <input type="number" step="any" id="grind" name="grind" placeholder="e.g. 14" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white focus:bg-white dark:focus:bg-[#0c0a09]">
                     </div>
 
                     <!-- Row 3: Recipe -->
                     <div class="col-span-1 md:col-span-2 lg:col-span-2 grid grid-cols-3 gap-2 bg-coffee-50/50 dark:bg-[#201d1b] p-2 rounded-lg border border-coffee-100 dark:border-[#44403c]">
                         <div>
                             <label class="block text-[10px] font-bold text-coffee-500 dark:text-[#78716c] mb-1 uppercase text-center">In (g)</label>
-                            <input type="number" step="any" id="inputWeight" name="weight" oninput="handleRecipeInput('weight')" required placeholder="18" class="w-full text-center font-mono bg-white dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded px-2 py-1.5 text-sm text-coffee-900 dark:text-white focus:ring-1 focus:ring-coffee-500">
+                            <input type="number" step="any" id="inputWeight" name="weight" oninput="handleRecipeInput('weight')" placeholder="18" class="w-full text-center font-mono bg-white dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded px-2 py-1.5 text-sm text-coffee-900 dark:text-white focus:ring-1 focus:ring-coffee-500">
                         </div>
                         <div class="relative">
                             <label class="block text-[10px] font-bold text-coffee-500 dark:text-[#78716c] mb-1 uppercase text-center">Ratio 1:X</label>
-                            <input type="number" step="any" id="inputRatio" name="ratio" oninput="handleRecipeInput('ratio')" required placeholder="16" class="w-full text-center font-mono bg-white dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded px-2 py-1.5 text-sm text-coffee-900 dark:text-white focus:ring-1 focus:ring-coffee-500">
+                            <input type="number" step="any" id="inputRatio" name="ratio" oninput="handleRecipeInput('ratio')" placeholder="16" class="w-full text-center font-mono bg-white dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded px-2 py-1.5 text-sm text-coffee-900 dark:text-white focus:ring-1 focus:ring-coffee-500">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-coffee-500 dark:text-[#78716c] mb-1 uppercase text-center">Out (g)</label>
@@ -172,7 +174,7 @@
                     <!-- Time & Temp -->
                     <div>
                         <label class="block text-xs font-medium text-coffee-600 dark:text-[#a8a29e] mb-1 uppercase tracking-wide">Time (Sec)</label>
-                        <input type="number" step="any" id="time" name="time" required placeholder="e.g. 180" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white focus:bg-white dark:focus:bg-[#0c0a09]">
+                        <input type="number" step="any" id="time" name="time" placeholder="e.g. 180" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white focus:bg-white dark:focus:bg-[#0c0a09]">
                     </div>
 
                     <div class="relative">
@@ -184,13 +186,15 @@
                             </div>
                         </div>
                         
+                        <!-- Input Containers -->
                         <div id="tempProfileContainer">
                             <select id="tempProfile" name="tempProfile" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white focus:bg-white dark:focus:bg-[#0c0a09] cursor-pointer">
+                                <option value="" disabled selected>Select</option>
                                 <option value="L4">L4 (Very Low)</option>
                                 <option value="L3">L3 (Low)</option>
                                 <option value="L2">L2</option>
                                 <option value="L1">L1</option>
-                                <option value="M" selected>M (Medium)</option>
+                                <option value="M">M (Medium)</option>
                                 <option value="H1">H1</option>
                                 <option value="H2">H2</option>
                                 <option value="H3">H3 (High)</option>
@@ -237,7 +241,7 @@
                     <thead class="text-xs text-coffee-700 dark:text-[#a8a29e] uppercase bg-coffee-100/50 dark:bg-[#1c1917] border-b border-coffee-200 dark:border-[#44403c]">
                         <tr>
                             <th scope="col" class="px-4 py-4 w-10 text-center"><i class="fa-solid fa-grip-vertical"></i></th>
-                            <th scope="col" class="px-4 py-4" onclick="sortBy('createdAt')">Date <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                            <th scope="col" class="px-4 py-4 text-center w-28">Actions</th>
                             <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group" onclick="sortBy('roaster')">Roaster <i class="fa-solid fa-sort text-coffee-400 dark:text-[#57534e] ml-1"></i></th>
                             <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4">Farmer</th>
@@ -250,7 +254,7 @@
                             <th scope="col" class="px-4 py-4 text-right" onclick="sortBy('time')">Time <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4 text-center filterable" onclick="sortBy('temp')" ondblclick="openFilterMenu(event, 'temp')">Temp <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4">Notes</th>
-                            <th scope="col" class="px-4 py-4 text-center w-28">Actions</th>
+                            <th scope="col" class="px-4 py-4" onclick="sortBy('createdAt')">Date <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                         </tr>
                     </thead>
                     <tbody id="coffeeTableBody" class="divide-y divide-coffee-50 dark:divide-[#1c1917]"></tbody>
@@ -371,6 +375,8 @@
             });
         };
 
+        const parseNum = (v) => (v === '' || v === null || isNaN(v)) ? null : parseFloat(v);
+
         const handleFormSubmit = async (e) => {
             e.preventDefault();
             if(currentView !== 'mine') return;
@@ -380,8 +386,8 @@
 
             const d = { 
                 roaster: f.get('roaster'), farmer: f.get('farmer'), origin: f.get('origin'), variety: f.get('variety'), processing: f.get('processing'),
-                roastType: f.get('roastType'), method: f.get('method'), grind: parseFloat(f.get('grind')), weight: parseFloat(f.get('weight')), 
-                ratio: parseFloat(f.get('ratio')), time: parseFloat(f.get('time')), temp: finalTemp, notes: f.get('notes'), updatedAt: new Date().toISOString() 
+                roastType: f.get('roastType'), method: f.get('method'), grind: parseNum(f.get('grind')), weight: parseNum(f.get('weight')), 
+                ratio: parseNum(f.get('ratio')), time: parseNum(f.get('time')), temp: finalTemp, notes: f.get('notes'), updatedAt: new Date().toISOString() 
             };
             
             try {
@@ -456,15 +462,15 @@
              document.getElementById('origin').value = c.origin || c.beanType || ''; // Migration logic
              document.getElementById('variety').value = c.variety || '';
              document.getElementById('processing').value = c.processing || '';
-             document.getElementById('roastType').value = c.roastType;
-             document.getElementById('method').value = c.method;
-             document.getElementById('grind').value = c.grind;
-             document.getElementById('inputWeight').value = c.weight;
-             document.getElementById('inputRatio').value = c.ratio;
-             document.getElementById('inputYield').value = (c.weight * c.ratio).toFixed(1);
-             document.getElementById('time').value = c.time;
-             document.getElementById('notes').value = c.notes;
-             if(!isNaN(parseFloat(c.temp))&&isFinite(c.temp)){ setTempMode('numeric'); document.getElementById('tempNumeric').value=c.temp; } else { setTempMode('profile'); document.getElementById('tempProfile').value=c.temp; }
+             document.getElementById('roastType').value = c.roastType || '';
+             document.getElementById('method').value = c.method || '';
+             document.getElementById('grind').value = c.grind || '';
+             document.getElementById('inputWeight').value = c.weight || '';
+             document.getElementById('inputRatio').value = c.ratio || '';
+             document.getElementById('inputYield').value = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '';
+             document.getElementById('time').value = c.time || '';
+             document.getElementById('notes').value = c.notes || '';
+             if(!isNaN(parseFloat(c.temp))&&isFinite(c.temp)){ setTempMode('numeric'); document.getElementById('tempNumeric').value=c.temp; } else { setTempMode('profile'); document.getElementById('tempProfile').value=c.temp || ''; }
         }
 
         const editCoffee = (id) => { const c=coffees.find(x=>x.id===id); if(!c)return; document.getElementById('editId').value=c.id; populateForm(c); document.getElementById('formContainer').classList.add('editing-mode'); toggleForm(true); document.getElementById('formTitle').innerHTML='<span class="text-orange-500">Edit Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Update</span>'; document.getElementById('submitBtn').className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); };
@@ -518,9 +524,9 @@
             return f; 
         };
         
-        const formatTime = (s) => { const m=Math.floor(s/60), sc=s%60; return m>0?`${m}m ${sc}s`:`${sc}s`; };
+        const formatTime = (s) => { if(!s && s !== 0) return '-'; const m=Math.floor(s/60), sc=s%60; return m>0?`${m}m ${sc}s`:`${sc}s`; };
         const getRoastBadge = (r) => { if(!r)return''; const m={'Light':'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-800','Medium':'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200 dark:border-orange-800','Medium-Dark':'bg-[#d6ccc2] text-[#5e4b41] border-[#c0b4aa] dark:bg-[#57534e]/50 dark:text-[#d6ccc2] dark:border-[#57534e]','Dark':'bg-gray-800 text-gray-100 border-gray-700 dark:bg-black dark:text-gray-300 dark:border-gray-800'}; return `<span class="${m[r]||'bg-gray-100 dark:bg-gray-800'} text-xs font-medium px-2 py-0.5 rounded-full border pointer-events-none select-none">${r}</span>`; };
-        const getTempBadge = (t) => { if(!isNaN(parseFloat(t))&&isFinite(t)){ let c='bg-gray-100 dark:bg-gray-800';if(t<90)c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';else if(t<94)c='bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';else c='bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-md ${c} text-xs font-bold shadow-sm pointer-events-none select-none font-mono">${t}°C</span>`;} const m={'L4':'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300','L3':'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300','L2':'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-200','L1':'bg-cyan-50 text-cyan-600 border-cyan-100 dark:bg-cyan-900/20 dark:text-cyan-200','M':'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200','H1':'bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-900/20 dark:text-orange-200','H2':'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200','H3':'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300','H4':'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/40 dark:text-rose-300'}; return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${m[t]||'bg-gray-100'} text-xs font-bold shadow-sm pointer-events-none select-none">${t}</span>`; };
+        const getTempBadge = (t) => { if(!t) return '-'; if(!isNaN(parseFloat(t))&&isFinite(t)){ let c='bg-gray-100 dark:bg-gray-800';if(t<90)c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';else if(t<94)c='bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';else c='bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-md ${c} text-xs font-bold shadow-sm pointer-events-none select-none font-mono">${t}°C</span>`;} const m={'L4':'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300','L3':'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300','L2':'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-200','L1':'bg-cyan-50 text-cyan-600 border-cyan-100 dark:bg-cyan-900/20 dark:text-cyan-200','M':'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200','H1':'bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-900/20 dark:text-orange-200','H2':'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200','H3':'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300','H4':'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/40 dark:text-rose-300'}; return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${m[t]||'bg-gray-100'} text-xs font-bold shadow-sm pointer-events-none select-none">${t}</span>`; };
         const closeMenus = (e) => { if(!document.getElementById('modalOverlay').contains(e.target) && !document.getElementById('modalOverlay').classList.contains('hidden') && e.target.id==='modalOverlay') closeModal(); if(!document.getElementById('filterDropdown').contains(e.target)) document.getElementById('filterDropdown').classList.add('hidden'); };
         
         // Theme
@@ -536,7 +542,7 @@
             const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !activeFilters.temp && !activeFilters.roastType && !activeFilters.roaster && !activeFilters.origin;
 
             filteredCoffees.forEach((c, index) => {
-                const w=(c.weight*c.ratio).toFixed(1);
+                const w = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
                 const r=document.createElement('tr'); 
                 r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0';
                 
@@ -557,7 +563,7 @@
                     <button onclick="deleteCoffee('${c.id}',event)" class="text-red-500 hover:bg-red-50 p-2 rounded" title="Delete"><i class="fa-solid fa-trash"></i></button>
                 ` : `<span class="text-xs text-gray-400">Read Only</span>`;
                 
-                const recipeCol = `<div class="flex flex-col items-center"><span class="text-xs text-coffee-500 dark:text-[#78716c] mb-1">1:${c.ratio}</span><div class="font-mono text-coffee-900 dark:text-[#e7e5e4] bg-coffee-50 dark:bg-[#1c1917] px-2 py-1 rounded border border-coffee-100 dark:border-[#44403c]"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight}g</span><i class="fa-solid fa-arrow-right text-[10px] text-coffee-400 dark:text-[#57534e] mx-1"></i><span class="font-bold text-coffee-900 dark:text-white">${w.endsWith('.0')?parseInt(w):w}g</span></div></div>`;
+                const recipeCol = `<div class="flex flex-col items-center"><span class="text-xs text-coffee-500 dark:text-[#78716c] mb-1">1:${c.ratio || '-'}</span><div class="font-mono text-coffee-900 dark:text-[#e7e5e4] bg-coffee-50 dark:bg-[#1c1917] px-2 py-1 rounded border border-coffee-100 dark:border-[#44403c]"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight || '-'}g</span><i class="fa-solid fa-arrow-right text-[10px] text-coffee-400 dark:text-[#57534e] mx-1"></i><span class="font-bold text-coffee-900 dark:text-white">${w === '-' ? '-' : (w.endsWith('.0')?parseInt(w):w) + 'g'}</span></div></div>`;
                 const gripIcon = isDraggable ? 'fa-grip-vertical cursor-grab' : 'fa-lock opacity-30';
                 
                 // Mapped Variables
@@ -567,20 +573,20 @@
 
                 r.innerHTML=`
                     <td class="px-4 py-4 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td>
-                    <td class="px-4 py-4 text-xs font-mono text-coffee-500">${displayDate}</td>
+                    <td class="px-4 py-4 text-center flex justify-center gap-2">${actions}</td>
                     <td class="px-4 py-4 font-semibold text-coffee-900 dark:text-[#e7e5e4] filterable pointer-events-auto" ondblclick="openFilterMenu(event,'roaster')">${displayRoaster}</td>
                     <td class="px-4 py-4 text-sm filterable pointer-events-auto" ondblclick="openFilterMenu(event,'origin')">${displayOrigin}</td>
                     <td class="px-4 py-4 text-sm">${c.farmer || '-'}</td>
                     <td class="px-4 py-4 text-sm">${c.variety || '-'}</td>
                     <td class="px-4 py-4 text-sm">${c.processing || '-'}</td>
                     <td class="px-4 py-4 pointer-events-auto" ondblclick="openFilterMenu(event,'roastType')">${getRoastBadge(c.roastType)}</td>
-                    <td class="px-4 py-4 pointer-events-auto" ondblclick="openFilterMenu(event,'method')"><span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method}</span></td>
-                    <td class="px-4 py-4 text-right font-mono text-coffee-700 dark:text-[#d6ccc2]">${c.grind}</td>
+                    <td class="px-4 py-4 pointer-events-auto" ondblclick="openFilterMenu(event,'method')"><span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method || '-'}</span></td>
+                    <td class="px-4 py-4 text-right font-mono text-coffee-700 dark:text-[#d6ccc2]">${c.grind || '-'}</td>
                     <td class="px-4 py-4 text-center">${recipeCol}</td>
-                    <td class="px-4 py-4 text-right">${Math.floor(c.time/60)}m ${c.time%60}s</td>
+                    <td class="px-4 py-4 text-right">${formatTime(c.time)}</td>
                     <td class="px-4 py-4 text-center pointer-events-auto" ondblclick="openFilterMenu(event,'temp')">${getTempBadge(c.temp)}</td>
-                    <td class="px-4 py-4 text-sm max-w-xs truncate" title="${c.notes}">${c.notes}</td>
-                    <td class="px-4 py-4 text-center flex justify-center gap-2">${actions}</td>
+                    <td class="px-4 py-4 text-sm max-w-xs truncate" title="${c.notes}">${c.notes || '-'}</td>
+                    <td class="px-4 py-4 text-xs font-mono text-coffee-500">${displayDate}</td>
                 `;
                 t.appendChild(r);
             });
