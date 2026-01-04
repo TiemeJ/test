@@ -272,6 +272,9 @@
 
                         <!-- SCA Wheel Picker -->
                         <div id="notesSCAContainer" class="hidden bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg p-3">
+                            <div id="scaAddedFlavors" class="flex flex-wrap gap-2 mb-2">
+                                <!-- JS Injected Chips -->
+                            </div>
                             <div id="scaSelectionDisplay" class="text-sm font-bold text-coffee-800 dark:text-white mb-2 min-h-[1.25rem]"></div>
                             <div id="scaButtonsContainer" class="flex flex-wrap gap-2">
                                 <!-- JS Injected Buttons -->
@@ -455,6 +458,7 @@
 
         // --- SCA Logic Variables ---
         let scaState = { level: 0, path: [], currentNode: null };
+        let scaSelectedFlavors = []; // New
 
         // --- Functions ---
         const googleLogin = () => signInWithPopup(auth, provider).catch(e => alert(e.message));
@@ -568,20 +572,62 @@
             }
         };
 
+        const addScaFlavor = () => {
+             const currentLeaf = scaState.path.length > 0 ? scaState.path[scaState.path.length - 1] : null;
+             if (currentLeaf) {
+                 scaSelectedFlavors.push(currentLeaf);
+                 resetScaPath(); // Reset wheel to root for next pick
+                 renderScaWheel(); // Updates the "Added" list display
+             }
+        };
+
+        const removeScaFlavor = (index) => {
+            scaSelectedFlavors.splice(index, 1);
+            renderScaWheel();
+        };
+
         const renderScaWheel = () => {
             const container = document.getElementById('scaButtonsContainer');
             const display = document.getElementById('scaSelectionDisplay');
+            const addedContainer = document.getElementById('scaAddedFlavors');
             const hiddenVal = document.getElementById('scaValue');
+            
             container.innerHTML = '';
             
-            // Show current path
-            const pathString = scaState.path.join(' > ');
-            display.innerHTML = pathString ? 
-                `<div class="flex justify-between items-center"><span>${pathString}</span> <button onclick="resetSca()" class="text-xs text-red-500 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded">Reset</button></div>` 
-                : '<span class="text-coffee-400 font-normal italic">Select a flavor...</span>';
-            hiddenVal.value = pathString;
+            // Render Added Flavors (Chips)
+            let addedHtml = '';
+            scaSelectedFlavors.forEach((f, i) => {
+                addedHtml += `<span class="bg-coffee-200 dark:bg-[#34302e] text-coffee-800 dark:text-[#d6ccc2] text-xs px-2 py-1 rounded-full flex items-center gap-1 border border-coffee-300 dark:border-[#57534e] font-semibold">${f} <button type="button" onclick="removeScaFlavor(${i})" class="hover:text-red-500 ml-1"><i class="fa-solid fa-times"></i></button></span>`;
+            });
+            addedContainer.innerHTML = addedHtml;
 
-            // Render based on level
+            // Update hidden value for form submission
+            hiddenVal.value = scaSelectedFlavors.join(', ');
+
+            // Show current path & Controls
+            const pathString = scaState.path.join(' > ');
+            const currentLeaf = scaState.path.length > 0 ? scaState.path[scaState.path.length - 1] : null;
+            
+            let displayHtml = '';
+            if (currentLeaf) {
+                 displayHtml = `
+                    <div class="flex justify-between items-center bg-white dark:bg-[#292524] p-2 rounded border border-coffee-100 dark:border-[#44403c] mb-2">
+                        <span class="text-xs text-coffee-500 dark:text-[#a8a29e]">${pathString}</span>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="resetScaPath()" class="text-xs text-gray-500 hover:text-gray-700 px-2">Cancel</button>
+                            <button type="button" onclick="addScaFlavor()" class="text-xs bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-plus"></i> Add "${currentLeaf}"
+                            </button>
+                        </div>
+                    </div>
+                 `;
+            } else {
+                 displayHtml = `<div class="text-sm text-coffee-400 font-normal italic mb-2">Select a flavor category...</div>`;
+            }
+            display.innerHTML = displayHtml;
+
+
+            // Render Buttons based on level
             if (scaState.level === 0) {
                 // Root Categories
                 Object.keys(scaData).forEach(key => {
@@ -610,19 +656,14 @@
                 backBtn.onclick = () => { scaState.level = 0; scaState.path = []; scaState.currentNode = null; renderScaWheel(); };
                 container.appendChild(backBtn);
 
-                // Option to stop here is implicit by the hidden value being set.
-                // But we display children:
                 Object.keys(subs).forEach(key => {
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    // Use parent color but maybe slightly lighter/dimmer or same? Same is fine for wheel consistency.
                     btn.className = `sca-btn px-3 py-2 rounded text-xs font-bold shadow-sm opacity-90 hover:opacity-100 ${parentColor}`;
                     btn.textContent = key;
                     btn.onclick = () => {
                         scaState.path.push(key);
                         scaState.level = 2;
-                        // currentNode stays parent for color reference, but we need sub data.
-                        // Actually let's just pass the array down.
                         renderScaWheel();
                     };
                     container.appendChild(btn);
@@ -643,8 +684,7 @@
                 container.appendChild(backBtn);
                 
                 if (notes.length === 0) {
-                     // Leaf node reached previously (empty array), just stay here
-                     container.innerHTML += `<span class="text-xs text-coffee-500 italic ml-2">No further details.</span>`;
+                     container.innerHTML += `<span class="text-xs text-coffee-500 italic ml-2">No further details. Use "Add" above.</span>`;
                 } else {
                     notes.forEach(note => {
                         const btn = document.createElement('button');
@@ -652,14 +692,8 @@
                         btn.className = `sca-btn px-3 py-2 rounded text-xs font-bold shadow-sm opacity-80 hover:opacity-100 ${parentColor}`;
                         btn.textContent = note;
                         btn.onclick = () => {
-                            // Replace last if already 3? No, logic is lvl 2 means we have 2 items.
-                            // But if user clicks another sibling, we want to add the 3rd item.
-                            // If we already have 3 items, pop the last one first.
                             if (scaState.path.length === 3) scaState.path.pop();
-                            
                             scaState.path.push(note);
-                            // Stay at level 2 visually but update path? Or consider "Done"?
-                            // Let's update path and re-render. 
                             renderScaWheel();
                         };
                         container.appendChild(btn);
@@ -668,10 +702,15 @@
             }
         };
 
-        const resetSca = () => {
+        const resetScaPath = () => {
             scaState = { level: 0, path: [], currentNode: null };
             renderScaWheel();
         };
+        const resetSca = () => { // Full reset including selection
+             scaState = { level: 0, path: [], currentNode: null };
+             scaSelectedFlavors = [];
+             renderScaWheel();
+        }
 
         // --- Standard UI ---
         const openFriendsModal = () => { document.getElementById('modalOverlay').classList.remove('hidden'); switchModalTab('profile'); };
@@ -717,7 +756,35 @@
         const setTempMode = (m) => { document.getElementById('tempMode').value=m; if(m==='profile'){document.getElementById('tempProfileContainer').classList.remove('hidden');document.getElementById('tempNumericContainer').classList.add('hidden');}else{document.getElementById('tempNumericContainer').classList.remove('hidden');document.getElementById('tempProfileContainer').classList.add('hidden');} };
         const toggleForm = (f=null) => { const c=document.getElementById('formContainer'),o=document.getElementById('formContent'),e=c.getAttribute('aria-expanded')==='true',s=f!==null?f:!e; c.setAttribute('aria-expanded',s?'true':'false'); if(s)o.classList.remove('hidden'); else o.classList.add('hidden'); };
         
-        const populateForm = (c) => { document.getElementById('roaster').value=c.roaster||c.name||''; document.getElementById('farmer').value=c.farmer||''; document.getElementById('origin').value=c.origin||c.beanType||''; document.getElementById('variety').value=c.variety||''; document.getElementById('processing').value=c.processing||''; document.getElementById('roastType').value=c.roastType||''; document.getElementById('method').value=c.method||''; document.getElementById('grind').value=c.grind||''; document.getElementById('inputWeight').value=c.weight||''; document.getElementById('inputRatio').value=c.ratio||''; document.getElementById('inputYield').value=(c.weight&&c.ratio)?(c.weight*c.ratio).toFixed(1):''; document.getElementById('time').value=c.time||''; document.getElementById('notes').value=c.notes||''; if(!isNaN(parseFloat(c.temp))&&isFinite(c.temp)){setTempMode('numeric');document.getElementById('tempNumeric').value=c.temp;}else{setTempMode('profile');document.getElementById('tempProfile').value=c.temp||'';} setRating(c.rating||0); setNotesMode('manual'); } // Default to manual on edit
+        const populateForm = (c) => { 
+            document.getElementById('roaster').value=c.roaster||c.name||''; 
+            document.getElementById('farmer').value=c.farmer||''; 
+            document.getElementById('origin').value=c.origin||c.beanType||''; 
+            document.getElementById('variety').value=c.variety||''; 
+            document.getElementById('processing').value=c.processing||''; 
+            document.getElementById('roastType').value=c.roastType||''; 
+            document.getElementById('method').value=c.method||''; 
+            document.getElementById('grind').value=c.grind||''; 
+            document.getElementById('inputWeight').value=c.weight||''; 
+            document.getElementById('inputRatio').value=c.ratio||''; 
+            document.getElementById('inputYield').value=(c.weight&&c.ratio)?(c.weight*c.ratio).toFixed(1):''; 
+            document.getElementById('time').value=c.time||''; 
+            
+            // For SCA Logic in Edit:
+            // We need to parse comma separated notes back into scaSelectedFlavors IF we want to edit them as SCA.
+            // But we don't know if they were created via SCA or Manual. 
+            // Simple approach: Default to Manual mode on edit, showing full string.
+            // If user switches to SCA, it starts fresh (empty) or we could try to parse, but text is unstructured.
+            document.getElementById('notes').value=c.notes||''; 
+            
+            if(!isNaN(parseFloat(c.temp))&&isFinite(c.temp)){setTempMode('numeric');document.getElementById('tempNumeric').value=c.temp;}else{setTempMode('profile');document.getElementById('tempProfile').value=c.temp||'';} 
+            setRating(c.rating||0); 
+            setNotesMode('manual'); 
+            
+            // Clear SCA state on edit open to avoid confusion
+            scaSelectedFlavors = [];
+            resetScaPath();
+        } 
 
         const editCoffee = (id) => { const c=coffees.find(x=>x.id===id); if(!c)return; document.getElementById('editId').value=c.id; populateForm(c); document.getElementById('formContainer').classList.add('editing-mode'); toggleForm(true); document.getElementById('formTitle').innerHTML='<span class="text-orange-500">Edit Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Update</span>'; document.getElementById('submitBtn').className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); };
         const duplicateCoffee = (id) => { const c=coffees.find(x=>x.id===id); if(!c)return; if(currentView!=='mine'){const d={...c};document.getElementById('viewSelect').value='mine';changeView('mine');setTimeout(()=>{document.getElementById('editId').value='';populateForm(d);toggleForm(true);document.getElementById('formContainer').classList.remove('editing-mode');document.getElementById('formTitle').innerHTML='<span>Duplicate Brew</span>';document.getElementById('submitBtn').innerHTML='<span>Save Copy</span>';window.scrollTo({top:0,behavior:'smooth'});},500);}else{document.getElementById('editId').value='';populateForm(c);toggleForm(true);document.getElementById('formContainer').classList.remove('editing-mode');document.getElementById('formTitle').innerHTML='<span>Duplicate Brew</span>';document.getElementById('submitBtn').innerHTML='<span>Save Copy</span>';window.scrollTo({top:0,behavior:'smooth'});} };
@@ -770,89 +837,7 @@
         const initTheme = () => { const s=localStorage.getItem('theme'); if(s==='light')document.documentElement.classList.remove('dark'); else {document.documentElement.classList.add('dark');localStorage.setItem('theme','dark');} };
         const toggleTheme = () => { const h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.setItem('theme','light');}else{h.classList.add('dark');localStorage.setItem('theme','dark');} };
 
-        const renderTable = () => { 
-            const t=document.getElementById('coffeeTableBody'); const e=document.getElementById('emptyState'); t.innerHTML=''; 
-            const filteredCoffees = getFilteredCoffees();
-            if(coffees.length===0){e.classList.remove('hidden'); return;} e.classList.add('hidden');
-            const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !activeFilters.temp && !activeFilters.roastType && !activeFilters.roaster && !activeFilters.origin && !activeFilters.farmer && !activeFilters.variety && !activeFilters.processing;
-
-            filteredCoffees.forEach((c, index) => {
-                const w = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
-                const r=document.createElement('tr'); 
-                r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0';
-                
-                if (isDraggable) {
-                    r.setAttribute('draggable', 'true');
-                    r.setAttribute('data-index', index);
-                    r.classList.add('cursor-grab');
-                    r.addEventListener('dragstart', handleDragStart);
-                    r.addEventListener('dragover', handleDragOver);
-                    r.addEventListener('drop', handleDrop);
-                    r.addEventListener('dragend', handleDragEnd);
-                }
-
-                // Actions: Edit, Duplicate, Delete
-                const actions = currentView==='mine' ? `
-                    <button onclick="editCoffee('${c.id}')" class="text-blue-500 hover:bg-blue-50 p-2 rounded" title="Edit"><i class="fa-solid fa-pencil"></i></button>
-                    <button onclick="duplicateCoffee('${c.id}')" class="text-green-500 hover:bg-green-50 p-2 rounded" title="Duplicate"><i class="fa-regular fa-copy"></i></button>
-                    <button onclick="deleteCoffee('${c.id}',event)" class="text-red-500 hover:bg-red-50 p-2 rounded" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                ` : `
-                    <button onclick="cloneBrew('${c.id}')" class="text-green-600 hover:bg-green-50 p-2 rounded" title="Clone to My Brews"><i class="fa-solid fa-file-import"></i></button>
-                `;
-                
-                const recipeCol = `<div class="flex flex-col items-center"><span class="text-xs text-coffee-500 dark:text-[#78716c] mb-1">1:${c.ratio || '-'}</span><div class="font-mono text-coffee-900 dark:text-[#e7e5e4] bg-coffee-50 dark:bg-[#1c1917] px-2 py-1 rounded border border-coffee-100 dark:border-[#44403c]"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight || '-'}g</span><i class="fa-solid fa-arrow-right text-[10px] text-coffee-400 dark:text-[#57534e] mx-1"></i><span class="font-bold text-coffee-900 dark:text-white">${w === '-' ? '-' : (w.endsWith('.0')?parseInt(w):w) + 'g'}</span></div></div>`;
-                const gripIcon = isDraggable ? 'fa-grip-vertical cursor-grab' : 'fa-lock opacity-30';
-                
-                // Mapped Variables
-                const displayRoaster = c.roaster || c.name || '-';
-                const displayOrigin = c.origin || c.beanType || '-';
-                const displayDate = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-';
-
-                r.innerHTML=`
-                    <td class="px-4 py-4 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td>
-                    <td class="px-4 py-4 font-semibold text-coffee-900 dark:text-[#e7e5e4] filterable pointer-events-auto" ondblclick="openFilterMenu(event,'roaster')">${displayRoaster}</td>
-                    <td class="px-4 py-4 text-sm filterable pointer-events-auto" ondblclick="openFilterMenu(event,'origin')">${displayOrigin}</td>
-                    <td class="px-4 py-4 text-sm filterable pointer-events-auto" ondblclick="openFilterMenu(event, 'farmer')">${c.farmer || '-'}</td>
-                    <td class="px-4 py-4 text-sm filterable pointer-events-auto" ondblclick="openFilterMenu(event, 'variety')">${c.variety || '-'}</td>
-                    <td class="px-4 py-4 text-sm filterable pointer-events-auto" ondblclick="openFilterMenu(event, 'processing')">${c.processing || '-'}</td>
-                    <td class="px-4 py-4 pointer-events-auto" ondblclick="openFilterMenu(event,'roastType')">${getRoastBadge(c.roastType)}</td>
-                    <td class="px-4 py-4 pointer-events-auto" ondblclick="openFilterMenu(event,'method')"><span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method || '-'}</span></td>
-                    <td class="px-4 py-4 text-right font-mono text-coffee-700 dark:text-[#d6ccc2]">${c.grind || '-'}</td>
-                    <td class="px-4 py-4 text-center">${recipeCol}</td>
-                    <td class="px-4 py-4 text-right">${formatTime(c.time)}</td>
-                    <td class="px-4 py-4 text-center pointer-events-auto" ondblclick="openFilterMenu(event,'temp')">${getTempBadge(c.temp)}</td>
-                    <td class="px-4 py-4 text-sm max-w-xs truncate" title="${c.notes}">${c.notes || '-'}</td>
-                    <td class="px-4 py-4 text-center">${getStarDisplay(c.rating)}</td>
-                    <td class="px-4 py-4 text-xs font-mono text-coffee-500">${displayDate}</td>
-                    <td class="px-4 py-4 text-center flex justify-center gap-2">${actions}</td>
-                `;
-                t.appendChild(r);
-            });
-        };
-
-        // Auth
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                document.getElementById('authContainer').innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <button onclick="openFriendsModal()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coffee-50 dark:bg-[#34302e] hover:bg-coffee-100 dark:hover:bg-[#44403c] border border-coffee-200 dark:border-[#44403c] transition-colors text-sm font-medium text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-solid fa-user-group"></i> Friends</button>
-                        <img src="${user.photoURL}" class="w-8 h-8 rounded-full border border-coffee-200 dark:border-[#44403c]" title="${user.displayName}">
-                    </div>`;
-                document.getElementById('syncStatus').classList.remove('hidden');
-                document.getElementById('viewSelectorContainer').classList.remove('hidden');
-                await initUserData(user);
-                loadFollowingList();
-                changeView('mine');
-            } else {
-                document.getElementById('authContainer').innerHTML = `<button onclick="googleLogin()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"><i class="fa-brands fa-google"></i> Sign In</button>`;
-                document.getElementById('viewSelectorContainer').classList.add('hidden');
-                document.getElementById('coffeeTableBody').innerHTML = '';
-                document.getElementById('emptyState').classList.remove('hidden');
-            }
-        });
-
-        // Expose to window
+        // Expose to window (Essential for onclick)
         window.googleLogin = googleLogin;
         window.googleLogout = googleLogout;
         window.openFriendsModal = openFriendsModal;
@@ -868,11 +853,11 @@
         window.handleFormSubmit = handleFormSubmit;
         window.handleRecipeInput = handleRecipeInput;
         window.setTempMode = setTempMode;
-        window.setNotesMode = setNotesMode; // New
-        window.resetSca = resetSca; // New
+        window.setNotesMode = setNotesMode;
+        window.resetSca = resetSca;
         window.editCoffee = editCoffee;
         window.duplicateCoffee = duplicateCoffee;
-        window.cloneBrew = cloneBrew; 
+        window.cloneBrew = cloneBrew;
         window.deleteCoffee = deleteCoffee;
         window.sortBy = sortBy;
         window.openFilterMenu = openFilterMenu;
@@ -889,16 +874,10 @@
         window.getFilteredCoffees = getFilteredCoffees;
         window.setRating = setRating;
         window.exportCSV = exportCSV;
-
-        // Init
-        initTheme();
-        
-        const searchInput = document.getElementById('globalSearch');
-        if(searchInput) {
-            searchInput.addEventListener('input', () => {
-                renderTable();
-            });
-        }
+        // Also expose helper functions for removeScaFlavor onclick
+        window.addScaFlavor = addScaFlavor;
+        window.removeScaFlavor = removeScaFlavor;
+        window.resetScaPath = resetScaPath;
 
     </script>
 </body>
