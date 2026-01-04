@@ -36,7 +36,7 @@
         }
         
         #filterDropdown { z-index: 50; animation: fadeIn 0.1s ease-out; }
-        #modalOverlay { animation: fadeIn 0.2s ease-out; }
+        #modalOverlay, #imageModalOverlay { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .chevron-rotate { transition: transform 0.3s ease; }
         .group[aria-expanded="true"] .chevron-rotate { transform: rotate(180deg); }
@@ -247,9 +247,12 @@
                     <div class="col-span-1 md:col-span-2 lg:col-span-4">
                         <div class="flex justify-between items-end mb-1">
                             <label class="block text-xs font-medium text-coffee-600 dark:text-[#a8a29e] uppercase tracking-wide">Tasting Notes</label>
+                            <button type="button" onclick="openImageModal()" class="text-xs text-blue-500 hover:underline dark:text-blue-400 mr-auto ml-2">
+                                <i class="fa-solid fa-image mr-1"></i>View Wheel
+                            </button>
                             <div class="flex bg-coffee-100 dark:bg-[#44403c] rounded p-0.5">
-                                <button type="button" onclick="setNotesMode('manual')" id="btnNotesManual" class="px-2 py-0.5 text-[10px] rounded font-bold transition-all bg-white dark:bg-[#1c1917] shadow-sm text-coffee-800 dark:text-white">Text</button>
-                                <button type="button" onclick="setNotesMode('sca')" id="btnNotesSCA" class="px-2 py-0.5 text-[10px] rounded font-bold transition-all text-coffee-500 dark:text-[#a8a29e] hover:text-coffee-700">SCA Wheel</button>
+                                <button type="button" onclick="setNotesMode('sca')" id="btnNotesSCA" class="px-2 py-0.5 text-[10px] rounded font-bold transition-all bg-white dark:bg-[#1c1917] shadow-sm text-coffee-800 dark:text-white">SCA Wheel</button>
+                                <button type="button" onclick="setNotesMode('manual')" id="btnNotesManual" class="px-2 py-0.5 text-[10px] rounded font-bold transition-all text-coffee-500 dark:text-[#a8a29e] hover:text-coffee-700">Text</button>
                             </div>
                         </div>
 
@@ -257,12 +260,12 @@
                             <input type="text" id="notes" name="notes" placeholder="e.g. Floral, fruity acidity, clean finish" class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white focus:bg-white dark:focus:bg-[#0c0a09]">
                         </div>
 
-                        <div id="notesSCAContainer" class="hidden mt-2 bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg p-3">
+                        <div id="notesSCAContainer" class="mt-2 bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg p-3">
                             <div id="scaSelectionDisplay" class="text-sm font-bold text-coffee-800 dark:text-white mb-2 min-h-[1.25rem]"></div>
                             <div id="scaButtonsContainer" class="flex flex-wrap gap-2">
                                 </div>
                         </div>
-                        <input type="hidden" id="notesMode" name="notesMode" value="manual">
+                        <input type="hidden" id="notesMode" name="notesMode" value="sca">
                     </div>
 
                     <div class="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end mt-2 gap-3">
@@ -357,6 +360,13 @@
             <div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end">
                 <button onclick="closeModal()" class="text-sm font-medium text-coffee-600 dark:text-[#a8a29e] hover:text-coffee-900 dark:hover:text-white">Close</button>
             </div>
+        </div>
+    </div>
+
+    <div id="imageModalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onclick="closeImageModal(event)">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl max-w-3xl max-h-[90vh] overflow-auto relative">
+            <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white text-2xl font-bold">&times;</button>
+            <img src="img/SCA_wheel.png" alt="SCA Flavor Wheel" class="w-full h-auto">
         </div>
     </div>
 
@@ -724,7 +734,7 @@
         const cloneBrew = (id) => duplicateCoffee(id);
 
         const deleteCoffee = async (id, ev) => { if(ev)ev.stopPropagation(); if(currentView!=='mine')return; if(!confirm('Delete?'))return; await deleteDoc(doc(db,'users',currentUser.uid,'coffees',id)); if(document.getElementById('editId').value==id)resetFormState(); };
-        const resetFormState = (e) => { if(e)e.stopPropagation(); document.getElementById('coffeeForm').reset(); document.getElementById('editId').value=''; setTempMode('profile'); setNotesMode('manual'); resetSca(); setRating(0); document.getElementById('formContainer').classList.remove('editing-mode'); document.getElementById('formTitle').innerHTML='<span>Add New Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Save Brew</span>'; document.getElementById('submitBtn').className="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] dark:hover:bg-[#44403c] text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.add('hidden'); };
+        const resetFormState = (e) => { if(e)e.stopPropagation(); document.getElementById('coffeeForm').reset(); document.getElementById('editId').value=''; setTempMode('profile'); setNotesMode('sca'); resetSca(); setRating(0); document.getElementById('formContainer').classList.remove('editing-mode'); document.getElementById('formTitle').innerHTML='<span>Add New Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Save Brew</span>'; document.getElementById('submitBtn').className="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] dark:hover:bg-[#44403c] text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.add('hidden'); };
         
         let currentSort = { key: null, direction: 'asc' };
         let activeFilters = { method: null, temp: null, roastType: null, roaster: null, origin: null, farmer: null, variety: null, processing: null };
@@ -874,6 +884,7 @@
         window.duplicateCoffee = duplicateCoffee;
         window.cloneBrew = cloneBrew; 
         window.deleteCoffee = deleteCoffee;
+        window.discardForm = discardForm;
         window.sortBy = sortBy;
         window.openFilterMenu = openFilterMenu;
         window.closeFilterMenu = closeFilterMenu;
@@ -889,7 +900,8 @@
         window.getFilteredCoffees = getFilteredCoffees;
         window.setRating = setRating;
         window.exportCSV = exportCSV;
-        window.discardForm = discardForm; // Exported new function
+        window.openImageModal = openImageModal;
+        window.closeImageModal = closeImageModal;
 
         // Init
         initTheme();
