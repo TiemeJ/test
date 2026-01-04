@@ -265,7 +265,10 @@
                         <input type="hidden" id="notesMode" name="notesMode" value="manual">
                     </div>
 
-                    <div class="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end mt-2">
+                    <div class="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end mt-2 gap-3">
+                        <button type="button" onclick="discardForm()" class="text-coffee-600 dark:text-[#a8a29e] hover:bg-coffee-100 dark:hover:bg-[#34302e] px-4 py-2.5 rounded-lg font-medium transition-colors">
+                            Discard
+                        </button>
                         <button type="submit" id="submitBtn" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] dark:hover:bg-[#44403c] text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2">
                             <i class="fa-solid fa-check"></i> <span>Save Brew</span>
                         </button>
@@ -499,6 +502,13 @@
                 if(eid) { await updateDoc(doc(col, eid), d); } else { d.customOrder = newOrder; d.createdAt = new Date().toISOString(); await addDoc(col, d); }
                 resetFormState();
             } catch(err){ alert(err.message); }
+        };
+
+        const discardForm = () => {
+            if(confirm("Discard unsaved changes?")) {
+                resetFormState();
+                toggleForm(false);
+            }
         };
 
         // --- Drag/Drop (unchanged) ---
@@ -879,6 +889,7 @@
         window.getFilteredCoffees = getFilteredCoffees;
         window.setRating = setRating;
         window.exportCSV = exportCSV;
+        window.discardForm = discardForm; // Exported new function
 
         // Init
         initTheme();
