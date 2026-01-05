@@ -296,17 +296,17 @@
                         <thead class="text-xs text-coffee-700 dark:text-[#a8a29e] uppercase bg-green-50 dark:bg-green-900/10 border-b border-green-100 dark:border-green-900">
                             <tr>
                                 <th scope="col" class="px-4 py-4 w-10 text-center"><i class="fa-solid fa-star text-green-600"></i></th>
-                                <th scope="col" class="px-4 py-4">Roaster</th>
-                                <th scope="col" class="px-4 py-4">Origin</th>
-                                <th scope="col" class="px-4 py-4">Farmer</th>
-                                <th scope="col" class="px-4 py-4">Variety</th>
-                                <th scope="col" class="px-4 py-4">Process</th>
-                                <th scope="col" class="px-4 py-4">Roast</th>
-                                <th scope="col" class="px-4 py-4">Method</th>
+                                <th scope="col" class="px-4 py-4 filterable" ondblclick="openFilterMenu(event,'roaster')">Roaster</th>
+                                <th scope="col" class="px-4 py-4 filterable" ondblclick="openFilterMenu(event,'origin')">Origin</th>
+                                <th scope="col" class="px-4 py-4 filterable" ondblclick="openFilterMenu(event,'farmer')">Farmer</th>
+                                <th scope="col" class="px-4 py-4 filterable" ondblclick="openFilterMenu(event,'variety')">Variety</th>
+                                <th scope="col" class="px-4 py-4 filterable" ondblclick="openFilterMenu(event,'processing')">Process</th>
+                                <th scope="col" class="px-4 py-4 filterable" ondblclick="openFilterMenu(event,'roastType')">Roast</th>
+                                <th scope="col" class="px-4 py-4 filterable" ondblclick="openFilterMenu(event,'method')">Method</th>
                                 <th scope="col" class="px-4 py-4 text-right">Grind</th>
                                 <th scope="col" class="px-4 py-4 text-center">Recipe</th>
                                 <th scope="col" class="px-4 py-4 text-right">Time</th>
-                                <th scope="col" class="px-4 py-4 text-center">Temp</th>
+                                <th scope="col" class="px-4 py-4 text-center filterable" ondblclick="openFilterMenu(event,'temp')">Temp</th>
                                 <th scope="col" class="px-4 py-4">Notes</th>
                                 <th scope="col" class="px-4 py-4">Rating</th>
                                 <th scope="col" class="px-4 py-4">Date</th>
@@ -325,7 +325,7 @@
                     <thead class="text-xs text-coffee-700 dark:text-[#a8a29e] uppercase bg-coffee-100/50 dark:bg-[#1c1917] border-b border-coffee-200 dark:border-[#44403c]">
                         <tr>
                             <th scope="col" class="px-4 py-4 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>
-                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('roaster')">Roaster <i class="fa-solid fa-sort text-coffee-400 dark:text-[#57534e] ml-1"></i></th>
+                            <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap filterable" onclick="sortBy('roaster')" ondblclick="openFilterMenu(event,'roaster')">Roaster <i class="fa-solid fa-sort text-coffee-400 dark:text-[#57534e] ml-1"></i></th>
                             <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('farmer')" ondblclick="openFilterMenu(event, 'farmer')">Farmer <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
                             <th scope="col" class="px-4 py-4 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('variety')" ondblclick="openFilterMenu(event, 'variety')">Variety <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
