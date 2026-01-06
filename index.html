@@ -836,6 +836,7 @@
         const renderTable = () => { 
             const t=document.getElementById('coffeeTableBody'); 
             const activeT=document.getElementById('activeCoffeeTableBody');
+            const activeContainer=document.getElementById('activeBrewsContainer');
             const e=document.getElementById('emptyState'); 
             
             t.innerHTML=''; 
@@ -845,13 +846,14 @@
             
             if(coffees.length===0){
                 e.classList.remove('hidden'); 
-                activeT.classList.add('hidden');
+                activeContainer.classList.add('hidden');
                 return;
             } 
             e.classList.add('hidden');
 
             const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !activeFilters.temp && !activeFilters.roastType && !activeFilters.roaster && !activeFilters.origin && !activeFilters.farmer && !activeFilters.variety && !activeFilters.processing;
 
+            // Separate active vs regular
             let hasActive = false;
 
             filteredCoffees.forEach((c, index) => {
@@ -880,7 +882,13 @@
                     actions = `<button onclick="cloneBrew('${c.id}'); event.stopPropagation();" class="text-green-600 hover:bg-green-50 p-2 rounded" title="Clone to My Brews"><i class="fa-solid fa-file-import"></i></button>`;
                 }
 
-                const recipeCol = `<div class="flex flex-col items-center"><span class="text-xs text-coffee-500 dark:text-[#78716c] leading-none mb-0.5">1:${c.ratio || '-'}</span><div class="font-mono text-coffee-900 dark:text-[#e7e5e4] text-xs"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight || '-'}g</span> • <span class="font-bold text-coffee-900 dark:text-white">${w === '-' ? '-' : (w.endsWith('.0')?parseInt(w):w) + 'g'}</span></div></div>`;
+                // Flattened structure
+                const recipeCol = `<div class="whitespace-nowrap text-xs">
+                    <span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight || '-'}g</span>
+                    <span class="text-coffee-300 dark:text-[#57534e] mx-0.5">•</span>
+                    <span class="font-bold text-coffee-900 dark:text-white">${w === '-' ? '-' : (w.endsWith('.0')?parseInt(w):w) + 'g'}</span>
+                    <span class="text-coffee-400 dark:text-[#78716c] ml-0.5">(1:${c.ratio || '-'})</span>
+                </div>`;
 
                 const rowHTML = `
                     <td class="px-4 py-2 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td>
@@ -930,22 +938,11 @@
                 }
             });
 
+            // Toggle visibility of Active Table
             if(hasActive && currentView === 'mine') {
-                // Add header row to Active body
-                const activeHeader = document.createElement('tr');
-                activeHeader.className = "bg-green-50/50 dark:bg-green-900/20";
-                activeHeader.innerHTML = `<td colspan="16" class="px-4 py-2 font-bold text-green-700 dark:text-green-400 text-xs uppercase tracking-wide"><i class="fa-solid fa-thumbtack mr-2"></i>Active Brews</td>`;
-                activeT.insertBefore(activeHeader, activeT.firstChild);
-
-                // Add header row to History body
-                const histHeader = document.createElement('tr');
-                histHeader.className = "bg-coffee-50/50 dark:bg-[#201d1b]";
-                histHeader.innerHTML = `<td colspan="16" class="px-4 py-2 font-bold text-coffee-600 dark:text-[#a8a29e] text-xs uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</td>`;
-                t.insertBefore(histHeader, t.firstChild);
-
-                activeT.classList.remove('hidden');
+                activeContainer.classList.remove('hidden');
             } else {
-                activeT.classList.add('hidden');
+                activeContainer.classList.add('hidden');
             }
         };
 
