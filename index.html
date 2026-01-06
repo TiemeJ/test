@@ -836,7 +836,6 @@
         const renderTable = () => { 
             const t=document.getElementById('coffeeTableBody'); 
             const activeT=document.getElementById('activeCoffeeTableBody');
-            const activeContainer=document.getElementById('activeBrewsContainer');
             const e=document.getElementById('emptyState'); 
             
             t.innerHTML=''; 
@@ -846,14 +845,13 @@
             
             if(coffees.length===0){
                 e.classList.remove('hidden'); 
-                activeContainer.classList.add('hidden');
+                activeT.classList.add('hidden');
                 return;
             } 
             e.classList.add('hidden');
 
             const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !activeFilters.temp && !activeFilters.roastType && !activeFilters.roaster && !activeFilters.origin && !activeFilters.farmer && !activeFilters.variety && !activeFilters.processing;
 
-            // Separate active vs regular
             let hasActive = false;
 
             filteredCoffees.forEach((c, index) => {
@@ -938,11 +936,22 @@
                 }
             });
 
-            // Toggle visibility of Active Table
             if(hasActive && currentView === 'mine') {
-                activeContainer.classList.remove('hidden');
+                // Add header row to Active body
+                const activeHeader = document.createElement('tr');
+                activeHeader.className = "bg-green-50/50 dark:bg-green-900/20";
+                activeHeader.innerHTML = `<td colspan="16" class="px-4 py-2 font-bold text-green-700 dark:text-green-400 text-xs uppercase tracking-wide"><i class="fa-solid fa-thumbtack mr-2"></i>Active Brews</td>`;
+                activeT.insertBefore(activeHeader, activeT.firstChild);
+
+                // Add header row to History body
+                const histHeader = document.createElement('tr');
+                histHeader.className = "bg-coffee-50/50 dark:bg-[#201d1b]";
+                histHeader.innerHTML = `<td colspan="16" class="px-4 py-2 font-bold text-coffee-600 dark:text-[#a8a29e] text-xs uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</td>`;
+                t.insertBefore(histHeader, t.firstChild);
+
+                activeT.classList.remove('hidden');
             } else {
-                activeContainer.classList.add('hidden');
+                activeT.classList.add('hidden');
             }
         };
 
