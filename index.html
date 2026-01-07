@@ -109,13 +109,7 @@
                     <input type="text" id="globalSearch" class="block w-full sm:w-64 p-2.5 pl-10 text-sm text-coffee-900 border border-coffee-200 rounded-lg bg-white dark:bg-[#292524] dark:border-[#44403c] dark:placeholder-[#57534e] dark:text-white focus:ring-coffee-500 focus:border-coffee-500" placeholder="Search brews...">
                 </div>
             </div>
-            
-            <div class="flex gap-2 w-full sm:w-auto justify-end">
-                <button id="addBrewBtn" onclick="toggleForm(true); window.scrollTo({top:0,behavior:'smooth'})" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] dark:hover:bg-[#44403c] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-all flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> New Brew
-                </button>
             </div>
-        </div>
 
         <div id="formContainer" class="hidden bg-white dark:bg-[#292524] rounded-xl shadow-lg border border-coffee-100 dark:border-[#44403c] mb-8 transition-all duration-300 overflow-hidden group" aria-expanded="false">
             <div onclick="toggleForm()" class="p-6 cursor-pointer flex justify-between items-center bg-coffee-50/50 dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#34302e] transition-colors">
@@ -749,41 +743,7 @@
         let activeFilters = { method: null, temp: null, roastType: null, roaster: null, origin: null, farmer: null, variety: null, processing: null };
         const sortBy = (k) => { if(currentSort.key===k)currentSort.direction=currentSort.direction==='asc'?'desc':'asc'; else {currentSort.key=k;currentSort.direction='asc';} renderTable(); };
         const openFilterMenu = (e,k) => { e.stopPropagation(); const m=document.getElementById('filterDropdown'); const vals = coffees.map(c => k==='roaster' ? (c.roaster||c.name) : (k==='origin' ? (c.origin||c.beanType) : c[k])); const v=[...new Set(vals)].sort(); if(!v.length)return; let h=`<div class="px-3 py-2 text-xs font-bold text-coffee-400 dark:text-[#78716c] uppercase border-b border-coffee-100 dark:border-[#44403c] mb-1">Filter ${k}</div><button onclick="applyFilter('${k}',null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] font-bold text-coffee-700 dark:text-[#d6ccc2]">All</button>`; v.forEach(val=>{h+=`<button onclick="applyFilter('${k}','${val}')" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-600 dark:text-[#a8a29e]">${val}</button>`}); m.innerHTML=h; const r=e.currentTarget.getBoundingClientRect(); const c=e.currentTarget.closest('.relative').getBoundingClientRect(); m.style.top=(r.bottom-c.top+5)+'px'; m.style.left=(r.left-c.left)+'px'; m.classList.remove('hidden'); }
-        const closeFilterMenu = (e) => { const m=document.getElementById('filterDropdown'); if(!m.contains(e.target))m.classList.add('hidden'); }
-        const applyFilter = (k,v) => { activeFilters[k]=v; document.getElementById('filterDropdown').classList.add('hidden'); renderTable(); renderActiveFilters(); };
-        const clearAllFilters = () => { activeFilters={method:null,temp:null,roastType:null,roaster:null,origin:null,farmer:null,variety:null,processing:null}; renderTable(); renderActiveFilters(); }
-        const renderActiveFilters = () => { const c=document.getElementById('activeFiltersContainer'), l=document.getElementById('activeFiltersList'); l.innerHTML=''; let h=false; Object.entries(activeFilters).forEach(([k,v])=>{ if(v){ h=true; l.innerHTML+=`<div class="flex items-center gap-2 bg-coffee-700 dark:bg-[#57534e] text-white text-xs px-3 py-1 rounded-full shadow-sm"><span>${k}:</span><b>${v}</b><button onclick="applyFilter('${k}',null)" class="ml-1 hover:text-red-200">x</button></div>`; } }); c.classList.toggle('hidden',!h); }
-        
-        const getFilteredCoffees = () => { 
-            let f=coffees;
-            const searchInput = document.getElementById('globalSearch');
-            if (searchInput && searchInput.value) {
-                const term = searchInput.value.toLowerCase();
-                f = f.filter(c => {
-                    const searchable = [c.roaster||c.name||'', c.origin||c.beanType||'', c.farmer||'', c.variety||'', c.processing||'', c.method||'', c.notes||''].join(' ').toLowerCase();
-                    return searchable.includes(term);
-                });
-            }
-            f=f.filter(c=>{ 
-                const cRoaster = c.roaster || c.name; const cOrigin = c.origin || c.beanType;
-                const m=!activeFilters.method||c.method===activeFilters.method; const t=!activeFilters.temp||String(c.temp)===String(activeFilters.temp); const r=!activeFilters.roastType||c.roastType===activeFilters.roastType; const rost=!activeFilters.roaster||cRoaster===activeFilters.roaster; const orig=!activeFilters.origin||cOrigin===activeFilters.origin; const farm=!activeFilters.farmer||c.farmer===activeFilters.farmer; const varr=!activeFilters.variety||c.variety===activeFilters.variety; const proc=!activeFilters.processing||c.processing===activeFilters.processing;
-                return m&&t&&r&&rost&&orig&&farm&&varr&&proc; 
-            }); 
-            if(currentSort.key){ f.sort((a,b)=>{ 
-                let va=a[currentSort.key], vb=b[currentSort.key]; 
-                if(currentSort.key==='roaster') { va=a.roaster||a.name; vb=b.roaster||b.name; }
-                if(currentSort.key==='origin') { va=a.origin||a.beanType; vb=b.origin||b.beanType; }
-                if(currentSort.key==='temp'){ const na=parseFloat(va), nb=parseFloat(vb); if(!isNaN(na)&&!isNaN(nb)){va=na;vb=nb;} } 
-                if(typeof va==='string')va=va.toLowerCase(); if(typeof vb==='string')vb=vb.toLowerCase(); 
-                if(va<vb)return currentSort.direction==='asc'?-1:1; if(va>vb)return currentSort.direction==='asc'?1:-1; return 0; 
-            }); } 
-            return f; 
-        };
-        
-        const formatTime = (s) => { if(!s && s !== 0) return '-'; const m=Math.floor(s/60), sc=s%60; return m>0?`${m}m ${sc}s`:`${sc}s`; };
-        const getRoastBadge = (r) => { if(!r)return''; const m={'Light':'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-800','Medium':'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200 dark:border-orange-800','Medium-Dark':'bg-[#d6ccc2] text-[#5e4b41] border-[#c0b4aa] dark:bg-[#57534e]/50 dark:text-[#d6ccc2] dark:border-[#57534e]','Dark':'bg-gray-800 text-gray-100 border-gray-700 dark:bg-black dark:text-gray-300 dark:border-gray-800'}; return `<span class="${m[r]||'bg-gray-100 dark:bg-gray-800'} text-xs font-medium px-2 py-0.5 rounded-full border pointer-events-none select-none">${r}</span>`; };
-        const getTempBadge = (t) => { if(!t) return '-'; if(!isNaN(parseFloat(t))&&isFinite(t)){ let c='bg-gray-100 dark:bg-gray-800';if(t<90)c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';else if(t<94)c='bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';else c='bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-md ${c} text-xs font-bold shadow-sm pointer-events-none select-none font-mono">${t}°C</span>`;} const m={'L4':'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300','L3':'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300','L2':'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-200','L1':'bg-cyan-50 text-cyan-600 border-cyan-100 dark:bg-cyan-900/20 dark:text-cyan-200','M':'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200','H1':'bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-900/20 dark:text-orange-200','H2':'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200','H3':'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300','H4':'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/40 dark:text-rose-300'}; return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${m[t]||'bg-gray-100'} text-xs font-bold shadow-sm pointer-events-none select-none">${t}</span>`; };
-        const closeMenus = (e) => { 
+        const closeFilterMenu = (e) => { 
             if(!document.getElementById('modalOverlay').contains(e.target) && !document.getElementById('modalOverlay').classList.contains('hidden') && e.target.id==='modalOverlay') closeModal(); 
             if(!document.getElementById('filterDropdown').contains(e.target)) document.getElementById('filterDropdown').classList.add('hidden'); 
             if(!document.getElementById('mainMenuDropdown').contains(e.target) && !e.target.closest('button[onclick*="toggleMainMenu"]')) document.getElementById('mainMenuDropdown').classList.add('hidden');
