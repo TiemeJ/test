@@ -70,12 +70,16 @@
                 </div>
                 
                 <div class="relative">
-                    <button onclick="toggleMainMenu(event)" class="p-2 rounded-full hover:bg-coffee-50 dark:hover:bg-[#44403c] transition-colors text-coffee-600 dark:text-[#a8a29e]" title="Menu">
+                    <button onclick="toggleMainMenu(event)" class="relative p-2 rounded-full hover:bg-coffee-50 dark:hover:bg-[#44403c] transition-colors text-coffee-600 dark:text-[#a8a29e]" title="Menu">
                         <i class="fa-solid fa-bars text-xl"></i>
+                        <span id="menuBadge" class="hidden absolute top-1 right-1 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-[#292524] bg-red-500"></span>
                     </button>
                     <div id="mainMenuDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-lg shadow-xl border border-coffee-200 dark:border-[#57534e] py-2 z-50">
-                        <button onclick="openGallery(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center gap-2">
-                            <i class="fa-solid fa-images"></i> <span>Photo Gallery</span>
+                        <button onclick="openGallery(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-images"></i> <span>Photo Gallery</span>
+                            </div>
+                            <span id="galleryBadge" class="hidden h-2 w-2 rounded-full bg-red-500 mr-2"></span>
                         </button>
                         <button onclick="toggleTheme(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center gap-2">
                             <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i> 
@@ -319,7 +323,7 @@
 
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, onSnapshot, query, writeBatch, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, onSnapshot, query, writeBatch, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
         import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
         const app = initializeApp(firebaseConfig);
@@ -333,6 +337,7 @@
         let coffees = [];
         let following = []; 
         let unsubscribeData = null; 
+        let unsubscribeNotifications = null;
         let isPublic = false;
         let dragSrcEl = null;
         let currentUploadCoffeeId = null;
@@ -577,6 +582,12 @@
 
         const openGallery = async () => {
             document.getElementById('galleryModal').classList.remove('hidden');
+            
+            // Mark as visited to clear notifications
+            localStorage.setItem('lastGalleryVisit', new Date().toISOString());
+            document.getElementById('menuBadge').classList.add('hidden');
+            document.getElementById('galleryBadge').classList.add('hidden');
+
             switchGalleryTab('mine');
         };
 
@@ -645,6 +656,35 @@
                     grid.appendChild(card);
                 });
             }
+        };
+
+        // --- Notifications Listener ---
+        const initNotificationListener = (uid) => {
+            if(unsubscribeNotifications) unsubscribeNotifications();
+
+            // Listen for newest photo shared with me
+            const q = query(
+                collection(db, 'photos'), 
+                where('sharedWith', 'array-contains', uid), 
+                orderBy('createdAt', 'desc'), 
+                limit(1)
+            );
+
+            unsubscribeNotifications = onSnapshot(q, (snapshot) => {
+                if(!snapshot.empty) {
+                    const latestPhotoDate = snapshot.docs[0].data().createdAt;
+                    const lastVisit = localStorage.getItem('lastGalleryVisit');
+
+                    // If never visited, or photo is newer than last visit
+                    if(!lastVisit || new Date(latestPhotoDate) > new Date(lastVisit)) {
+                        document.getElementById('menuBadge').classList.remove('hidden');
+                        document.getElementById('galleryBadge').classList.remove('hidden');
+                    } else {
+                        document.getElementById('menuBadge').classList.add('hidden');
+                        document.getElementById('galleryBadge').classList.add('hidden');
+                    }
+                }
+            });
         };
 
         // --- Standard Logic ---
@@ -820,10 +860,15 @@
             currentUser = user;
             if (user) {
                 document.getElementById('authContainer').innerHTML = `<div class="flex items-center gap-3"><button onclick="openFriendsModal()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coffee-50 dark:bg-[#34302e] hover:bg-coffee-100 dark:hover:bg-[#44403c] border border-coffee-200 dark:border-[#44403c] transition-colors text-sm font-medium text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-solid fa-user-group"></i> Friends</button><img src="${user.photoURL}" class="w-8 h-8 rounded-full border border-coffee-200 dark:border-[#44403c]" title="${user.displayName}"></div>`;
-                document.getElementById('syncStatus').classList.remove('hidden'); document.getElementById('viewSelectorContainer').classList.remove('hidden'); await initUserData(user); loadFollowingList(); changeView('mine');
+                document.getElementById('syncStatus').classList.remove('hidden'); document.getElementById('viewSelectorContainer').classList.remove('hidden'); 
+                await initUserData(user); 
+                loadFollowingList(); 
+                changeView('mine');
+                initNotificationListener(user.uid);
             } else {
                 document.getElementById('authContainer').innerHTML = `<button onclick="googleLogin()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"><i class="fa-brands fa-google"></i> Sign In</button>`;
                 document.getElementById('viewSelectorContainer').classList.add('hidden'); document.getElementById('coffeeTableBody').innerHTML = ''; document.getElementById('emptyState').classList.remove('hidden');
+                if(unsubscribeNotifications) unsubscribeNotifications();
             }
         });
 
