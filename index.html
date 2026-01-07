@@ -337,7 +337,6 @@
 
     </main>
 
-    <!-- Coffee Card Overlay -->
     <div id="coffeeCardOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onclick="closeCoffeeCard(event)">
         <div id="coffeeCardContent" class="bg-white dark:bg-[#292524] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden transform transition-all border border-coffee-200 dark:border-[#44403c] flex flex-col max-h-[95vh]">
             <div class="bg-coffee-100 dark:bg-[#1c1917] p-5 border-b border-coffee-200 dark:border-[#44403c] relative">
@@ -351,7 +350,6 @@
             </div>
             
             <div class="p-5 overflow-y-auto space-y-5">
-                <!-- Attached Photo Container in Card -->
                 <div id="cardPhotoContainer" class="hidden rounded-lg overflow-hidden border border-coffee-200 dark:border-[#44403c] shadow-sm">
                     <img id="cardPhoto" src="" class="w-full h-48 object-cover">
                     <div class="p-2 bg-coffee-50 dark:bg-[#1c1917]">
@@ -433,7 +431,6 @@
         </div>
     </div>
 
-    <!-- Upload Photo Modal -->
     <div id="photoUploadModalOverlay" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-coffee-200 dark:border-[#44403c]">
             <div class="p-4 border-b border-coffee-100 dark:border-[#44403c] flex justify-between items-center">
@@ -468,7 +465,6 @@
         </div>
     </div>
 
-    <!-- Gallery Modal -->
     <div id="galleryModalOverlay" class="hidden fixed inset-0 z-[75] bg-black/80 backdrop-blur-sm overflow-y-auto">
         <div class="min-h-screen px-4 py-8 flex items-start justify-center">
             <div class="bg-[#fcfbf9] dark:bg-[#1c1917] w-full max-w-5xl rounded-xl shadow-2xl overflow-hidden border border-coffee-200 dark:border-[#44403c] relative">
@@ -488,8 +484,7 @@
                 </div>
 
                 <div id="galleryGrid" class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 bg-[#fcfbf9] dark:bg-[#1c1917] min-h-[50vh]">
-                    <!-- Photos injected here -->
-                </div>
+                    </div>
                 
                 <div id="galleryLoading" class="hidden absolute inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center">
                     <i class="fa-solid fa-circle-notch fa-spin text-4xl text-coffee-600"></i>
@@ -498,7 +493,6 @@
         </div>
     </div>
 
-    <!-- Profile/Friends Modal -->
     <div id="modalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
             <div class="flex border-b border-coffee-200 dark:border-[#44403c]">
@@ -556,10 +550,13 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, onSnapshot, query, writeBatch, orderBy, limit, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        // --- NEW STORAGE IMPORTS ---
+        import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app); // Initialize Storage
         const provider = new GoogleAuthProvider();
 
         let currentUser = null;
@@ -911,7 +908,7 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800; // Resize to max 800px width
+                        const MAX_WIDTH = 1200; // Increased size since we are using Storage now
                         let width = img.width;
                         let height = img.height;
 
@@ -924,8 +921,8 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        // Compress to JPEG 0.6 quality to keep string size low for Firestore
-                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                        // Compress to JPEG 0.7 quality
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
                     }
                 }
                 reader.onerror = (e) => reject(e);
@@ -936,7 +933,7 @@
             if(!currentUser) return;
             const coffeeId = document.getElementById('uploadCoffeeId').value;
             const note = document.getElementById('photoNote').value;
-            const imgData = document.getElementById('previewImg').src;
+            const imgData = document.getElementById('previewImg').src; // This is a Data URL
 
             if(!imgData || imgData === '' || window.location.href === imgData) {
                 alert("Please select a photo first.");
@@ -944,20 +941,31 @@
             }
 
             const btn = document.getElementById('btnUploadSave');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
             btn.disabled = true;
 
             try {
-                // Save to subcollection
+                // 1. Create Storage Reference
+                const timestamp = Date.now();
+                // Creates a path like: users/UID/brew_photos/1709...jpg
+                const storageRef = ref(storage, `users/${currentUser.uid}/brew_photos/${timestamp}.jpg`);
+
+                // 2. Upload String (Firebase Storage SDK handles Base64 Data URLs)
+                await uploadString(storageRef, imgData, 'data_url');
+
+                // 3. Get the Download URL
+                const downloadUrl = await getDownloadURL(storageRef);
+
+                // 4. Save Metadata + URL to Firestore
                 await addDoc(collection(db, 'users', currentUser.uid, 'photos'), {
                     coffeeId: coffeeId,
                     coffeeRoaster: document.getElementById('uploadCoffeeRoaster').value,
-                    image: imgData,
+                    image: downloadUrl, // Save the URL, not the base64 string
                     note: note,
                     createdAt: new Date().toISOString(),
                     userId: currentUser.uid,
                     userName: currentUser.displayName || 'Brewer',
-                    shared: false // Default private until shared
+                    shared: false 
                 });
 
                 // Update Coffee Doc to indicate it has a photo
@@ -968,9 +976,7 @@
                 closePhotoUploadModal();
                 
                 // Prompt for sharing
-                if(confirm("Photo Saved! Would you like to share this with your friends?")) {
-                    // Update the last added photo to shared=true. 
-                    // Since we just added it, query recent 1
+                if(confirm("Photo Uploaded! Share with friends?")) {
                     const q = query(collection(db, 'users', currentUser.uid, 'photos'), orderBy('createdAt', 'desc'), limit(1));
                     const snap = await getDocs(q);
                     if(!snap.empty) {
@@ -981,7 +987,7 @@
 
             } catch (e) {
                 console.error(e);
-                alert("Upload failed. Image might be too large for Firestore free tier. Try a smaller image.");
+                alert("Upload failed: " + e.message);
             } finally {
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Save';
                 btn.disabled = false;
