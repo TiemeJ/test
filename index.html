@@ -582,13 +582,21 @@
 
         const openGallery = async () => {
             document.getElementById('galleryModal').classList.remove('hidden');
-            
+
+            // Check if there is an active notification BEFORE clearing it
+            const hasNotification = !document.getElementById('galleryBadge').classList.contains('hidden');
+
             // Mark as visited to clear notifications
             localStorage.setItem('lastGalleryVisit', new Date().toISOString());
             document.getElementById('menuBadge').classList.add('hidden');
             document.getElementById('galleryBadge').classList.add('hidden');
 
-            switchGalleryTab('mine');
+            // If there was a notification, jump straight to the shared tab
+            if(hasNotification) {
+                switchGalleryTab('shared');
+            } else {
+                switchGalleryTab('mine');
+            }
         };
 
         const switchGalleryTab = async (tab) => {
