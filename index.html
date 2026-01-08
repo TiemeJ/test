@@ -241,28 +241,6 @@
         </div>
     </div>
 
-    <div id="modalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
-            <div class="flex border-b border-coffee-200 dark:border-[#44403c]">
-                <button onclick="switchModalTab('profile')" id="tabProfile" class="flex-1 py-3 text-sm font-semibold text-coffee-700 dark:text-[#d6ccc2] bg-coffee-50 dark:bg-[#1c1917]">My Profile</button>
-                <button onclick="switchModalTab('following')" id="tabFollowing" class="flex-1 py-3 text-sm font-semibold text-coffee-500 dark:text-[#78716c] hover:bg-coffee-50 dark:hover:bg-[#1c1917]">Following</button>
-            </div>
-            <div id="contentProfile" class="p-6">
-                <div class="flex items-center justify-between mb-4"><span class="text-sm font-medium text-coffee-900 dark:text-white">Public Profile</span><button id="togglePublicBtn" onclick="togglePublicProfile()" class="bg-gray-200 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 transition-colors relative"><div class="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform"></div></button></div>
-                <p class="text-xs text-coffee-500 dark:text-[#78716c] mb-4">When enabled, anyone with your Share ID can see your brews.</p>
-                <div id="shareIdContainer" class="hidden"><label class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] mb-1 uppercase">Your Share ID</label><div class="flex gap-2"><input type="text" id="myShareId" readonly class="flex-1 bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded px-2 py-1 text-sm font-mono text-coffee-900 dark:text-white select-all"><button onclick="copyShareId()" class="bg-coffee-200 dark:bg-[#44403c] hover:bg-coffee-300 px-3 rounded text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-regular fa-copy"></i></button></div></div>
-                <hr class="my-6 border-coffee-200 dark:border-[#44403c]">
-                <button onclick="googleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-300 py-2 rounded-lg text-sm font-medium">Sign Out</button>
-            </div>
-            <div id="contentFollowing" class="hidden p-6">
-                <div class="flex gap-2 mb-4"><input type="text" id="friendIdInput" placeholder="Enter Friend's Share ID" class="flex-1 bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white"><button onclick="followUser()" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] text-white px-3 py-2 rounded-lg text-sm font-medium">Follow</button></div>
-                <div class="text-xs font-semibold text-coffee-500 dark:text-[#78716c] uppercase mb-2">People you follow</div>
-                <div id="followingList" class="space-y-2 max-h-48 overflow-y-auto"></div>
-            </div>
-            <div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end"><button onclick="closeModal()" class="text-sm font-medium text-coffee-600 dark:text-[#a8a29e] hover:text-coffee-900 dark:hover:text-white">Close</button></div>
-        </div>
-    </div>
-
     <div id="preferencesModal" class="hidden fixed inset-0 z-[85] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col max-h-[80vh]">
             <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center">
@@ -424,7 +402,7 @@
             }
             updatePublicToggleUI();
             document.getElementById('myShareId').value = user.uid;
-            renderHeaders(); // Draw headers initially
+            renderHeaders(); // Draw headers
         };
 
         const changeView = (uid) => {
@@ -601,7 +579,7 @@
             }
         };
 
-        // --- RENDER HEADERS SEPARATELY ---
+        // --- RENDER HEADERS SEPARATELY (Corrects double-click issue) ---
         const renderHeaders = () => {
             const headerRow = document.getElementById('tableHeaderRow');
             let headerHTML = `<th scope="col" class="px-4 py-2 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>`;
@@ -955,7 +933,6 @@
             const e = document.getElementById('emptyState'); 
             
             t.innerHTML=''; activeT.innerHTML=''; 
-            // NOTE: We do NOT clear headerRow.innerHTML here anymore!
             
             const filteredCoffees = getFilteredCoffees();
             if(coffees.length===0){ e.classList.remove('hidden'); activeT.classList.add('hidden'); return; } e.classList.add('hidden');
@@ -1059,10 +1036,21 @@
             if (user) {
                 document.getElementById('authContainer').innerHTML = `<div class="flex items-center gap-3"><button onclick="openFriendsModal()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coffee-50 dark:bg-[#34302e] hover:bg-coffee-100 dark:hover:bg-[#44403c] border border-coffee-200 dark:border-[#44403c] transition-colors text-sm font-medium text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-solid fa-user-group"></i> Friends</button><img src="${user.photoURL}" class="w-8 h-8 rounded-full border border-coffee-200 dark:border-[#44403c]" title="${user.displayName}"></div>`;
                 document.getElementById('syncStatus').classList.remove('hidden'); document.getElementById('viewSelectorContainer').classList.remove('hidden'); 
-                await initUserData(user); 
-                loadFollowingList(); 
+                
+                // Show data immediately, then update when profile is ready
+                renderHeaders(); 
                 changeView('mine');
+                loadFollowingList(); 
                 initNotificationListener(user.uid);
+
+                try {
+                    await initUserData(user); 
+                    // Re-render after successful profile sync
+                    renderHeaders(); 
+                    renderTable();
+                } catch(e) {
+                    console.error("User init partial failure", e);
+                }
             } else {
                 document.getElementById('authContainer').innerHTML = `<button onclick="googleLogin()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"><i class="fa-brands fa-google"></i> Sign In</button>`;
                 document.getElementById('viewSelectorContainer').classList.add('hidden'); document.getElementById('coffeeTableBody').innerHTML = ''; document.getElementById('emptyState').classList.remove('hidden');
