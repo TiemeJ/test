@@ -424,6 +424,7 @@
             }
             updatePublicToggleUI();
             document.getElementById('myShareId').value = user.uid;
+            renderHeaders(); // Draw headers initially
         };
 
         const changeView = (uid) => {
@@ -589,6 +590,7 @@
             });
             userPreferences = newPrefs;
             closePreferencesModal();
+            renderHeaders();
             renderTable();
             
             // Save to Firestore
@@ -597,6 +599,30 @@
             } catch(e) {
                 console.error("Failed to save prefs", e);
             }
+        };
+
+        // --- RENDER HEADERS SEPARATELY ---
+        const renderHeaders = () => {
+            const headerRow = document.getElementById('tableHeaderRow');
+            let headerHTML = `<th scope="col" class="px-4 py-2 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>`;
+            
+            if (userPreferences.roaster) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap filterable" onclick="sortBy('roaster')" ondblclick="openFilterMenu(event,'roaster')">Roaster</th>`;
+            if (userPreferences.origin) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin</th>`;
+            if (userPreferences.farmer) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('farmer')" ondblclick="openFilterMenu(event, 'farmer')">Farmer</th>`;
+            if (userPreferences.variety) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('variety')" ondblclick="openFilterMenu(event, 'variety')">Variety</th>`;
+            if (userPreferences.processing) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('processing')" ondblclick="openFilterMenu(event, 'processing')">Process</th>`;
+            if (userPreferences.roastType) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('roastType')" ondblclick="openFilterMenu(event, 'roastType')">Roast</th>`;
+            if (userPreferences.method) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('method')" ondblclick="openFilterMenu(event, 'method')">Method</th>`;
+            if (userPreferences.grind) headerHTML += `<th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('grind')">Grind</th>`;
+            if (userPreferences.recipe) headerHTML += `<th scope="col" class="px-4 py-2 text-center whitespace-nowrap">Recipe</th>`;
+            if (userPreferences.time) headerHTML += `<th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('time')">Time</th>`;
+            if (userPreferences.temp) headerHTML += `<th scope="col" class="px-4 py-2 text-center filterable whitespace-nowrap" onclick="sortBy('temp')" ondblclick="openFilterMenu(event, 'temp')">Temp</th>`;
+            if (userPreferences.notes) headerHTML += `<th scope="col" class="px-4 py-2 whitespace-nowrap">Notes</th>`;
+            if (userPreferences.rating) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('rating')">Rating</th>`;
+            if (userPreferences.date) headerHTML += `<th scope="col" class="px-4 py-2 whitespace-nowrap" onclick="sortBy('createdAt')">Date</th>`;
+            
+            headerHTML += `<th scope="col" class="px-4 py-2 text-center w-36 whitespace-nowrap">Actions</th>`;
+            headerRow.innerHTML = headerHTML;
         };
 
         // --- Photo & Gallery Logic ---
@@ -928,35 +954,15 @@
             const activeT = document.getElementById('activeCoffeeTableBody'); 
             const e = document.getElementById('emptyState'); 
             
-            t.innerHTML=''; activeT.innerHTML=''; headerRow.innerHTML='';
+            t.innerHTML=''; activeT.innerHTML=''; 
+            // NOTE: We do NOT clear headerRow.innerHTML here anymore!
             
             const filteredCoffees = getFilteredCoffees();
             if(coffees.length===0){ e.classList.remove('hidden'); activeT.classList.add('hidden'); return; } e.classList.add('hidden');
             const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !Object.values(activeFilters).some(v=>v!==null);
             let hasActive = false;
 
-            // --- BUILD HEADERS BASED ON PREFS ---
-            let headerHTML = `<th scope="col" class="px-4 py-2 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>`;
-            if (userPreferences.roaster) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap filterable" onclick="sortBy('roaster')" ondblclick="openFilterMenu(event,'roaster')">Roaster</th>`;
-            if (userPreferences.origin) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin</th>`;
-            if (userPreferences.farmer) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('farmer')" ondblclick="openFilterMenu(event, 'farmer')">Farmer</th>`;
-            if (userPreferences.variety) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('variety')" ondblclick="openFilterMenu(event, 'variety')">Variety</th>`;
-            if (userPreferences.processing) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('processing')" ondblclick="openFilterMenu(event, 'processing')">Process</th>`;
-            if (userPreferences.roastType) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('roastType')" ondblclick="openFilterMenu(event, 'roastType')">Roast</th>`;
-            if (userPreferences.method) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('method')" ondblclick="openFilterMenu(event, 'method')">Method</th>`;
-            if (userPreferences.grind) headerHTML += `<th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('grind')">Grind</th>`;
-            if (userPreferences.recipe) headerHTML += `<th scope="col" class="px-4 py-2 text-center whitespace-nowrap">Recipe</th>`;
-            if (userPreferences.time) headerHTML += `<th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('time')">Time</th>`;
-            if (userPreferences.temp) headerHTML += `<th scope="col" class="px-4 py-2 text-center filterable whitespace-nowrap" onclick="sortBy('temp')" ondblclick="openFilterMenu(event, 'temp')">Temp</th>`;
-            if (userPreferences.notes) headerHTML += `<th scope="col" class="px-4 py-2 whitespace-nowrap">Notes</th>`;
-            if (userPreferences.rating) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('rating')">Rating</th>`;
-            if (userPreferences.date) headerHTML += `<th scope="col" class="px-4 py-2 whitespace-nowrap" onclick="sortBy('createdAt')">Date</th>`;
-            headerHTML += `<th scope="col" class="px-4 py-2 text-center w-36 whitespace-nowrap">Actions</th>`;
-            headerRow.innerHTML = headerHTML;
-
-            // --- RENDER ROWS ---
             // Calculate colspan for section headers (Active/History)
-            // Grip (1) + Actions (1) + Count of true preferences
             const colSpanCount = 2 + Object.values(userPreferences).filter(v => v).length;
 
             filteredCoffees.forEach((c, index) => {
@@ -1021,6 +1027,30 @@
                 const activeHeader = document.createElement('tr'); activeHeader.className = "bg-green-50/50 dark:bg-green-900/20"; activeHeader.innerHTML = `<td colspan="${colSpanCount}" class="px-4 py-2 font-bold text-green-700 dark:text-green-400 text-xs uppercase tracking-wide"><i class="fa-solid fa-thumbtack mr-2"></i>Active Brews</td>`; activeT.insertBefore(activeHeader, activeT.firstChild);
                 const histHeader = document.createElement('tr'); histHeader.className = "bg-coffee-50/50 dark:bg-[#201d1b]"; histHeader.innerHTML = `<td colspan="${colSpanCount}" class="px-4 py-2 font-bold text-coffee-600 dark:text-[#a8a29e] text-xs uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</td>`; t.insertBefore(histHeader, t.firstChild); activeT.classList.remove('hidden');
             } else { activeT.classList.add('hidden'); }
+        };
+
+        // --- RENDER HEADERS SEPARATELY (Corrects double-click issue) ---
+        const renderHeaders = () => {
+            const headerRow = document.getElementById('tableHeaderRow');
+            let headerHTML = `<th scope="col" class="px-4 py-2 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>`;
+            
+            if (userPreferences.roaster) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap filterable" onclick="sortBy('roaster')" ondblclick="openFilterMenu(event,'roaster')">Roaster</th>`;
+            if (userPreferences.origin) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin</th>`;
+            if (userPreferences.farmer) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('farmer')" ondblclick="openFilterMenu(event, 'farmer')">Farmer</th>`;
+            if (userPreferences.variety) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('variety')" ondblclick="openFilterMenu(event, 'variety')">Variety</th>`;
+            if (userPreferences.processing) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('processing')" ondblclick="openFilterMenu(event, 'processing')">Process</th>`;
+            if (userPreferences.roastType) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('roastType')" ondblclick="openFilterMenu(event, 'roastType')">Roast</th>`;
+            if (userPreferences.method) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('method')" ondblclick="openFilterMenu(event, 'method')">Method</th>`;
+            if (userPreferences.grind) headerHTML += `<th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('grind')">Grind</th>`;
+            if (userPreferences.recipe) headerHTML += `<th scope="col" class="px-4 py-2 text-center whitespace-nowrap">Recipe</th>`;
+            if (userPreferences.time) headerHTML += `<th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('time')">Time</th>`;
+            if (userPreferences.temp) headerHTML += `<th scope="col" class="px-4 py-2 text-center filterable whitespace-nowrap" onclick="sortBy('temp')" ondblclick="openFilterMenu(event, 'temp')">Temp</th>`;
+            if (userPreferences.notes) headerHTML += `<th scope="col" class="px-4 py-2 whitespace-nowrap">Notes</th>`;
+            if (userPreferences.rating) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('rating')">Rating</th>`;
+            if (userPreferences.date) headerHTML += `<th scope="col" class="px-4 py-2 whitespace-nowrap" onclick="sortBy('createdAt')">Date</th>`;
+            
+            headerHTML += `<th scope="col" class="px-4 py-2 text-center w-36 whitespace-nowrap">Actions</th>`;
+            headerRow.innerHTML = headerHTML;
         };
 
         // Auth
