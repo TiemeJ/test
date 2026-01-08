@@ -23,7 +23,7 @@
         th.filterable { position: relative; cursor: context-menu; touch-action: manipulation; }
         
         #filterDropdown, #mainMenuDropdown { z-index: 50; animation: fadeIn 0.1s ease-out; }
-        #modalOverlay, #imageModalOverlay, #coffeeCardOverlay, #uploadPhotoModal, #galleryModal, #easterEggModal { animation: fadeIn 0.2s ease-out; }
+        #modalOverlay, #imageModalOverlay, #coffeeCardOverlay, #uploadPhotoModal, #galleryModal, #easterEggModal, #preferencesModal { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .chevron-rotate { transition: transform 0.3s ease; }
         .group[aria-expanded="true"] .chevron-rotate { transform: rotate(180deg); }
@@ -77,10 +77,11 @@
                     </button>
                     <div id="mainMenuDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-lg shadow-xl border border-coffee-200 dark:border-[#57534e] py-2 z-50">
                         <button onclick="openGallery(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-images"></i> <span>Photo Gallery</span>
-                            </div>
+                            <div class="flex items-center gap-2"><i class="fa-solid fa-images"></i> <span>Photo Gallery</span></div>
                             <span id="galleryBadge" class="hidden h-2 w-2 rounded-full bg-red-500 mr-2"></span>
+                        </button>
+                        <button onclick="openPreferences(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center gap-2">
+                            <i class="fa-solid fa-sliders"></i> <span>Preferences</span>
                         </button>
                         <button onclick="toggleTheme(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center gap-2">
                             <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i> 
@@ -103,7 +104,7 @@
                 <div class="flex items-center gap-2">
                     <select id="viewSelect" onchange="changeView(this.value)" class="bg-white dark:bg-[#292524] border border-coffee-200 dark:border-[#44403c] text-coffee-900 dark:text-white text-sm rounded-lg block p-2.5 shadow-sm font-bold min-w-[150px]">
                         <option value="mine">My Brews</option>
-                        </select>
+                    </select>
                 </div>
                 <div class="relative flex-1 sm:flex-initial">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -120,9 +121,7 @@
                     <i class="fa-solid fa-plus-circle text-coffee-700 dark:text-[#d6ccc2]"></i> <span>Add New Brew</span>
                 </h2>
                 <div class="flex items-center gap-4">
-                    <button id="cancelEditBtn" onclick="resetFormState(event)" class="hidden text-xs text-red-500 hover:text-red-700 dark:text-red-400 underline z-10 relative">
-                        Cancel Edit
-                    </button>
+                    <button id="cancelEditBtn" onclick="resetFormState(event)" class="hidden text-xs text-red-500 hover:text-red-700 dark:text-red-400 underline z-10 relative">Cancel Edit</button>
                     <i class="fa-solid fa-chevron-down text-coffee-400 chevron-rotate"></i>
                 </div>
             </div>
@@ -186,24 +185,8 @@
             <div class="overflow-x-auto min-h-[300px]">
                 <table class="w-full text-sm text-left text-coffee-900 dark:text-[#e7e5e4]">
                     <thead class="text-xs text-coffee-700 dark:text-[#a8a29e] uppercase bg-coffee-100/50 dark:bg-[#1c1917] border-b border-coffee-200 dark:border-[#44403c]">
-                        <tr>
-                            <th scope="col" class="px-4 py-2 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>
-                            <th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap filterable" onclick="sortBy('roaster')" ondblclick="openFilterMenu(event,'roaster')">Roaster</th>
-                            <th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin</th>
-                            <th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('farmer')" ondblclick="openFilterMenu(event, 'farmer')">Farmer</th>
-                            <th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('variety')" ondblclick="openFilterMenu(event, 'variety')">Variety</th>
-                            <th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('processing')" ondblclick="openFilterMenu(event, 'processing')">Process</th>
-                            <th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('roastType')" ondblclick="openFilterMenu(event, 'roastType')">Roast</th>
-                            <th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('method')" ondblclick="openFilterMenu(event, 'method')">Method</th>
-                            <th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('grind')">Grind</th>
-                            <th scope="col" class="px-4 py-2 text-center whitespace-nowrap">Recipe</th>
-                            <th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('time')">Time</th>
-                            <th scope="col" class="px-4 py-2 text-center filterable whitespace-nowrap" onclick="sortBy('temp')" ondblclick="openFilterMenu(event, 'temp')">Temp</th>
-                            <th scope="col" class="px-4 py-2 whitespace-nowrap">Notes</th>
-                            <th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('rating')">Rating</th>
-                            <th scope="col" class="px-4 py-2 whitespace-nowrap" onclick="sortBy('createdAt')">Date</th>
-                            <th scope="col" class="px-4 py-2 text-center w-36 whitespace-nowrap">Actions</th>
-                        </tr>
+                        <tr id="tableHeaderRow">
+                            </tr>
                     </thead>
                     <tbody id="activeCoffeeTableBody" class="divide-y divide-green-50 dark:divide-green-900/10 border-b-2 border-coffee-100 dark:border-[#44403c] hidden"></tbody>
                     <tbody id="coffeeTableBody" class="divide-y divide-coffee-50 dark:divide-[#1c1917]"></tbody>
@@ -277,6 +260,23 @@
                 <div id="followingList" class="space-y-2 max-h-48 overflow-y-auto"></div>
             </div>
             <div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end"><button onclick="closeModal()" class="text-sm font-medium text-coffee-600 dark:text-[#a8a29e] hover:text-coffee-900 dark:hover:text-white">Close</button></div>
+        </div>
+    </div>
+
+    <div id="preferencesModal" class="hidden fixed inset-0 z-[85] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col max-h-[80vh]">
+            <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center">
+                <h3 class="font-bold text-coffee-900 dark:text-white">Table Preferences</h3>
+                <button onclick="closePreferencesModal()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <p class="text-xs text-coffee-500 dark:text-[#78716c] mb-4">Select columns to display in the brew table.</p>
+                <div id="preferencesList" class="space-y-3">
+                    </div>
+            </div>
+            <div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end">
+                <button onclick="savePreferences()" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] text-white px-4 py-2 rounded-lg text-sm font-medium">Save</button>
+            </div>
         </div>
     </div>
 
@@ -379,6 +379,18 @@
         let isPublic = false;
         let dragSrcEl = null;
         let currentUploadCoffeeId = null;
+        let userPreferences = {
+            roaster: true, origin: true, farmer: true, variety: true, processing: true,
+            roastType: true, method: true, grind: true, recipe: true, time: true,
+            temp: true, notes: true, rating: true, date: true
+        };
+
+        const prefLabels = {
+            roaster: "Roaster", origin: "Origin", farmer: "Farmer", variety: "Variety",
+            processing: "Process", roastType: "Roast Type", method: "Method",
+            grind: "Grind Size", recipe: "Recipe", time: "Time", temp: "Temperature",
+            notes: "Tasting Notes", rating: "Rating", date: "Date"
+        };
 
         // --- SCA Wheel Data ---
         const scaData = {
@@ -403,10 +415,12 @@
             const userDocRef = doc(db, 'users', user.uid);
             const snap = await getDoc(userDocRef);
             if (snap.exists()) {
-                isPublic = snap.data().isPublic || false;
-                if(snap.data().displayName !== user.displayName) await updateDoc(userDocRef, { displayName: user.displayName });
+                const data = snap.data();
+                isPublic = data.isPublic || false;
+                if(data.preferences) userPreferences = { ...userPreferences, ...data.preferences };
+                if(data.displayName !== user.displayName) await updateDoc(userDocRef, { displayName: user.displayName });
             } else {
-                await setDoc(userDocRef, { isPublic: false, displayName: user.displayName });
+                await setDoc(userDocRef, { isPublic: false, displayName: user.displayName, preferences: userPreferences });
             }
             updatePublicToggleUI();
             document.getElementById('myShareId').value = user.uid;
@@ -543,6 +557,47 @@
         const followUser = async () => { const i=document.getElementById('friendIdInput');const u=i.value.trim();if(!u||u===currentUser.uid)return alert("Invalid ID");try{const d=await getDoc(doc(db,'users',u));let n='Friend';if(d.exists()&&d.data().displayName)n=d.data().displayName;await setDoc(doc(db,'users',currentUser.uid,'following',u),{uid:u,name:n,addedAt:new Date().toISOString()});i.value='';loadFollowingList();}catch(e){console.error(e);alert("Could not follow user. Check ID.");} };
         const unfollowUser = async (u) => { if(!confirm("Unfollow?"))return;await deleteDoc(doc(db,'users',currentUser.uid,'following',u));loadFollowingList();if(currentView===u){document.getElementById('viewSelect').value='mine';changeView('mine');} };
         const loadFollowingList = async () => { if(!currentUser)return;const s=await getDocs(collection(db,'users',currentUser.uid,'following'));following=[];s.forEach(d=>following.push(d.data()));const l=document.getElementById('followingList');l.innerHTML='';following.forEach(f=>{const d=document.createElement('div');d.className="flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";d.innerHTML=`<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate w-40">${f.name||f.uid}</span> <button onclick="unfollowUser('${f.uid}')" class="text-xs text-red-500 hover:text-red-700">Unfollow</button>`;l.appendChild(d);});const sl=document.getElementById('viewSelect');sl.innerHTML='<option value="mine">My Brews</option>';following.forEach(f=>{const o=document.createElement('option');o.value=f.uid;o.text=f.name||`Friend (${f.uid.substr(0,5)}...)`;sl.appendChild(o);});sl.value=currentView; };
+
+        // --- Preferences Logic ---
+        const openPreferences = () => {
+            const list = document.getElementById('preferencesList');
+            list.innerHTML = '';
+            Object.keys(userPreferences).forEach(key => {
+                const label = prefLabels[key] || key;
+                const checked = userPreferences[key] ? 'checked' : '';
+                const item = document.createElement('div');
+                item.className = "flex items-center gap-3";
+                item.innerHTML = `
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" id="pref_${key}" ${checked} class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 dark:border-gray-600"/>
+                        <label for="pref_${key}" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer"></label>
+                    </div>
+                    <label for="pref_${key}" class="text-sm text-coffee-800 dark:text-[#d6ccc2] font-medium cursor-pointer">${label}</label>
+                `;
+                list.appendChild(item);
+            });
+            document.getElementById('preferencesModal').classList.remove('hidden');
+        };
+
+        const closePreferencesModal = () => document.getElementById('preferencesModal').classList.add('hidden');
+
+        const savePreferences = async () => {
+            const newPrefs = {};
+            Object.keys(userPreferences).forEach(key => {
+                const el = document.getElementById(`pref_${key}`);
+                if(el) newPrefs[key] = el.checked;
+            });
+            userPreferences = newPrefs;
+            closePreferencesModal();
+            renderTable();
+            
+            // Save to Firestore
+            try {
+                await updateDoc(doc(db, 'users', currentUser.uid), { preferences: userPreferences });
+            } catch(e) {
+                console.error("Failed to save prefs", e);
+            }
+        };
 
         // --- Photo & Gallery Logic ---
         const openUploadModal = (coffeeId) => {
@@ -868,12 +923,42 @@
 
         // --- CORE RENDER FUNCTION ---
         const renderTable = () => { 
-            const t=document.getElementById('coffeeTableBody'); const activeT=document.getElementById('activeCoffeeTableBody'); const e=document.getElementById('emptyState'); 
-            t.innerHTML=''; activeT.innerHTML='';
+            const headerRow = document.getElementById('tableHeaderRow');
+            const t = document.getElementById('coffeeTableBody'); 
+            const activeT = document.getElementById('activeCoffeeTableBody'); 
+            const e = document.getElementById('emptyState'); 
+            
+            t.innerHTML=''; activeT.innerHTML=''; headerRow.innerHTML='';
+            
             const filteredCoffees = getFilteredCoffees();
             if(coffees.length===0){ e.classList.remove('hidden'); activeT.classList.add('hidden'); return; } e.classList.add('hidden');
             const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !Object.values(activeFilters).some(v=>v!==null);
             let hasActive = false;
+
+            // --- BUILD HEADERS BASED ON PREFS ---
+            let headerHTML = `<th scope="col" class="px-4 py-2 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>`;
+            if (userPreferences.roaster) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap filterable" onclick="sortBy('roaster')" ondblclick="openFilterMenu(event,'roaster')">Roaster</th>`;
+            if (userPreferences.origin) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('origin')" ondblclick="openFilterMenu(event, 'origin')">Origin</th>`;
+            if (userPreferences.farmer) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('farmer')" ondblclick="openFilterMenu(event, 'farmer')">Farmer</th>`;
+            if (userPreferences.variety) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('variety')" ondblclick="openFilterMenu(event, 'variety')">Variety</th>`;
+            if (userPreferences.processing) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group filterable whitespace-nowrap" onclick="sortBy('processing')" ondblclick="openFilterMenu(event, 'processing')">Process</th>`;
+            if (userPreferences.roastType) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('roastType')" ondblclick="openFilterMenu(event, 'roastType')">Roast</th>`;
+            if (userPreferences.method) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] filterable whitespace-nowrap" onclick="sortBy('method')" ondblclick="openFilterMenu(event, 'method')">Method</th>`;
+            if (userPreferences.grind) headerHTML += `<th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('grind')">Grind</th>`;
+            if (userPreferences.recipe) headerHTML += `<th scope="col" class="px-4 py-2 text-center whitespace-nowrap">Recipe</th>`;
+            if (userPreferences.time) headerHTML += `<th scope="col" class="px-4 py-2 text-right whitespace-nowrap" onclick="sortBy('time')">Time</th>`;
+            if (userPreferences.temp) headerHTML += `<th scope="col" class="px-4 py-2 text-center filterable whitespace-nowrap" onclick="sortBy('temp')" ondblclick="openFilterMenu(event, 'temp')">Temp</th>`;
+            if (userPreferences.notes) headerHTML += `<th scope="col" class="px-4 py-2 whitespace-nowrap">Notes</th>`;
+            if (userPreferences.rating) headerHTML += `<th scope="col" class="px-4 py-2 cursor-pointer hover:bg-coffee-100 dark:hover:bg-[#44403c] transition-colors group whitespace-nowrap" onclick="sortBy('rating')">Rating</th>`;
+            if (userPreferences.date) headerHTML += `<th scope="col" class="px-4 py-2 whitespace-nowrap" onclick="sortBy('createdAt')">Date</th>`;
+            headerHTML += `<th scope="col" class="px-4 py-2 text-center w-36 whitespace-nowrap">Actions</th>`;
+            headerRow.innerHTML = headerHTML;
+
+            // --- RENDER ROWS ---
+            // Calculate colspan for section headers (Active/History)
+            // Grip (1) + Actions (1) + Count of true preferences
+            const colSpanCount = 2 + Object.values(userPreferences).filter(v => v).length;
+
             filteredCoffees.forEach((c, index) => {
                 const w = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
                 const displayRoaster = c.roaster || c.name || '-';
@@ -898,24 +983,23 @@
                 }
 
                 const recipeCol = `<div class="whitespace-nowrap text-xs"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight || '-'}g</span><span class="text-coffee-300 dark:text-[#57534e] mx-0.5">•</span><span class="font-bold text-coffee-900 dark:text-white">${w === '-' ? '-' : (w.endsWith('.0')?parseInt(w):w) + 'g'}</span><span class="text-coffee-400 dark:text-[#78716c] ml-0.5">(1:${c.ratio || '-'})</span></div>`;
-                const rowHTML = `
-                    <td class="px-4 py-2 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td>
-                    <td class="px-4 py-2 font-semibold text-coffee-900 dark:text-[#e7e5e4]">${displayRoaster}</td>
-                    <td class="px-4 py-2 text-sm">${displayOrigin}</td>
-                    <td class="px-4 py-2 text-sm">${c.farmer || '-'}</td>
-                    <td class="px-4 py-2 text-sm">${c.variety || '-'}</td>
-                    <td class="px-4 py-2 text-sm">${c.processing || '-'}</td>
-                    <td class="px-4 py-2">${getRoastBadge(c.roastType)}</td>
-                    <td class="px-4 py-2"><span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method || '-'}</span></td>
-                    <td class="px-4 py-2 text-right font-mono text-coffee-700 dark:text-[#d6ccc2]">${c.grind || '-'}</td>
-                    <td class="px-4 py-2 text-center">${recipeCol}</td>
-                    <td class="px-4 py-2 text-right">${formatTime(c.time)}</td>
-                    <td class="px-4 py-2 text-center">${getTempBadge(c.temp)}</td>
-                    <td class="px-4 py-2 text-sm max-w-xs truncate" title="${c.notes}">${c.notes || '-'}</td>
-                    <td class="px-4 py-2 text-center">${getStarDisplay(c.rating)}</td>
-                    <td class="px-4 py-2 text-xs font-mono text-coffee-500">${displayDate}</td>
-                    <td class="px-4 py-2 text-center flex justify-center gap-2" onclick="event.stopPropagation()">${actions}</td>
-                `;
+                
+                let rowHTML = `<td class="px-4 py-2 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td>`;
+                if (userPreferences.roaster) rowHTML += `<td class="px-4 py-2 font-semibold text-coffee-900 dark:text-[#e7e5e4]">${displayRoaster}</td>`;
+                if (userPreferences.origin) rowHTML += `<td class="px-4 py-2 text-sm">${displayOrigin}</td>`;
+                if (userPreferences.farmer) rowHTML += `<td class="px-4 py-2 text-sm">${c.farmer || '-'}</td>`;
+                if (userPreferences.variety) rowHTML += `<td class="px-4 py-2 text-sm">${c.variety || '-'}</td>`;
+                if (userPreferences.processing) rowHTML += `<td class="px-4 py-2 text-sm">${c.processing || '-'}</td>`;
+                if (userPreferences.roastType) rowHTML += `<td class="px-4 py-2">${getRoastBadge(c.roastType)}</td>`;
+                if (userPreferences.method) rowHTML += `<td class="px-4 py-2"><span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method || '-'}</span></td>`;
+                if (userPreferences.grind) rowHTML += `<td class="px-4 py-2 text-right font-mono text-coffee-700 dark:text-[#d6ccc2]">${c.grind || '-'}</td>`;
+                if (userPreferences.recipe) rowHTML += `<td class="px-4 py-2 text-center">${recipeCol}</td>`;
+                if (userPreferences.time) rowHTML += `<td class="px-4 py-2 text-right">${formatTime(c.time)}</td>`;
+                if (userPreferences.temp) rowHTML += `<td class="px-4 py-2 text-center">${getTempBadge(c.temp)}</td>`;
+                if (userPreferences.notes) rowHTML += `<td class="px-4 py-2 text-sm max-w-xs truncate" title="${c.notes}">${c.notes || '-'}</td>`;
+                if (userPreferences.rating) rowHTML += `<td class="px-4 py-2 text-center">${getStarDisplay(c.rating)}</td>`;
+                if (userPreferences.date) rowHTML += `<td class="px-4 py-2 text-xs font-mono text-coffee-500">${displayDate}</td>`;
+                rowHTML += `<td class="px-4 py-2 text-center flex justify-center gap-2" onclick="event.stopPropagation()">${actions}</td>`;
 
                 const r = document.createElement('tr');
                 r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0 cursor-pointer';
@@ -934,8 +1018,8 @@
             });
 
             if(hasActive && currentView === 'mine') {
-                const activeHeader = document.createElement('tr'); activeHeader.className = "bg-green-50/50 dark:bg-green-900/20"; activeHeader.innerHTML = `<td colspan="16" class="px-4 py-2 font-bold text-green-700 dark:text-green-400 text-xs uppercase tracking-wide"><i class="fa-solid fa-thumbtack mr-2"></i>Active Brews</td>`; activeT.insertBefore(activeHeader, activeT.firstChild);
-                const histHeader = document.createElement('tr'); histHeader.className = "bg-coffee-50/50 dark:bg-[#201d1b]"; histHeader.innerHTML = `<td colspan="16" class="px-4 py-2 font-bold text-coffee-600 dark:text-[#a8a29e] text-xs uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</td>`; t.insertBefore(histHeader, t.firstChild); activeT.classList.remove('hidden');
+                const activeHeader = document.createElement('tr'); activeHeader.className = "bg-green-50/50 dark:bg-green-900/20"; activeHeader.innerHTML = `<td colspan="${colSpanCount}" class="px-4 py-2 font-bold text-green-700 dark:text-green-400 text-xs uppercase tracking-wide"><i class="fa-solid fa-thumbtack mr-2"></i>Active Brews</td>`; activeT.insertBefore(activeHeader, activeT.firstChild);
+                const histHeader = document.createElement('tr'); histHeader.className = "bg-coffee-50/50 dark:bg-[#201d1b]"; histHeader.innerHTML = `<td colspan="${colSpanCount}" class="px-4 py-2 font-bold text-coffee-600 dark:text-[#a8a29e] text-xs uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</td>`; t.insertBefore(histHeader, t.firstChild); activeT.classList.remove('hidden');
             } else { activeT.classList.add('hidden'); }
         };
 
@@ -957,7 +1041,7 @@
         });
 
         // Expose to window
-        Object.assign(window, { googleLogin, googleLogout, openFriendsModal, closeModal, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, switchGalleryTab, openEasterEgg, closeEasterEgg });
+        Object.assign(window, { googleLogin, googleLogout, openFriendsModal, closeModal, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, switchGalleryTab, openEasterEgg, closeEasterEgg, openPreferences, closePreferencesModal, savePreferences });
 
         initTheme();
         const searchInput = document.getElementById('globalSearch'); if(searchInput) { searchInput.addEventListener('input', () => { renderTable(); }); }
