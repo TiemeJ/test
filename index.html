@@ -241,6 +241,28 @@
         </div>
     </div>
 
+    <div id="modalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
+            <div class="flex border-b border-coffee-200 dark:border-[#44403c]">
+                <button onclick="switchModalTab('profile')" id="tabProfile" class="flex-1 py-3 text-sm font-semibold text-coffee-700 dark:text-[#d6ccc2] bg-coffee-50 dark:bg-[#1c1917]">My Profile</button>
+                <button onclick="switchModalTab('following')" id="tabFollowing" class="flex-1 py-3 text-sm font-semibold text-coffee-500 dark:text-[#78716c] hover:bg-coffee-50 dark:hover:bg-[#1c1917]">Following</button>
+            </div>
+            <div id="contentProfile" class="p-6">
+                <div class="flex items-center justify-between mb-4"><span class="text-sm font-medium text-coffee-900 dark:text-white">Public Profile</span><button id="togglePublicBtn" onclick="togglePublicProfile()" class="bg-gray-200 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 transition-colors relative"><div class="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform"></div></button></div>
+                <p class="text-xs text-coffee-500 dark:text-[#78716c] mb-4">When enabled, anyone with your Share ID can see your brews.</p>
+                <div id="shareIdContainer" class="hidden"><label class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] mb-1 uppercase">Your Share ID</label><div class="flex gap-2"><input type="text" id="myShareId" readonly class="flex-1 bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded px-2 py-1 text-sm font-mono text-coffee-900 dark:text-white select-all"><button onclick="copyShareId()" class="bg-coffee-200 dark:bg-[#44403c] hover:bg-coffee-300 px-3 rounded text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-regular fa-copy"></i></button></div></div>
+                <hr class="my-6 border-coffee-200 dark:border-[#44403c]">
+                <button onclick="googleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-300 py-2 rounded-lg text-sm font-medium">Sign Out</button>
+            </div>
+            <div id="contentFollowing" class="hidden p-6">
+                <div class="flex gap-2 mb-4"><input type="text" id="friendIdInput" placeholder="Enter Friend's Share ID" class="flex-1 bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white"><button onclick="followUser()" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] text-white px-3 py-2 rounded-lg text-sm font-medium">Follow</button></div>
+                <div class="text-xs font-semibold text-coffee-500 dark:text-[#78716c] uppercase mb-2">People you follow</div>
+                <div id="followingList" class="space-y-2 max-h-48 overflow-y-auto"></div>
+            </div>
+            <div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end"><button onclick="closeModal()" class="text-sm font-medium text-coffee-600 dark:text-[#a8a29e] hover:text-coffee-900 dark:hover:text-white">Close</button></div>
+        </div>
+    </div>
+
     <div id="preferencesModal" class="hidden fixed inset-0 z-[85] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col max-h-[80vh]">
             <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center">
@@ -402,7 +424,7 @@
             }
             updatePublicToggleUI();
             document.getElementById('myShareId').value = user.uid;
-            renderHeaders(); // Draw headers
+            renderHeaders(); // Draw headers initially
         };
 
         const changeView = (uid) => {
@@ -534,7 +556,7 @@
         const updatePublicToggleUI = () => { const btn=document.getElementById('togglePublicBtn'),dot=btn.firstElementChild,con=document.getElementById('shareIdContainer');if(isPublic){btn.className="bg-green-500 w-12 h-6 rounded-full p-1 transition-colors relative";dot.className="bg-white w-4 h-4 rounded-full shadow-md transform translate-x-6 transition-transform";con.classList.remove('hidden');}else{btn.className="bg-gray-300 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 transition-colors relative";dot.className="bg-white w-4 h-4 rounded-full shadow-md transform translate-x-0 transition-transform";con.classList.add('hidden');} };
         const copyShareId = () => { document.getElementById('myShareId').select(); document.execCommand('copy'); alert("ID Copied!"); };
         const followUser = async () => { const i=document.getElementById('friendIdInput');const u=i.value.trim();if(!u||u===currentUser.uid)return alert("Invalid ID");try{const d=await getDoc(doc(db,'users',u));let n='Friend';if(d.exists()&&d.data().displayName)n=d.data().displayName;await setDoc(doc(db,'users',currentUser.uid,'following',u),{uid:u,name:n,addedAt:new Date().toISOString()});i.value='';loadFollowingList();}catch(e){console.error(e);alert("Could not follow user. Check ID.");} };
-        const unfollowUser = async (u) => { if(!confirm("Unfollow?"))return;await deleteDoc(doc(db,'users',currentUser.uid,'following',u));loadFollowingList();if(currentView===u){document.getElementById('viewSelect').value='mine';changeView('mine');} };
+        const unfollowUser = async (u) => { if(!confirm("Unfollow?"))return;await deleteDoc(doc(db,'users',currentUser.uid,'following',u));loadFollowingList();if(currentView===u){document.getElementById('viewSelect').value='mine'; changeView('mine');} };
         const loadFollowingList = async () => { if(!currentUser)return;const s=await getDocs(collection(db,'users',currentUser.uid,'following'));following=[];s.forEach(d=>following.push(d.data()));const l=document.getElementById('followingList');l.innerHTML='';following.forEach(f=>{const d=document.createElement('div');d.className="flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";d.innerHTML=`<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate w-40">${f.name||f.uid}</span> <button onclick="unfollowUser('${f.uid}')" class="text-xs text-red-500 hover:text-red-700">Unfollow</button>`;l.appendChild(d);});const sl=document.getElementById('viewSelect');sl.innerHTML='<option value="mine">My Brews</option>';following.forEach(f=>{const o=document.createElement('option');o.value=f.uid;o.text=f.name||`Friend (${f.uid.substr(0,5)}...)`;sl.appendChild(o);});sl.value=currentView; };
 
         // --- Preferences Logic ---
@@ -579,7 +601,7 @@
             }
         };
 
-        // --- RENDER HEADERS SEPARATELY (Corrects double-click issue) ---
+        // --- RENDER HEADERS SEPARATELY ---
         const renderHeaders = () => {
             const headerRow = document.getElementById('tableHeaderRow');
             let headerHTML = `<th scope="col" class="px-4 py-2 w-10 text-center whitespace-nowrap"><i class="fa-solid fa-grip-vertical"></i></th>`;
@@ -957,8 +979,8 @@
                     actions = `
                         <button onclick="editCoffee('${c.id}'); event.stopPropagation();" class="text-blue-500 hover:bg-blue-50 p-2 rounded" title="Edit"><i class="fa-solid fa-pencil"></i></button>
                         <button onclick="duplicateCoffee('${c.id}'); event.stopPropagation();" class="text-green-500 hover:bg-green-50 p-2 rounded" title="Duplicate"><i class="fa-regular fa-copy"></i></button>
-                        ${pinBtn}
                         <button onclick="openUploadModal('${c.id}'); event.stopPropagation();" class="text-purple-500 hover:bg-purple-50 p-2 rounded" title="Upload Photo"><i class="fa-solid fa-camera"></i></button>
+                        ${pinBtn}
                         <button onclick="deleteCoffee('${c.id}',event); event.stopPropagation();" class="text-red-500 hover:bg-red-50 p-2 rounded" title="Delete"><i class="fa-solid fa-trash"></i></button>
                     `;
                 } else {
