@@ -447,15 +447,15 @@
                     </div>
                 </div>
 
-                <!-- Step 2: Active Brews (Pinning) -->
+                <!-- Step 2: Pinning -->
                 <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
-                    <h4 class="font-bold text-coffee-800 dark:text-white mb-2">2. Active Brews (Pinning)</h4>
+                    <h4 class="font-bold text-coffee-800 dark:text-white mb-2">2. Pinning & Active Brews</h4>
                     <div class="flex flex-col sm:flex-row gap-4 items-center">
                         <div class="flex-shrink-0 text-green-600 text-3xl">
                             <i class="fa-solid fa-thumbtack"></i>
                         </div>
                         <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">
-                            Found a recipe you're currently brewing? Click the <strong>Pin icon</strong> on the row (or check "Add to Active Brews" in the form). This moves the brew to the top <strong>"Active Brews"</strong> section so you don't lose it among your history.
+                            Found a recipe you love? Click the <strong>Pin icon</strong> (<i class="fa-solid fa-thumbtack text-xs"></i>) to move it to the top <strong>"Active Brews"</strong> section. This keeps your daily drivers separated from your experiment history.
                         </p>
                     </div>
                 </div>
@@ -771,7 +771,7 @@
                     btn.onclick = () => { scaState.path.push(key); scaState.level = 2; renderScaWheel(); }; container.appendChild(btn);
                 });
             } else if (scaState.level === 2) {
-                const parentKey = scaState.path[0]; const subKey = scaState.path[1]; const notes = scaData[parentKey].s[subKey]; const notes = scaData[parentKey].s[subKey]; const parentColor = scaData[parentKey].c;
+                const parentKey = scaState.path[0]; const subKey = scaState.path[1]; const notes = scaData[parentKey].s[subKey]; const parentColor = scaData[parentKey].c;
                 const backBtn = document.createElement('button'); backBtn.type = 'button'; backBtn.className = "sca-btn px-3 py-2 rounded text-xs font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200"; backBtn.innerHTML = "<i class='fa-solid fa-arrow-left'></i>"; backBtn.onclick = () => { scaState.path.pop(); scaState.level = 1; renderScaWheel(); }; container.appendChild(backBtn);
                 if (notes.length === 0) { container.innerHTML += `<div class="flex-1 text-xs text-coffee-500 italic ml-2 flex items-center">Use 'Add' above to confirm selection.</div>`; } else {
                     notes.forEach(note => {
