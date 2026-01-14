@@ -6,7 +6,7 @@
     <title>Coffee Dial - Brew Log</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Image Compression Library (Used for Thumbnails Only) -->
+    <!-- Image Compression Library -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
@@ -930,14 +930,46 @@
             progressBar.classList.remove('hidden');
             
             try {
-                const storageRef = ref(storage, `photos/${currentUser.uid}/${Date.now()}_${file.name}`);
+                // --- NEW: Image Compression Logic ---
+                const options = {
+                    maxSizeMB: 1, // Max file size 1MB
+                    maxWidthOrHeight: 1024, // Resize to max 1024px width/height
+                    useWebWorker: true
+                };
+                
+                // --- THUMBNAIL LOGIC ---
+                let thumbFile = null;
+                const thumbOptions = {
+                    maxSizeMB: 0.2, // Max 200KB for thumb
+                    maxWidthOrHeight: 300, // Max 300px for thumb
+                    useWebWorker: true
+                };
+
+                try {
+                    thumbFile = await imageCompression(file, thumbOptions);
+                } catch (error) {
+                    console.log('Thumbnail generation failed:', error);
+                }
+
+                // Upload Original
+                const timestamp = Date.now();
+                const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}_${file.name}_original`);
                 const snapshot = await uploadBytes(storageRef, file);
                 const downloadURL = await getDownloadURL(snapshot.ref);
+                
+                // Upload Thumbnail (if generated)
+                let thumbURL = null;
+                if(thumbFile) {
+                     const thumbRef = ref(storage, `photos/${currentUser.uid}/${timestamp}_${file.name}_thumb`);
+                     const thumbSnapshot = await uploadBytes(thumbRef, thumbFile);
+                     thumbURL = await getDownloadURL(thumbSnapshot.ref);
+                }
 
                 await addDoc(collection(db, 'photos'), {
                     uid: currentUser.uid,
                     uploaderName: currentUser.displayName || 'Unknown User',
                     photoURL: downloadURL,
+                    thumbURL: thumbURL, // Save thumb URL
                     message: message,
                     coffeeId: currentUploadCoffeeId,
                     coffeeSnapshot: coffeeSnapshot,
@@ -1014,9 +1046,12 @@
                     
                     const ratingHtml = getStarDisplay(data.coffeeSnapshot?.rating || 0);
 
+                    // Use Thumbnail if available, fallback to original
+                    const displayUrl = data.thumbURL || data.photoURL;
+
                     card.innerHTML = `
                         <div class="h-48 overflow-hidden bg-gray-100 dark:bg-gray-800 relative group cursor-pointer">
-                            <img src="${data.photoURL}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Brew Photo" onclick="window.open('${data.photoURL}', '_blank')">
+                            <img src="${displayUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Brew Photo" onclick="window.open('${data.photoURL}', '_blank')">
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 text-white text-xs">
                                 ${new Date(data.createdAt).toLocaleDateString()}
                             </div>
