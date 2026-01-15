@@ -1035,9 +1035,9 @@
                 });
                 
                 // Connect Buttons
-                document.getElementById('zoomInBtn').addEventListener('click', panzoomInstance.zoomIn);
-                document.getElementById('zoomOutBtn').addEventListener('click', panzoomInstance.zoomOut);
-                document.getElementById('zoomResetBtn').addEventListener('click', panzoomInstance.reset);
+                document.getElementById('zoomInBtn').addEventListener('click', () => panzoomInstance.zoomIn());
+                document.getElementById('zoomOutBtn').addEventListener('click', () => panzoomInstance.zoomOut());
+                document.getElementById('zoomResetBtn').addEventListener('click', () => panzoomInstance.reset());
                 
                 // Mouse Wheel Zoom
                 elem.parentElement.addEventListener('wheel', panzoomInstance.zoomWithWheel);
