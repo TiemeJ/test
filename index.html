@@ -44,11 +44,6 @@
         /* Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #68D391; }
         .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
-
-        /* Zoom Container */
-        #wheelImageContainer { overflow: auto; cursor: grab; max-height: 80vh; }
-        #wheelImageContainer:active { cursor: grabbing; }
-        #scaWheelImage { transform-origin: top left; transition: transform 0.2s ease-out; }
     </style>
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { colors: { coffee: { 50: '#fdf8f6', 100: '#f2e8e5', 200: '#eaddd7', 300: '#e0ccbb', 400: '#d2bab0', 500: '#a18e84', 600: '#8c7365', 700: '#7f5539', 800: '#9c6644', 900: '#4a3b32', } } } } }
@@ -356,14 +351,7 @@
                 <div class="flex items-center justify-between mb-4"><span class="text-sm font-medium text-coffee-900 dark:text-white">Public Profile</span><button id="togglePublicBtn" onclick="togglePublicProfile()" class="bg-gray-200 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 transition-colors relative"><div class="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform"></div></button></div>
                 <p class="text-xs text-coffee-500 dark:text-[#78716c] mb-4">When enabled, anyone with your Share ID can see your brews.</p>
                 <div id="shareIdContainer" class="hidden"><label class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] mb-1 uppercase">Your Share ID</label><div class="flex gap-2"><input type="text" id="myShareId" readonly class="flex-1 bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded px-2 py-1 text-sm font-mono text-coffee-900 dark:text-white select-all"><button onclick="copyShareId()" class="bg-coffee-200 dark:bg-[#44403c] hover:bg-coffee-300 px-3 rounded text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-regular fa-copy"></i></button></div></div>
-                
                 <hr class="my-6 border-coffee-200 dark:border-[#44403c]">
-                
-                <div class="text-xs font-semibold text-coffee-500 dark:text-[#78716c] uppercase mb-2">People following you</div>
-                <div id="followersList" class="space-y-2 max-h-32 overflow-y-auto mb-6">
-                    <!-- Followers populated here -->
-                </div>
-
                 <button onclick="googleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-300 py-2 rounded-lg text-sm font-medium">Sign Out</button>
             </div>
             <div id="contentFollowing" class="hidden p-6">
@@ -376,16 +364,9 @@
     </div>
 
     <div id="imageModalOverlay" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onclick="closeImageModal(event)">
-        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl max-w-3xl max-h-[90vh] overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col relative">
-            <div class="absolute top-2 right-2 z-10 flex gap-2">
-                 <button onclick="zoomImage(0.2)" class="bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-                 <button onclick="zoomImage(-0.2)" class="bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
-                 <button onclick="resetZoom()" class="bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-compress"></i></button>
-                <button onclick="closeImageModal(null)" class="bg-black/50 hover:bg-red-500/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div id="wheelImageContainer" class="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-auto">
-                <img id="scaWheelImage" src="img/SCA_wheel.png" alt="SCA Flavor Wheel" class="max-w-full h-auto transition-transform duration-200 ease-out origin-top-left">
-            </div>
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl max-w-3xl max-h-[90vh] overflow-auto relative">
+            <button onclick="closeImageModal(null)" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white text-2xl font-bold">&times;</button>
+            <img src="img/SCA_wheel.png" alt="SCA Flavor Wheel" class="w-full h-auto">
         </div>
     </div>
 
@@ -631,14 +612,6 @@
         let currentGalleryMode = 'mine';
         let isGalleryLoading = false;
 
-        // --- Zoom State ---
-        let wheelZoomLevel = 1;
-        let isDraggingWheel = false;
-        let wheelStartX = 0;
-        let wheelStartY = 0;
-        let wheelScrollLeft = 0;
-        let wheelScrollTop = 0;
-
         // --- PREFERENCES CONFIG ---
         const columnDefs = [
             { id: 'roaster', label: 'Roaster' },
@@ -704,7 +677,6 @@
             updatePublicToggleUI();
             document.getElementById('myShareId').value = user.uid;
             renderTable();
-            loadFollowersList(); // Load followers too
         };
 
         const changeView = (uid) => {
@@ -889,7 +861,6 @@
                 tFoll.classList.add('text-coffee-500','dark:text-[#78716c]');
                 cProf.classList.remove('hidden');
                 cFoll.classList.add('hidden');
-                loadFollowersList(); // Re-fetch followers
             } else {
                 tFoll.classList.add('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
                 tFoll.classList.remove('text-coffee-500','dark:text-[#78716c]');
@@ -903,103 +874,9 @@
         const togglePublicProfile = async () => { if(!currentUser) return; isPublic = !isPublic; updatePublicToggleUI(); await updateDoc(doc(db, 'users', currentUser.uid), { isPublic: isPublic }); };
         const updatePublicToggleUI = () => { const btn=document.getElementById('togglePublicBtn'),dot=btn.firstElementChild,con=document.getElementById('shareIdContainer');if(isPublic){btn.className="bg-green-500 w-12 h-6 rounded-full p-1 transition-colors relative";dot.className="bg-white w-4 h-4 rounded-full shadow-md transform translate-x-6 transition-transform";con.classList.remove('hidden');}else{btn.className="bg-gray-300 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 transition-colors relative";dot.className="bg-white w-4 h-4 rounded-full shadow-md transform translate-x-0 transition-transform";con.classList.add('hidden');} };
         const copyShareId = () => { document.getElementById('myShareId').select(); document.execCommand('copy'); alert("ID Copied!"); };
-        
-        // --- Updated Follow Logic with Dual Writes ---
-        const followUser = async () => { 
-            const i=document.getElementById('friendIdInput');
-            const u=i.value.trim();
-            if(!u||u===currentUser.uid) return alert("Invalid ID");
-            
-            try {
-                // Check if user exists
-                const d = await getDoc(doc(db,'users',u));
-                let n='Friend';
-                if(d.exists() && d.data().displayName) n=d.data().displayName;
-
-                // 1. Add to MY 'following' collection
-                await setDoc(doc(db,'users',currentUser.uid,'following',u), {
-                    uid:u, name:n, addedAt:new Date().toISOString()
-                });
-
-                // 2. Add to THEIR 'followers' collection
-                const myName = currentUser.displayName || 'Unknown User';
-                await setDoc(doc(db,'users',u,'followers',currentUser.uid), {
-                    uid:currentUser.uid, name:myName, addedAt:new Date().toISOString()
-                });
-
-                i.value='';
-                loadFollowingList();
-            } catch(e) {
-                console.error(e);
-                alert("Could not follow user. Check ID.");
-            } 
-        };
-
-        const unfollowUser = async (u) => { 
-            if(!confirm("Unfollow?")) return;
-            
-            // 1. Remove from MY 'following'
-            await deleteDoc(doc(db,'users',currentUser.uid,'following',u));
-            
-            // 2. Remove from THEIR 'followers'
-            // Note: This requires permission to delete from another user's subcollection.
-            // If rules prevent this, this part will fail silently or throw error, but UI will update.
-            try {
-                await deleteDoc(doc(db,'users',u,'followers',currentUser.uid));
-            } catch(e) { console.error("Could not remove from their follower list", e); }
-
-            loadFollowingList();
-            if(currentView===u){ document.getElementById('viewSelect').value='mine'; changeView('mine'); } 
-        };
-
-        const loadFollowingList = async () => { 
-            if(!currentUser) return;
-            const s=await getDocs(collection(db,'users',currentUser.uid,'following'));
-            following=[];
-            s.forEach(d=>following.push(d.data()));
-            const l=document.getElementById('followingList');
-            l.innerHTML='';
-            following.forEach(f=>{
-                const d=document.createElement('div');
-                d.className="flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";
-                d.innerHTML=`<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate w-40">${f.name||f.uid}</span> <button onclick="unfollowUser('${f.uid}')" class="text-xs text-red-500 hover:text-red-700">Unfollow</button>`;
-                l.appendChild(d);
-            });
-            const sl=document.getElementById('viewSelect');
-            sl.innerHTML='<option value="mine">My Brews</option>';
-            following.forEach(f=>{
-                const o=document.createElement('option');
-                o.value=f.uid;
-                o.text=f.name||`Friend (${f.uid.substr(0,5)}...)`;
-                sl.appendChild(o);
-            });
-            sl.value=currentView; 
-        };
-
-        const loadFollowersList = async () => {
-             if(!currentUser) return;
-             const l = document.getElementById('followersList');
-             l.innerHTML = '<div class="text-center py-2"><i class="fa-solid fa-spinner animate-spin text-coffee-400"></i></div>';
-             
-             try {
-                 const s = await getDocs(collection(db, 'users', currentUser.uid, 'followers'));
-                 l.innerHTML = '';
-                 if (s.empty) {
-                     l.innerHTML = '<span class="text-xs text-gray-400 italic">No followers yet.</span>';
-                 } else {
-                     s.forEach(doc => {
-                         const f = doc.data();
-                         const d = document.createElement('div');
-                         d.className = "flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";
-                         d.innerHTML = `<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate">${f.name || f.uid}</span>`;
-                         l.appendChild(d);
-                     });
-                 }
-             } catch(e) {
-                 console.error("Error loading followers", e);
-                 l.innerHTML = '<span class="text-xs text-red-400">Error loading followers.</span>';
-             }
-        };
+        const followUser = async () => { const i=document.getElementById('friendIdInput');const u=i.value.trim();if(!u||u===currentUser.uid)return alert("Invalid ID");try{const d=await getDoc(doc(db,'users',u));let n='Friend';if(d.exists()&&d.data().displayName)n=d.data().displayName;await setDoc(doc(db,'users',currentUser.uid,'following',u),{uid:u,name:n,addedAt:new Date().toISOString()});i.value='';loadFollowingList();}catch(e){console.error(e);alert("Could not follow user. Check ID.");} };
+        const unfollowUser = async (u) => { if(!confirm("Unfollow?"))return;await deleteDoc(doc(db,'users',currentUser.uid,'following',u));loadFollowingList();if(currentView===u){document.getElementById('viewSelect').value='mine';changeView('mine');} };
+        const loadFollowingList = async () => { if(!currentUser)return;const s=await getDocs(collection(db,'users',currentUser.uid,'following'));following=[];s.forEach(d=>following.push(d.data()));const l=document.getElementById('followingList');l.innerHTML='';following.forEach(f=>{const d=document.createElement('div');d.className="flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";d.innerHTML=`<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate w-40">${f.name||f.uid}</span> <button onclick="unfollowUser('${f.uid}')" class="text-xs text-red-500 hover:text-red-700">Unfollow</button>`;l.appendChild(d);});const sl=document.getElementById('viewSelect');sl.innerHTML='<option value="mine">My Brews</option>';following.forEach(f=>{const o=document.createElement('option');o.value=f.uid;o.text=f.name||`Friend (${f.uid.substr(0,5)}...)`;sl.appendChild(o);});sl.value=currentView; };
 
         // --- Photo & Gallery Logic ---
         const openUploadModal = (coffeeId) => {
@@ -1354,54 +1231,9 @@
             }
         };
 
-        // --- Zoom Logic ---
-        const openImageModal = () => {
-             document.getElementById('imageModalOverlay').classList.remove('hidden');
-             resetZoom();
-        };
-
-        const zoomImage = (amount) => {
-            const img = document.getElementById('scaWheelImage');
-            wheelZoomLevel += amount;
-            if(wheelZoomLevel < 0.5) wheelZoomLevel = 0.5;
-            if(wheelZoomLevel > 3) wheelZoomLevel = 3;
-            img.style.transform = `scale(${wheelZoomLevel})`;
-        };
-
-        const resetZoom = () => {
-            const img = document.getElementById('scaWheelImage');
-            wheelZoomLevel = 1;
-            img.style.transform = `scale(1)`;
-        };
-
-        // Zoom Drag Logic
-        const wheelContainer = document.getElementById('wheelImageContainer');
-        wheelContainer.addEventListener('mousedown', (e) => {
-            isDraggingWheel = true;
-            wheelContainer.style.cursor = 'grabbing';
-            wheelStartX = e.pageX - wheelContainer.offsetLeft;
-            wheelStartY = e.pageY - wheelContainer.offsetTop;
-            wheelScrollLeft = wheelContainer.scrollLeft;
-            wheelScrollTop = wheelContainer.scrollTop;
-        });
-
-        wheelContainer.addEventListener('mouseleave', () => { isDraggingWheel = false; wheelContainer.style.cursor = 'grab'; });
-        wheelContainer.addEventListener('mouseup', () => { isDraggingWheel = false; wheelContainer.style.cursor = 'grab'; });
-
-        wheelContainer.addEventListener('mousemove', (e) => {
-            if (!isDraggingWheel) return;
-            e.preventDefault();
-            const x = e.pageX - wheelContainer.offsetLeft;
-            const y = e.pageY - wheelContainer.offsetTop;
-            const walkX = (x - wheelStartX) * 1.5;
-            const walkY = (y - wheelStartY) * 1.5;
-            wheelContainer.scrollLeft = wheelScrollLeft - walkX;
-            wheelContainer.scrollTop = wheelScrollTop - walkY;
-        });
-
         // --- Standard Logic ---
         const setRating = (r) => { const c=document.getElementById('starContainer'); document.getElementById('ratingInput').value=r; for(let i=0;i<c.children.length;i++){ if(i<r)c.children[i].classList.add('active'); else c.children[i].classList.remove('active'); } };
-        const getStarDisplay = (r) => { if(!r)return'-'; let h='<div class="whitespace-nowrap flex justify-center gap-0.5">'; for(let i=0;i<r;i++)h+='<i class="fa-solid fa-star text-xs text-yellow-400"></i>'; h+='</div>'; return h; };
+        const getStarDisplay = (r) => { if(!r)return'-'; let h=''; for(let i=0;i<r;i++)h+='<i class="fa-solid fa-star text-xs text-yellow-400"></i>'; return h; };
         
         // --- IMPROVED EXPORT FUNCTION ---
         const exportCSV = () => { 
@@ -1559,11 +1391,7 @@
             if(!document.getElementById('mainMenuDropdown').contains(e.target) && !e.target.closest('button[onclick*="toggleMainMenu"]')) document.getElementById('mainMenuDropdown').classList.add('hidden');
         };
         const toggleMainMenu = (e) => { if(e) e.stopPropagation(); document.getElementById('mainMenuDropdown').classList.toggle('hidden'); };
-        const openImageModal = () => {
-             document.getElementById('imageModalOverlay').classList.remove('hidden');
-             resetZoom();
-        };
-
+        const openImageModal = () => document.getElementById('imageModalOverlay').classList.remove('hidden');
         const closeImageModal = (e) => { if(!e || e.target.id === 'imageModalOverlay' || e.target.closest('button')) document.getElementById('imageModalOverlay').classList.add('hidden'); };
         const openCoffeeCard = (id, e) => {
             if(window.getSelection().toString().length > 0) return;
@@ -1666,11 +1494,7 @@
                 if(columnPreferences.drink !== false) rowHTML += `<td class="px-4 py-2 text-sm font-medium text-center">${c.drink || '-'}</td>`;
                 if(columnPreferences.notes !== false) rowHTML += `<td class="px-4 py-2 text-sm max-w-xs truncate" title="${c.notes}">${c.notes || '-'}</td>`;
                 if(columnPreferences.improve !== false) rowHTML += `<td class="px-4 py-2 text-sm italic text-red-400 dark:text-red-400/80 max-w-xs truncate" title="${c.improve || ''}">${c.improve || '-'}</td>`;
-                
-                // --- STAR RATING FIX ---
-                // Add whitespace-nowrap class to the td
-                if(columnPreferences.rating !== false) rowHTML += `<td class="px-4 py-2 text-center whitespace-nowrap">${getStarDisplay(c.rating)}</td>`;
-                
+                if(columnPreferences.rating !== false) rowHTML += `<td class="px-4 py-2 text-center">${getStarDisplay(c.rating)}</td>`;
                 if(columnPreferences.date !== false) rowHTML += `<td class="px-4 py-2 text-xs font-mono text-coffee-500">${displayDate}</td>`;
                 
                 // Actions always visible
@@ -1740,7 +1564,7 @@
         });
 
         // Expose to window
-        Object.assign(window, { googleLogin, googleLogout, openFriendsModal, closeModal, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, switchGalleryTab, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, zoomImage, resetZoom });
+        Object.assign(window, { googleLogin, googleLogout, openFriendsModal, closeModal, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, switchGalleryTab, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery });
 
         initTheme();
         const searchInput = document.getElementById('globalSearch'); 
