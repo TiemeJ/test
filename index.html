@@ -348,9 +348,8 @@
                         <div class="bg-white dark:bg-[#292524] p-2 rounded border border-coffee-100 dark:border-[#44403c]"><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Ratio</div><div id="cardRatio" class="font-mono font-bold text-coffee-900 dark:text-white"></div></div>
                         <div class="bg-white dark:bg-[#292524] p-2 rounded border border-coffee-100 dark:border-[#44403c]"><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Out</div><div id="cardOut" class="font-mono font-bold text-coffee-900 dark:text-white"></div></div>
                     </div>
-                    <div class="grid grid-cols-4 gap-2 text-center border-t border-coffee-200 dark:border-[#44403c] pt-2">
-                        <div><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Grinder</div><div id="cardGrinder" class="font-bold text-coffee-800 dark:text-[#d6ccc2] text-[10px] truncate"></div></div>
-                        <div><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Grind</div><div id="cardGrind" class="font-bold text-coffee-800 dark:text-[#d6ccc2]"></div></div>
+                    <div class="grid grid-cols-3 gap-2 text-center border-t border-coffee-200 dark:border-[#44403c] pt-2">
+                        <div><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Grinder/Grind</div><div id="cardCombinedGrind" class="font-bold text-coffee-800 dark:text-[#d6ccc2] text-[11px] truncate"></div></div>
                         <div><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Time</div><div id="cardTime" class="font-bold text-coffee-800 dark:text-[#d6ccc2]"></div></div>
                         <div><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Temp</div><div id="cardTemp" class="font-bold text-coffee-800 dark:text-[#d6ccc2]"></div></div>
                     </div>
@@ -1476,8 +1475,12 @@
             document.getElementById('cardRatio').textContent = (c.ratio ? '1:' + c.ratio : '-');
             const outWeight = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
             document.getElementById('cardOut').textContent = (outWeight !== '-' ? (outWeight.endsWith('.0') ? parseInt(outWeight) : outWeight) + 'g' : '-');
-            document.getElementById('cardGrinder').textContent = c.grinder || '-';
-            document.getElementById('cardGrind').textContent = c.grind || '-';
+            
+            // Logic for combined Grinder/Grind Size
+            const grinderVal = c.grinder || '';
+            const grindVal = c.grind || '-';
+            document.getElementById('cardCombinedGrind').textContent = grinderVal ? `${grinderVal}: ${grindVal}` : grindVal;
+            
             document.getElementById('cardTime').textContent = formatTime(c.time);
             document.getElementById('cardTemp').innerHTML = getTempBadge(c.temp);
             document.getElementById('cardDrink').textContent = c.drink || '-';
