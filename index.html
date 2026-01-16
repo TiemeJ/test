@@ -344,7 +344,7 @@
     <!-- Statistics Modal -->
     <div id="statsModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col my-8 max-h-[90vh]">
-            <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917]">
+            <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] flex-none">
                 <div class="flex items-center gap-3">
                     <h3 class="font-bold text-xl text-coffee-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-chart-pie text-coffee-600 dark:text-[#d6ccc2]"></i></h3>
                      <select id="statsUserSelect" onchange="loadStatsForUser(this.value)" class="bg-white dark:bg-[#292524] border border-coffee-200 dark:border-[#44403c] text-coffee-900 dark:text-white text-sm rounded-lg block p-1.5 shadow-sm font-bold max-w-[200px]">
@@ -354,9 +354,9 @@
                 <button onclick="closeStats()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <div class="relative flex-1 overflow-hidden min-h-0">
+            <div class="relative flex-1 min-h-0 overflow-hidden">
                 <!-- Main Stats Content -->
-                <div id="statsMainContent" class="h-full overflow-y-auto p-6 bg-coffee-50/50 dark:bg-[#1c1917]">
+                <div id="statsMainContent" class="absolute inset-0 overflow-y-auto p-6 bg-coffee-50/50 dark:bg-[#1c1917] overscroll-contain">
                     <!-- General Stats Grid -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                         <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm text-center">
@@ -422,7 +422,7 @@
                         <!-- Top Coffees List -->
                         <div class="bg-white dark:bg-[#292524] p-5 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm flex flex-col">
                             <h4 class="text-sm font-bold text-coffee-800 dark:text-white mb-4 uppercase border-b border-coffee-100 dark:border-[#44403c] pb-2"><i class="fa-solid fa-trophy text-yellow-500 mr-2"></i>Hall of Fame (5 Stars)</h4>
-                            <div id="topCoffeesList" class="overflow-y-auto max-h-48 space-y-2 pr-1">
+                            <div id="topCoffeesList" class="overflow-y-auto max-h-48 space-y-2 pr-1 custom-scrollbar">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
@@ -430,8 +430,8 @@
                 </div>
 
                 <!-- Hidden Unique List View -->
-                <div id="statsUniqueListView" class="absolute inset-0 bg-white dark:bg-[#292524] z-10 transform translate-x-full transition-transform duration-300 flex flex-col">
-                    <div class="p-4 border-b border-coffee-200 dark:border-[#44403c] flex items-center bg-coffee-50 dark:bg-[#1c1917]">
+                <div id="statsUniqueListView" class="absolute inset-0 overflow-y-auto bg-white dark:bg-[#292524] z-10 transform translate-x-full transition-transform duration-300 flex flex-col overscroll-contain">
+                    <div class="p-4 border-b border-coffee-200 dark:border-[#44403c] flex items-center bg-coffee-50 dark:bg-[#1c1917] flex-none">
                         <button onclick="hideUniqueList()" class="mr-4 text-coffee-600 dark:text-[#a8a29e] hover:text-coffee-900 dark:hover:text-white">
                             <i class="fa-solid fa-arrow-left"></i> Back
                         </button>
