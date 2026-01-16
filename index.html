@@ -8,6 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Image Compression Library -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <!-- Chart.js for Statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         
@@ -25,7 +27,7 @@
         th.filterable { position: relative; cursor: context-menu; touch-action: manipulation; }
         
         #filterDropdown, #mainMenuDropdown { z-index: 50; animation: fadeIn 0.1s ease-out; }
-        #modalOverlay, #imageModalOverlay, #coffeeCardOverlay, #uploadPhotoModal, #galleryModal, #easterEggModal, #preferencesModal, #helpModal, #aboutModal { animation: fadeIn 0.2s ease-out; }
+        #modalOverlay, #statsModal, #imageModalOverlay, #coffeeCardOverlay, #uploadPhotoModal, #galleryModal, #easterEggModal, #preferencesModal, #helpModal, #aboutModal { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .chevron-rotate { transition: transform 0.3s ease; }
         .group[aria-expanded="true"] .chevron-rotate { transform: rotate(180deg); }
@@ -78,6 +80,9 @@
                         <span id="menuBadge" class="hidden absolute top-1 right-1 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-[#292524] bg-red-500"></span>
                     </button>
                     <div id="mainMenuDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-lg shadow-xl border border-coffee-200 dark:border-[#57534e] py-2 z-50">
+                        <button onclick="openStats(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie"></i> <span>Statistics</span>
+                        </button>
                         <button onclick="openHelp(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center gap-2">
                             <i class="fa-solid fa-circle-question"></i> <span>Help / Tutorial</span>
                         </button>
@@ -333,6 +338,90 @@
                 <div id="cardImproveContainer" class="hidden"><span class="block text-xs font-bold text-red-500 dark:text-red-400 uppercase mb-1">To Improve</span><p id="cardImprove" class="text-sm text-coffee-800 dark:text-[#d6ccc2] bg-red-50 dark:bg-red-900/10 p-2 rounded-lg border border-red-100 dark:border-red-900/20"></p></div>
             </div>
             <div class="bg-coffee-50 dark:bg-[#1c1917] p-4 border-t border-coffee-200 dark:border-[#44403c] flex justify-between items-center text-xs text-coffee-400 dark:text-[#57534e]"><span id="cardDate"></span><button onclick="closeCoffeeCard(null)" class="font-bold text-coffee-600 dark:text-[#a8a29e] hover:text-coffee-900 dark:hover:text-white">Close</button></div>
+        </div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div id="statsModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col my-8 max-h-[90vh]">
+            <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917]">
+                <h3 class="font-bold text-xl text-coffee-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-chart-pie text-coffee-600 dark:text-[#d6ccc2]"></i> Brewing Statistics</h3>
+                <button onclick="closeStats()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto bg-coffee-50/50 dark:bg-[#1c1917]">
+                
+                <!-- General Stats Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm text-center">
+                        <div class="text-xs text-coffee-500 dark:text-[#78716c] uppercase font-bold mb-1">Total Brews</div>
+                        <div id="statTotalBrews" class="text-3xl font-bold text-coffee-900 dark:text-white">-</div>
+                    </div>
+                    <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm text-center">
+                        <div class="text-xs text-coffee-500 dark:text-[#78716c] uppercase font-bold mb-1">Last 30 Days</div>
+                        <div id="statMonthBrews" class="text-3xl font-bold text-coffee-900 dark:text-white">-</div>
+                    </div>
+                    <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm text-center">
+                        <div class="text-xs text-coffee-500 dark:text-[#78716c] uppercase font-bold mb-1">Last 7 Days</div>
+                        <div id="statWeekBrews" class="text-3xl font-bold text-coffee-900 dark:text-white">-</div>
+                    </div>
+                    <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm text-center">
+                        <div class="text-xs text-coffee-500 dark:text-[#78716c] uppercase font-bold mb-1">Daily Avg</div>
+                        <div id="statAvgBrews" class="text-3xl font-bold text-coffee-900 dark:text-white">-</div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Pie Charts Container -->
+                    <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm flex flex-col items-center">
+                        <h4 class="text-sm font-bold text-coffee-800 dark:text-white mb-4 uppercase">Roast Profile</h4>
+                        <div class="relative w-full h-48"><canvas id="chartRoast"></canvas></div>
+                    </div>
+                     <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm flex flex-col items-center">
+                        <h4 class="text-sm font-bold text-coffee-800 dark:text-white mb-4 uppercase">Brew Method</h4>
+                        <div class="relative w-full h-48"><canvas id="chartMethod"></canvas></div>
+                    </div>
+                    <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm flex flex-col items-center">
+                        <h4 class="text-sm font-bold text-coffee-800 dark:text-white mb-4 uppercase">Drink Type</h4>
+                        <div class="relative w-full h-48"><canvas id="chartDrink"></canvas></div>
+                    </div>
+                    <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm flex flex-col items-center">
+                        <h4 class="text-sm font-bold text-coffee-800 dark:text-white mb-4 uppercase">Star Rating Frequency</h4>
+                         <div class="relative w-full h-48"><canvas id="chartStars"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Variety Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                     <div class="bg-white dark:bg-[#292524] p-5 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm">
+                        <h4 class="text-sm font-bold text-coffee-800 dark:text-white mb-4 uppercase border-b border-coffee-100 dark:border-[#44403c] pb-2">Variety Analysis</h4>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-coffee-600 dark:text-[#a8a29e]">Unique Coffees Tried:</span>
+                                <span id="statUniqueCoffees" class="font-bold text-xl text-coffee-900 dark:text-white">-</span>
+                            </div>
+                            <div class="text-xs text-gray-400 italic mb-2">*Based on unique combination of Roaster, Origin, and Blend/Farmer.</div>
+                            
+                            <div>
+                                <span class="block text-sm text-coffee-600 dark:text-[#a8a29e] mb-1">Most Frequently Brewed:</span>
+                                <div id="statMostBrewed" class="p-3 bg-coffee-50 dark:bg-[#1c1917] rounded-lg border border-coffee-100 dark:border-[#44403c]">
+                                    <div class="font-bold text-coffee-800 dark:text-white text-sm" id="mostBrewedName">-</div>
+                                    <div class="text-xs text-coffee-500 dark:text-[#78716c]" id="mostBrewedCount">0 brews</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Coffees List -->
+                    <div class="bg-white dark:bg-[#292524] p-5 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm flex flex-col">
+                        <h4 class="text-sm font-bold text-coffee-800 dark:text-white mb-4 uppercase border-b border-coffee-100 dark:border-[#44403c] pb-2"><i class="fa-solid fa-trophy text-yellow-500 mr-2"></i>Hall of Fame (5 Stars)</h4>
+                        <div id="topCoffeesList" class="overflow-y-auto max-h-48 space-y-2 pr-1">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -1457,6 +1546,181 @@
         // Initialize listeners
         initZoomListeners();
 
+        // --- Statistics Logic (Chart.js Integration) ---
+        let chartInstances = {};
+
+        const openStats = () => {
+            if (!currentUser || coffees.length === 0) {
+                alert("You need to log some brews first!");
+                return;
+            }
+            document.getElementById('statsModal').classList.remove('hidden');
+            calculateStats();
+        };
+
+        const closeStats = () => document.getElementById('statsModal').classList.add('hidden');
+
+        const calculateStats = () => {
+            // 1. General Stats
+            const total = coffees.length;
+            const now = new Date();
+            const oneDay = 24 * 60 * 60 * 1000;
+            
+            // Dates filter
+            const last30 = coffees.filter(c => (now - new Date(c.createdAt)) < 30 * oneDay).length;
+            const last7 = coffees.filter(c => (now - new Date(c.createdAt)) < 7 * oneDay).length;
+            
+            // Avg
+            const firstDate = new Date(Math.min(...coffees.map(c => new Date(c.createdAt || now))));
+            const diffDays = Math.max(1, Math.round(Math.abs((now - firstDate) / oneDay)));
+            const avg = (total / diffDays).toFixed(1);
+
+            document.getElementById('statTotalBrews').innerText = total;
+            document.getElementById('statMonthBrews').innerText = last30;
+            document.getElementById('statWeekBrews').innerText = last7;
+            document.getElementById('statAvgBrews').innerText = avg;
+
+            // 2. Data Aggregation for Charts
+            const agg = (key) => coffees.reduce((acc, c) => {
+                const val = c[key] || 'Unknown';
+                acc[val] = (acc[val] || 0) + 1;
+                return acc;
+            }, {});
+
+            const roastData = agg('roastType');
+            const methodData = agg('method');
+            const drinkData = agg('drink');
+            const ratingData = coffees.reduce((acc, c) => {
+                const r = c.rating || 0;
+                if(r > 0) acc[r] = (acc[r] || 0) + 1;
+                return acc;
+            }, {});
+
+            renderCharts(roastData, methodData, drinkData, ratingData);
+
+            // 3. Unique Coffees & Most Brewed
+            const uniqueMap = {};
+            coffees.forEach(c => {
+                const key = `${c.roaster||''}|${c.origin||''}|${c.farmer||''}`;
+                if(!uniqueMap[key]) uniqueMap[key] = { count: 0, roaster: c.roaster, origin: c.origin, farmer: c.farmer };
+                uniqueMap[key].count++;
+            });
+
+            const uniqueCount = Object.keys(uniqueMap).length;
+            document.getElementById('statUniqueCoffees').innerText = uniqueCount;
+
+            // Most brewed
+            let maxKey = null;
+            Object.keys(uniqueMap).forEach(k => {
+                if(!maxKey || uniqueMap[k].count > uniqueMap[maxKey].count) maxKey = k;
+            });
+
+            if(maxKey) {
+                const d = uniqueMap[maxKey];
+                document.getElementById('mostBrewedName').innerText = `${d.roaster || 'Unknown'} - ${d.origin || ''} ${d.farmer ? '('+d.farmer+')' : ''}`;
+                document.getElementById('mostBrewedCount').innerText = `${d.count} brews`;
+            }
+
+            // 4. Top Coffees List (5 Stars)
+            // Group 5-star brews by unique coffee logic
+            const topMap = {};
+            coffees.filter(c => c.rating === 5).forEach(c => {
+                 const key = `${c.roaster||''}|${c.origin||''}|${c.farmer||''}`;
+                 if(!topMap[key]) topMap[key] = { count: 0, data: c };
+                 topMap[key].count++;
+            });
+
+            const sortedTop = Object.values(topMap).sort((a,b) => b.count - a.count);
+            const listEl = document.getElementById('topCoffeesList');
+            listEl.innerHTML = '';
+
+            if(sortedTop.length === 0) {
+                listEl.innerHTML = '<p class="text-sm text-gray-400 italic">No 5-star brews yet.</p>';
+            } else {
+                sortedTop.forEach(item => {
+                    const c = item.data;
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-100 dark:border-[#44403c]";
+                    div.innerHTML = `
+                        <div class="truncate pr-2">
+                            <span class="font-bold text-coffee-800 dark:text-white text-sm block truncate">${c.roaster || 'Unknown'}</span>
+                            <span class="text-xs text-coffee-500 dark:text-[#78716c] truncate">${c.origin || ''} ${c.farmer ? '• '+c.farmer : ''}</span>
+                        </div>
+                        <span class="text-xs font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full whitespace-nowrap">${item.count} <i class="fa-solid fa-mug-hot ml-1"></i></span>
+                    `;
+                    listEl.appendChild(div);
+                });
+            }
+        };
+
+        const renderCharts = (roast, method, drink, stars) => {
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#e7e5e4' : '#4a3b32';
+            const gridColor = isDark ? '#44403c' : '#e5e7eb';
+
+            // Helper to create pie chart
+            const createPie = (ctxId, dataObj, colors) => {
+                if(chartInstances[ctxId]) chartInstances[ctxId].destroy();
+                const ctx = document.getElementById(ctxId).getContext('2d');
+                chartInstances[ctxId] = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(dataObj),
+                        datasets: [{
+                            data: Object.values(dataObj),
+                            backgroundColor: colors,
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right', labels: { color: textColor, font: { size: 10, family: "'Outfit', sans-serif" }, boxWidth: 10 } }
+                        }
+                    }
+                });
+            };
+
+            // Colors
+            const roastColors = ['#fcd34d', '#f97316', '#78350f', '#000000', '#9ca3af']; // Light, Med, Med-Dark, Dark, Unknown
+            const methodColors = ['#60a5fa', '#34d399', '#f472b6', '#a78bfa', '#fbbf24', '#9ca3af', '#f87171', '#2dd4bf'];
+            const drinkColors = ['#fb923c', '#c084fc', '#22d3ee', '#4ade80', '#e879f9', '#9ca3af'];
+
+            createPie('chartRoast', roast, roastColors);
+            createPie('chartMethod', method, methodColors);
+            createPie('chartDrink', drink, drinkColors);
+
+            // Bar Chart for Stars
+            if(chartInstances['chartStars']) chartInstances['chartStars'].destroy();
+            const ctxStars = document.getElementById('chartStars').getContext('2d');
+            
+            // Ensure 1-5 keys exist
+            const starCounts = [1,2,3,4,5].map(i => stars[i] || 0);
+
+            chartInstances['chartStars'] = new Chart(ctxStars, {
+                type: 'bar',
+                data: {
+                    labels: ['1★', '2★', '3★', '4★', '5★'],
+                    datasets: [{
+                        label: 'Count',
+                        data: starCounts,
+                        backgroundColor: '#fbbf24',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: textColor, precision:0 }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor }, grid: { display: false } }
+                    }
+                }
+            });
+        };
+
         // --- Standard Logic ---
         const setRating = (r) => { const c=document.getElementById('starContainer'); document.getElementById('ratingInput').value=r; for(let i=0;i<c.children.length;i++){ if(i<r)c.children[i].classList.add('active'); else c.children[i].classList.remove('active'); } };
         const getStarDisplay = (r) => { if(!r)return'-'; let h=''; for(let i=0;i<r;i++)h+='<i class="fa-solid fa-star text-xs text-yellow-400"></i>'; return h; };
@@ -1790,7 +2054,7 @@
         });
 
         // Expose to window
-        Object.assign(window, { googleLogin, googleLogout, openFriendsModal, closeModal, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, switchGalleryTab, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, openImageModal, closeImageModal, resetZoom });
+        Object.assign(window, { googleLogin, googleLogout, openFriendsModal, closeModal, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, switchGalleryTab, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, openImageModal, closeImageModal, resetZoom, openStats, closeStats });
 
         initTheme();
         const searchInput = document.getElementById('globalSearch'); 
