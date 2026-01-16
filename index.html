@@ -100,7 +100,6 @@
                             <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i> 
                             <span>Toggle Theme</span>
                         </button>
-                        <!-- Statistics moved here -->
                         <button onclick="openStats(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center gap-2">
                             <i class="fa-solid fa-chart-pie"></i> <span>Statistics</span>
                         </button>
@@ -343,7 +342,7 @@
     </div>
 
     <!-- Statistics Modal -->
-    <div id="statsModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+    <div id="statsModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col my-8 max-h-[90vh]">
             <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917]">
                 <div class="flex items-center gap-3">
@@ -981,8 +980,8 @@
         const resetSca = () => { scaState = { level: 0, path: [], currentNode: null }; renderScaWheel(); };
 
         // --- Standard UI ---
-        const openFriendsModal = () => { document.getElementById('modalOverlay').classList.remove('hidden'); switchModalTab('profile'); };
-        const closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
+        const openFriendsModal = () => { document.getElementById('modalOverlay').classList.remove('hidden'); switchModalTab('profile'); document.body.style.overflow = 'hidden'; };
+        const closeModal = () => { document.getElementById('modalOverlay').classList.add('hidden'); document.body.style.overflow = ''; };
         
         const switchModalTab = (tab) => { 
             const tProf = document.getElementById('tabProfile');
@@ -1153,6 +1152,7 @@
                     list.appendChild(div);
                 });
             }
+            document.body.style.overflow = 'hidden';
         };
 
         const toggleAllFriends = (state) => {
@@ -1160,7 +1160,7 @@
             checkboxes.forEach(cb => cb.checked = state);
         };
 
-        const closeUploadModal = () => document.getElementById('uploadPhotoModal').classList.add('hidden');
+        const closeUploadModal = () => { document.getElementById('uploadPhotoModal').classList.add('hidden'); document.body.style.overflow = ''; };
 
         const handlePhotoSubmit = async () => {
             const fileInput = document.getElementById('photoInput');
@@ -1246,6 +1246,7 @@
 
         const openGallery = async () => {
             document.getElementById('galleryModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
 
             // Check if there is an active notification BEFORE clearing it
             const hasNotification = !document.getElementById('galleryBadge').classList.contains('hidden');
@@ -1394,6 +1395,7 @@
             });
             
             document.getElementById('preferencesModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         };
 
         const savePreferences = async () => {
@@ -1417,22 +1419,24 @@
             }
             
             document.getElementById('preferencesModal').classList.add('hidden');
+            document.body.style.overflow = '';
             renderTable(); // Apply changes
         };
 
         // --- Help & About Logic ---
-        const openHelp = () => document.getElementById('helpModal').classList.remove('hidden');
+        const openHelp = () => { document.getElementById('helpModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
         
         const closeHelp = () => {
             document.getElementById('helpModal').classList.add('hidden');
+            document.body.style.overflow = '';
             if(currentUser) {
                 // Set flag so it doesn't open automatically again
                 localStorage.setItem(`tutorialSeen_${currentUser.uid}`, 'true');
             }
         };
         
-        const openAbout = () => document.getElementById('aboutModal').classList.remove('hidden');
-        const closeAbout = () => document.getElementById('aboutModal').classList.add('hidden');
+        const openAbout = () => { document.getElementById('aboutModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
+        const closeAbout = () => { document.getElementById('aboutModal').classList.add('hidden'); document.body.style.overflow = ''; };
 
         // --- Notifications Listener ---
         const initNotificationListener = (uid) => {
@@ -1468,6 +1472,7 @@
             const m = document.getElementById('easterEggModal');
             const v = document.getElementById('easterEggVideo');
             m.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
             v.currentTime = 0;
             v.play().catch(e => console.log("Autoplay failed", e));
         };
@@ -1476,6 +1481,7 @@
                 const m = document.getElementById('easterEggModal');
                 const v = document.getElementById('easterEggVideo');
                 m.classList.add('hidden');
+                document.body.style.overflow = '';
                 v.pause();
             }
         };
@@ -1486,12 +1492,14 @@
 
         const openImageModal = () => {
             document.getElementById('imageModalOverlay').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
             resetZoom();
         };
 
         const closeImageModal = (e) => {
             if (!e || e.target.id === 'imageModalOverlay' || e.target.closest('button')) {
                 document.getElementById('imageModalOverlay').classList.add('hidden');
+                document.body.style.overflow = '';
             }
         };
 
@@ -1589,6 +1597,7 @@
             }
             
             document.getElementById('statsModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
             
             // Reset views
             hideUniqueList();
@@ -1610,7 +1619,7 @@
             loadStatsForUser(select.value);
         };
 
-        const closeStats = () => document.getElementById('statsModal').classList.add('hidden');
+        const closeStats = () => { document.getElementById('statsModal').classList.add('hidden'); document.body.style.overflow = ''; };
 
         const loadStatsForUser = async (uid) => {
             const targetUid = uid === 'mine' ? currentUser.uid : uid;
