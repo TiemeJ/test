@@ -147,11 +147,14 @@
                     </h2>
                 </div>
                 <div class="flex items-center gap-3">
-                    <!-- Scan Button -->
-                    <button type="button" onclick="document.getElementById('bagScannerInput').click()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow flex items-center gap-2 transition-all">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hidden sm:inline">AI Scan Bag</span>
-                    </button>
-                    <input type="file" id="bagScannerInput" accept="image/*" capture="environment" class="hidden" onchange="handleBagScan(this)">
+                    
+                    <!-- Scan Button Wrapper (Starts Hidden) -->
+                    <div id="scanButtonWrapper" class="hidden">
+                        <button type="button" onclick="document.getElementById('bagScannerInput').click()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow flex items-center gap-2 transition-all">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hidden sm:inline">AI Scan Bag</span>
+                        </button>
+                        <input type="file" id="bagScannerInput" accept="image/*" capture="environment" class="hidden" onchange="handleBagScan(this)">
+                    </div>
                     
                     <button id="cancelEditBtn" onclick="resetFormState(event)" class="hidden text-xs text-red-500 hover:text-red-700 dark:text-red-400 underline z-10 relative">
                         Cancel Edit
@@ -1033,7 +1036,7 @@
                 tFoll.classList.remove('text-coffee-500','dark:text-[#78716c]');
                 tProf.classList.remove('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
                 tProf.classList.add('text-coffee-500','dark:text-[#78716c]');
-                cFoll.classList.remove('hidden'); cProf.classList.add('hidden');
+                cFoll.classList.remove('hidden'); cFoll.classList.add('hidden');
             } 
         };
 
@@ -1490,22 +1493,6 @@
             });
         };
 
-        const renderCharts = (roast, method, drink, stars) => {
-            const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? '#e7e5e4' : '#4a3b32'; const gridColor = isDark ? '#44403c' : '#e5e7eb';
-            const createPie = (ctxId, dataObj, colors) => {
-                if(chartInstances[ctxId]) chartInstances[ctxId].destroy(); const ctx = document.getElementById(ctxId).getContext('2d');
-                chartInstances[ctxId] = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(dataObj), datasets: [{ data: Object.values(dataObj), backgroundColor: colors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, font: { size: 10, family: "'Outfit', sans-serif" }, boxWidth: 10 } } } } });
-            };
-            const roastColors = ['#fcd34d', '#f97316', '#78350f', '#000000', '#9ca3af'];
-            const methodColors = ['#60a5fa', '#34d399', '#f472b6', '#a78bfa', '#fbbf24', '#9ca3af', '#f87171', '#2dd4bf'];
-            const drinkColors = ['#fb923c', '#c084fc', '#22d3ee', '#4ade80', '#e879f9', '#9ca3af'];
-            createPie('chartRoast', roast, roastColors); createPie('chartMethod', method, methodColors); createPie('chartDrink', drink, drinkColors);
-            if(chartInstances['chartStars']) chartInstances['chartStars'].destroy(); const ctxStars = document.getElementById('chartStars').getContext('2d');
-            const starCounts = [1,2,3,4,5].map(i => stars[i] || 0);
-            chartInstances['chartStars'] = new Chart(ctxStars, { type: 'bar', data: { labels: ['1★', '2★', '3★', '4★', '5★'], datasets: [{ label: 'Count', data: starCounts, backgroundColor: '#fbbf24', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: textColor, precision:0 }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { display: false } } } } });
-        };
-
         const setRating = (r) => { const c=document.getElementById('starContainer'); document.getElementById('ratingInput').value=r; for(let i=0;i<c.children.length;i++){ if(i<r)c.children[i].classList.add('active'); else c.children[i].classList.remove('active'); } };
         const getStarDisplay = (r) => { if(!r)return'-'; let h=''; for(let i=0;i<r;i++)h+='<i class="fa-solid fa-star text-xs text-yellow-400"></i>'; return h; };
         
@@ -1525,7 +1512,23 @@
             if (m === 'numeric') { conNum.classList.remove('hidden'); conProf.classList.add('hidden'); btnNum.className = activeClass; btnProf.className = inactiveClass; } else { conProf.classList.remove('hidden'); conNum.classList.add('hidden'); btnProf.className = activeClass; btnNum.className = inactiveClass; }
         };
         
-        const toggleForm = (f=null) => { const c=document.getElementById('formContainer'),o=document.getElementById('formContent'),e=c.getAttribute('aria-expanded')==='true',s=f!==null?f:!e; c.setAttribute('aria-expanded',s?'true':'false'); if(s){ o.classList.remove('hidden'); if(document.getElementById('notesMode').value === 'sca') renderScaWheel(); } else { o.classList.add('hidden'); } };
+        // UPDATED: Toggle visibility of the scan button container
+        const toggleForm = (f=null) => { 
+            const c=document.getElementById('formContainer');
+            const o=document.getElementById('formContent');
+            const b=document.getElementById('scanButtonWrapper'); // New Wrapper
+            const e=c.getAttribute('aria-expanded')==='true';
+            const s=f!==null?f:!e; 
+            c.setAttribute('aria-expanded',s?'true':'false'); 
+            if(s){ 
+                o.classList.remove('hidden'); 
+                if(b) b.classList.remove('hidden'); // Show when unfolded
+                if(document.getElementById('notesMode').value === 'sca') renderScaWheel(); 
+            } else { 
+                o.classList.add('hidden'); 
+                if(b) b.classList.add('hidden'); // Hide when collapsed
+            } 
+        };
         
         const populateForm = (c) => { 
             document.getElementById('roaster').value=c.roaster||c.name||''; document.getElementById('farmer').value=c.farmer||''; document.getElementById('origin').value=c.origin||c.beanType||''; document.getElementById('variety').value=c.variety||''; document.getElementById('processing').value=c.processing||''; document.getElementById('roastType').value=c.roastType||''; document.getElementById('grinder').value=c.grinder||''; document.getElementById('grind').value=c.grind||''; document.getElementById('inputWeight').value=c.weight||''; document.getElementById('inputRatio').value=c.ratio||''; document.getElementById('inputYield').value=(c.weight&&c.ratio)?(c.weight*c.ratio).toFixed(1):''; document.getElementById('time').value=c.time||''; document.getElementById('notes').value=c.notes||''; document.getElementById('improve').value=c.improve||'';
