@@ -798,6 +798,9 @@
         let dragSrcEl = null;
         let currentUploadCoffeeId = null;
 
+        // --- Stats Specific Tracker ---
+        let currentStatsData = [];
+
         // --- Gallery Pagination State ---
         let lastGalleryDoc = null;
         let currentGalleryMode = 'mine';
@@ -912,9 +915,9 @@
             }
         };
 
-        // NEW: STATS AI PROFILER FUNCTION
+        // STATS AI PROFILER FUNCTION (Fixed to use local data)
         const triggerAIProfile = async () => {
-            if (coffees.length === 0) return alert("No brews found for this user to analyze.");
+            if (currentStatsData.length === 0) return alert("No brews found for this user to analyze.");
 
             const btn = document.getElementById('statsAIBtn');
             const originalContent = btn.innerHTML;
@@ -929,9 +932,9 @@
                 btn.classList.add('ai-loading-pulse');
                 container.classList.add('hidden');
 
-                // 1. Prepare Data to Send (Summary only to save tokens/costs)
-                const dataString = coffees.slice(0, 50).map(c => 
-                    `${c.roaster} (${c.origin}): ${c.rating} stars, notes: ${c.notes}`
+                // 1. Prepare Data to Send (Using currentStatsData, NOT global coffees)
+                const dataString = currentStatsData.slice(0, 50).map(c => 
+                    `${c.roaster || c.name} (${c.origin || c.beanType}): ${c.rating} stars, notes: ${c.notes || 'None'}`
                 ).join('\n');
 
                 // 2. Call Backend
@@ -1455,18 +1458,35 @@
         const changeStatsView = async (uid) => {
             document.getElementById('aiProfileContainer').classList.add('hidden'); // Reset AI Box on view change
             let dataToUse = [];
-            if (uid === currentView) dataToUse = coffees;
-            else {
+            if (uid === 'mine') {
+                 // Fetch current user's latest data to ensure stats are fresh
+                 const q = collection(db, 'users', currentUser.uid, 'coffees');
+                 const snap = await getDocs(q);
+                 snap.forEach(doc => dataToUse.push({ id: doc.id, ...doc.data() }));
+            } else {
                 const q = collection(db, 'users', uid, 'coffees');
                 const snap = await getDocs(q);
                 snap.forEach(doc => dataToUse.push({ id: doc.id, ...doc.data() }));
             }
-            if(dataToUse.length === 0) { calculateStats([]); return; }
             calculateStats(dataToUse);
         };
 
         const calculateStats = (dataToUse) => {
-            const total = dataToUse.length; const now = new Date(); const oneDay = 24 * 60 * 60 * 1000;
+            // Update the data tracker for the AI Sommelier
+            currentStatsData = dataToUse;
+
+            const total = dataToUse.length; 
+            if(total === 0) {
+                 document.getElementById('statTotalBrews').innerText = '0'; document.getElementById('statMonthBrews').innerText = '0'; document.getElementById('statWeekBrews').innerText = '0'; document.getElementById('statAvgBrews').innerText = '0';
+                 document.getElementById('statUniqueCoffees').innerText = '0';
+                 document.getElementById('mostBrewedName').innerText = '-'; document.getElementById('mostBrewedCount').innerText = '0 brews';
+                 document.getElementById('topCoffeesList').innerHTML = '<p class="text-sm text-gray-400 italic">No brews found.</p>';
+                 document.getElementById('uniqueLeaderboardBody').innerHTML = "<tr><td colspan='4' class='text-center py-4 italic text-coffee-400'>No data.</td></tr>";
+                 renderCharts({}, {}, {}, {});
+                 return;
+            }
+
+            const now = new Date(); const oneDay = 24 * 60 * 60 * 1000;
             const last30 = dataToUse.filter(c => (now - new Date(c.createdAt)) < 30 * oneDay).length;
             const last7 = dataToUse.filter(c => (now - new Date(c.createdAt)) < 7 * oneDay).length;
             const firstDate = new Date(Math.min(...dataToUse.map(c => new Date(c.createdAt || now))));
