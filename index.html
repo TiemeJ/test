@@ -147,12 +147,12 @@
                     </h2>
                 </div>
                 <div class="flex items-center gap-3">
-                    <!-- AI MAGIC BUTTON -->
-                    <button type="button" onclick="triggerAIScan()" id="aiScanBtn" class="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm">
+                    <!-- AI MAGIC BUTTON (Hidden by default, shown when expanded) -->
+                    <button type="button" onclick="triggerAIScan()" id="aiScanBtn" class="hidden flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> AI Scan Bag
                     </button>
-                    <!-- Hidden input for camera -->
-                    <input type="file" id="aiFileInput" accept="image/*" capture="environment" class="hidden" onchange="handleAIFile(event)">
+                    <!-- Hidden input (No capture="environment" means user can pick source) -->
+                    <input type="file" id="aiFileInput" accept="image/*" class="hidden" onchange="handleAIFile(event)">
                     
                     <button id="cancelEditBtn" onclick="resetFormState(event)" class="hidden text-xs text-red-500 hover:text-red-700 dark:text-red-400 underline z-10 relative">
                         Cancel Edit
@@ -492,7 +492,7 @@
     </div>
 
     <div id="modalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
             <div class="flex border-b border-coffee-200 dark:border-[#44403c]">
                 <button onclick="switchModalTab('profile')" id="tabProfile" class="flex-1 py-3 text-sm font-semibold text-coffee-700 dark:text-[#d6ccc2] bg-coffee-50 dark:bg-[#1c1917]">My Profile</button>
                 <button onclick="switchModalTab('following')" id="tabFollowing" class="flex-1 py-3 text-sm font-semibold text-coffee-500 dark:text-[#78716c] hover:bg-coffee-50 dark:hover:bg-[#1c1917]">Following</button>
@@ -874,7 +874,7 @@
                 if (data.processing) document.getElementById('processing').value = data.processing;
                 if (data.roastType) document.getElementById('roastType').value = data.roastType;
 
-                // Ensure form is open
+                // Open the form automatically to show the results
                 toggleForm(true);
                 
             } catch (error) {
@@ -1475,7 +1475,19 @@
             if (m === 'numeric') { conNum.classList.remove('hidden'); conProf.classList.add('hidden'); btnNum.className = activeClass; btnProf.className = inactiveClass; } else { conProf.classList.remove('hidden'); conNum.classList.add('hidden'); btnProf.className = activeClass; btnNum.className = inactiveClass; }
         };
         
-        const toggleForm = (f=null) => { const c=document.getElementById('formContainer'),o=document.getElementById('formContent'),e=c.getAttribute('aria-expanded')==='true',s=f!==null?f:!e; c.setAttribute('aria-expanded',s?'true':'false'); if(s){ o.classList.remove('hidden'); if(document.getElementById('notesMode').value === 'sca') renderScaWheel(); } else { o.classList.add('hidden'); } };
+        const toggleForm = (f=null) => { 
+            const c=document.getElementById('formContainer'),o=document.getElementById('formContent'),e=c.getAttribute('aria-expanded')==='true',s=f!==null?f:!e; 
+            const aiBtn = document.getElementById('aiScanBtn');
+            c.setAttribute('aria-expanded',s?'true':'false'); 
+            if(s){ 
+                o.classList.remove('hidden'); 
+                aiBtn.classList.remove('hidden'); // Show AI button when form expands
+                if(document.getElementById('notesMode').value === 'sca') renderScaWheel(); 
+            } else { 
+                o.classList.add('hidden'); 
+                aiBtn.classList.add('hidden'); // Hide AI button when form collapses
+            } 
+        };
         
         const populateForm = (c) => { 
             document.getElementById('roaster').value=c.roaster||c.name||''; document.getElementById('farmer').value=c.farmer||''; document.getElementById('origin').value=c.origin||c.beanType||''; document.getElementById('variety').value=c.variety||''; document.getElementById('processing').value=c.processing||''; document.getElementById('roastType').value=c.roastType||''; document.getElementById('grinder').value=c.grinder||''; document.getElementById('grind').value=c.grind||''; document.getElementById('inputWeight').value=c.weight||''; document.getElementById('inputRatio').value=c.ratio||''; document.getElementById('inputYield').value=(c.weight&&c.ratio)?(c.weight*c.ratio).toFixed(1):''; document.getElementById('time').value=c.time||''; document.getElementById('notes').value=c.notes||''; document.getElementById('improve').value=c.improve||'';
