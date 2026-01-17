@@ -6,10 +6,13 @@
     <title>Coffee Dial - Brew Log</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Image Compression Library -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <!-- Chart.js for Statistics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        
         body { font-family: 'Outfit', sans-serif; transition: background-color 0.3s ease, color 0.3s ease; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -20,7 +23,9 @@
         .dark .dragging { background-color: #44403c; border-color: #a8a29e; }
         input:focus, select:focus, textarea:focus { outline: none; ring: 2px; border-color: #b08968; box-shadow: 0 0 0 3px rgba(176, 137, 104, 0.2); }
         .editing-mode { border: 2px solid #ea580c !important; }
+        
         th.filterable { position: relative; cursor: context-menu; touch-action: manipulation; }
+        
         #filterDropdown, #mainMenuDropdown { z-index: 50; animation: fadeIn 0.1s ease-out; }
         #modalOverlay, #statsModal, #imageModalOverlay, #coffeeCardOverlay, #uploadPhotoModal, #galleryModal, #easterEggModal, #preferencesModal, #helpModal, #aboutModal { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -28,16 +33,29 @@
         .group[aria-expanded="true"] .chevron-rotate { transform: rotate(180deg); }
         .cursor-grab { cursor: grab; }
         .cursor-grabbing { cursor: grabbing; }
+        
+        /* Star Rating Styles */
         .star-rating i { cursor: pointer; transition: color 0.2s; }
         .star-rating i:hover, .star-rating i.active { color: #fbbf24; }
         .dark .star-rating i:hover, .star-rating i.active { color: #f59e0b; }
+
+        /* SCA Wheel Styles */
         .sca-btn { transition: all 0.2s; }
         .sca-btn:active { transform: scale(0.95); }
+
+        /* Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #68D391; }
         .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
+
+        /* AI Loading and Flash Animations */
         .ai-loading-pulse { animation: ai-pulse 1.5s infinite; }
         @keyframes ai-pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        @keyframes ai-flash { 0% { background-color: transparent; } 30% { background-color: rgba(199, 210, 254, 0.5); } 100% { background-color: transparent; } }
+
+        @keyframes ai-flash {
+            0% { background-color: transparent; }
+            30% { background-color: rgba(199, 210, 254, 0.5); } /* Light Indigo */
+            100% { background-color: transparent; }
+        }
         .ai-flash-effect { animation: ai-flash 2s ease-out; }
     </style>
     <script>
@@ -135,9 +153,11 @@
                     </h2>
                 </div>
                 <div class="flex items-center gap-3">
+                    <!-- AI MAGIC BUTTON (Hidden by default, shown when expanded) -->
                     <button type="button" onclick="triggerAIScan()" id="aiScanBtn" class="hidden flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> AI Scan Bag
                     </button>
+                    <!-- Hidden input (No capture="environment" means user can pick source) -->
                     <input type="file" id="aiFileInput" accept="image/*" class="hidden" onchange="handleAIFile(event)">
                     
                     <button id="cancelEditBtn" onclick="resetFormState(event)" class="hidden text-xs text-red-500 hover:text-red-700 dark:text-red-400 underline z-10 relative">
@@ -368,30 +388,22 @@
             <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex flex-col sm:flex-row justify-between items-center gap-4 bg-coffee-50 dark:bg-[#1c1917]">
                 <div class="flex items-center gap-4 w-full sm:w-auto">
                     <h3 class="font-bold text-xl text-coffee-900 dark:text-white flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-pie text-coffee-600 dark:text-[#d6ccc2]"></i> Brewing Statistics</h3>
-                    <div class="flex items-center gap-2">
-                        <select id="statsViewSelect" onchange="changeStatsView(this.value)" class="bg-white dark:bg-[#292524] border border-coffee-200 dark:border-[#44403c] text-coffee-900 dark:text-white text-xs rounded-lg block p-2 shadow-sm font-bold min-w-[150px]">
-                            <option value="mine">My Brews</option>
-                        </select>
-                        <!-- AI BREW PROFILE BUTTON -->
-                        <button id="aiProfileBtn" onclick="generateAIProfile()" class="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-sm" title="Generate AI Brew Profile">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        </button>
-                    </div>
+                    <select id="statsViewSelect" onchange="changeStatsView(this.value)" class="bg-white dark:bg-[#292524] border border-coffee-200 dark:border-[#44403c] text-coffee-900 dark:text-white text-xs rounded-lg block p-2 shadow-sm font-bold min-w-[150px]">
+                        <option value="mine">My Brews</option>
+                    </select>
+                    <!-- NEW AI SUMMARY BUTTON -->
+                    <button type="button" onclick="generateAISummary()" id="aiSummaryBtn" class="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI Profile
+                    </button>
                 </div>
                 <button onclick="closeStats()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white absolute top-5 right-5 sm:static"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
             <div id="statsModalContent" class="p-6 overflow-y-auto bg-coffee-50/50 dark:bg-[#1c1917]">
                 
-                <!-- 0. AI Brew Profile Area (Hidden until generated) -->
-                <div id="aiProfileArea" class="hidden mb-8 transform transition-all duration-500 animate-in fade-in slide-in-from-top-4">
-                    <div class="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-900/30 rounded-xl p-5 relative overflow-hidden">
-                        <div class="absolute -right-4 -top-4 text-6xl text-indigo-200 dark:text-indigo-900/20 opacity-50 rotate-12"><i class="fa-solid fa-quote-right"></i></div>
-                        <h4 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-sparkles"></i> AI Sommelier Profile
-                        </h4>
-                        <p id="aiProfileText" class="text-coffee-800 dark:text-indigo-100 italic leading-relaxed text-sm"></p>
-                    </div>
+                <!-- NEW AI SOMMELIER PROFILE AREA -->
+                <div id="aiProfileContainer" class="hidden mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl relative overflow-hidden transition-all duration-500">
+                    <!-- Text inserted via JS -->
                 </div>
 
                 <!-- 1. General Charts View -->
@@ -494,7 +506,6 @@
         </div>
     </div>
 
-    <!-- Other Modals (Social, Gallery, Help, About, etc. Kept exactly as they were) -->
     <div id="modalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
             <div class="flex border-b border-coffee-200 dark:border-[#44403c]">
@@ -505,9 +516,14 @@
                 <div class="flex items-center justify-between mb-4"><span class="text-sm font-medium text-coffee-900 dark:text-white">Public Profile</span><button id="togglePublicBtn" onclick="togglePublicProfile()" class="bg-gray-200 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 transition-colors relative"><div class="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform"></div></button></div>
                 <p class="text-xs text-coffee-500 dark:text-[#78716c] mb-4">When enabled, anyone with your Share ID can see your brews.</p>
                 <div id="shareIdContainer" class="hidden"><label class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] mb-1 uppercase">Your Share ID</label><div class="flex gap-2"><input type="text" id="myShareId" readonly class="flex-1 bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded px-2 py-1 text-sm font-mono text-coffee-900 dark:text-white select-all"><button onclick="copyShareId()" class="bg-coffee-200 dark:bg-[#44403c] hover:bg-coffee-300 px-3 rounded text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-regular fa-copy"></i></button></div></div>
+                
                 <hr class="my-6 border-coffee-200 dark:border-[#44403c]">
+                <!-- Followers List Section -->
                 <div class="text-xs font-semibold text-coffee-500 dark:text-[#78716c] uppercase mb-2">Followers</div>
-                <div id="followersList" class="space-y-2 max-h-48 overflow-y-auto mb-4"><p class="text-xs text-gray-400 italic">No followers yet.</p></div>
+                <div id="followersList" class="space-y-2 max-h-48 overflow-y-auto mb-4">
+                     <p class="text-xs text-gray-400 italic">No followers yet.</p>
+                </div>
+
                 <hr class="my-6 border-coffee-200 dark:border-[#44403c]">
                 <button onclick="googleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-300 py-2 rounded-lg text-sm font-medium">Sign Out</button>
             </div>
@@ -523,25 +539,238 @@
     <!-- Image Modal with Zoom & Pan -->
     <div id="imageModalOverlay" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden relative flex flex-col h-[80vh]">
-            <div class="absolute top-0 right-0 p-4 z-20"><button onclick="closeImageModal(null)" class="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors">&times;</button></div>
-            <div class="flex-1 overflow-hidden relative bg-coffee-50 dark:bg-[#1c1917] flex items-center justify-center" id="imageContainer" style="touch-action: none;"><img id="zoomableImage" src="img/SCA_wheel.png" alt="SCA Flavor Wheel" class="max-w-full max-h-full object-contain cursor-grab" style="transform-origin: center center;"></div>
-            <div class="absolute bottom-4 left-0 right-0 text-center pointer-events-none"><span class="bg-black/50 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-sm">Drag to Pan • Pinch to Zoom • Double Tap to Reset</span></div>
+            <div class="absolute top-0 right-0 p-4 z-20">
+                <button onclick="closeImageModal(null)" class="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors">&times;</button>
+            </div>
+            
+            <div class="flex-1 overflow-hidden relative bg-coffee-50 dark:bg-[#1c1917] flex items-center justify-center" id="imageContainer" style="touch-action: none;">
+                <img id="zoomableImage" src="img/SCA_wheel.png" alt="SCA Flavor Wheel" class="max-w-full max-h-full object-contain cursor-grab" style="transform-origin: center center;">
+            </div>
+
+            <div class="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+                 <span class="bg-black/50 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-sm">Drag to Pan • Pinch to Zoom • Double Tap to Reset</span>
+            </div>
         </div>
     </div>
 
-    <!-- Other modals removed for brevity but they are preserved in my script logic below -->
-    <div id="uploadPhotoModal" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"></div>
-    <div id="galleryModal" class="hidden fixed inset-0 z-[75] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"></div>
-    <div id="preferencesModal" class="hidden fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"></div>
-    <div id="helpModal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"></div>
-    <div id="aboutModal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"></div>
-    <div id="easterEggModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 animate-in fade-in duration-300" onclick="closeEasterEgg(event)"></div>
+    <div id="uploadPhotoModal" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
+            <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center">
+                <h3 class="font-bold text-coffee-900 dark:text-white">Upload Brew Photo</h3>
+                <button onclick="closeUploadModal()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-1">Select Photo</label>
+                    <input type="file" id="photoInput" accept="image/*" class="w-full text-sm text-coffee-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-coffee-100 file:text-coffee-700 hover:file:bg-coffee-200 dark:file:bg-[#44403c] dark:file:text-[#d6ccc2]">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-1">Message</label>
+                    <textarea id="photoMessage" rows="2" placeholder="Tell us about this brew..." class="w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white"></textarea>
+                </div>
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase">Share with friends</label>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="toggleAllFriends(false)" class="text-[10px] font-bold text-coffee-600 dark:text-[#a8a29e] hover:text-red-500 transition-colors uppercase">None</button>
+                            <button type="button" onclick="toggleAllFriends(true)" class="text-[10px] font-bold text-coffee-600 dark:text-[#a8a29e] hover:text-green-500 transition-colors uppercase">All</button>
+                        </div>
+                    </div>
+                    <div id="shareWithList" class="max-h-32 overflow-y-auto space-y-2 border border-coffee-100 dark:border-[#44403c] rounded-lg p-2 bg-coffee-50 dark:bg-[#1c1917]"></div>
+                </div>
+                <div id="uploadProgress" class="hidden w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-4">
+                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: 45%"></div>
+                </div>
+            </div>
+            <div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end gap-2">
+                <button onclick="closeUploadModal()" class="px-4 py-2 rounded-lg text-sm text-coffee-600 dark:text-[#a8a29e] hover:bg-coffee-100 dark:hover:bg-[#34302e]">Cancel</button>
+                <button onclick="handlePhotoSubmit()" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="galleryModal" class="hidden fixed inset-0 z-[75] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col">
+            <div class="flex border-b border-coffee-200 dark:border-[#44403c]">
+                <button onclick="switchGalleryTab('mine')" id="tabGalleryMine" class="flex-1 py-3 text-sm font-semibold text-coffee-700 dark:text-[#d6ccc2] bg-coffee-50 dark:bg-[#1c1917]">My Photos</button>
+                <button onclick="switchGalleryTab('shared')" id="tabGalleryShared" class="flex-1 py-3 text-sm font-semibold text-coffee-500 dark:text-[#78716c] hover:bg-coffee-50 dark:hover:bg-[#1c1917]">Friends' Photos</button>
+                <button onclick="document.getElementById('galleryModal').classList.add('hidden')" class="px-4 text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="galleryContent" class="p-4 overflow-y-auto flex-1 bg-coffee-50 dark:bg-[#1c1917]">
+                <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+                <div id="galleryLoadMore" class="text-center py-4 hidden">
+                    <button onclick="loadMoreGallery()" class="bg-coffee-100 dark:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] px-6 py-2 rounded-full text-sm font-bold shadow-sm hover:bg-coffee-200 dark:hover:bg-[#44403c] transition-colors">
+                        Load More <i class="fa-solid fa-chevron-down ml-2"></i>
+                    </button>
+                </div>
+                <div id="galleryEmpty" class="hidden text-center py-10 text-coffee-400 dark:text-[#57534e]">
+                    <i class="fa-solid fa-images text-4xl mb-2"></i>
+                    <p>No photos found.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="preferencesModal" class="hidden fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-coffee-200 dark:border-[#44403c]">
+            <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center">
+                <h3 class="font-bold text-coffee-900 dark:text-white"><i class="fa-solid fa-sliders mr-2"></i>Table Preferences</h3>
+                <button onclick="document.getElementById('preferencesModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 max-h-[60vh] overflow-y-auto">
+                <p class="text-xs text-coffee-500 dark:text-[#78716c] mb-4">Select the columns you want to see in your brew log.</p>
+                <div id="preferencesList" class="space-y-3">
+                    </div>
+            </div>
+            <div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end gap-2">
+                <button onclick="document.getElementById('preferencesModal').classList.add('hidden')" class="px-4 py-2 rounded-lg text-sm text-coffee-600 dark:text-[#a8a29e] hover:bg-coffee-100 dark:hover:bg-[#34302e]">Cancel</button>
+                <button onclick="savePreferences()" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] text-white px-4 py-2 rounded-lg text-sm font-medium">
+                    Save Preferences
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="helpModal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col">
+            <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center">
+                <h3 class="font-bold text-xl text-coffee-900 dark:text-white"><i class="fa-solid fa-circle-question mr-2 text-coffee-600 dark:text-[#d6ccc2]"></i>How to Use Coffee Dial</h3>
+                <button onclick="closeHelp()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-8 bg-coffee-50 dark:bg-[#1c1917]">
+                
+                <!-- Intro -->
+                <div class="space-y-2">
+                    <h4 class="font-bold text-coffee-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-hand-sparkles text-yellow-500"></i> Your Brew, Your Way</h4>
+                    <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">Coffee Dial is flexible. You can use it to log <strong>every single shot</strong> you make to track consistency, OR you can just save your <strong>favourite recipes</strong> (Golden Cups) and update them as you dial in a new bean. It's your laboratory!</p>
+                </div>
+
+                <!-- Step 1: Add/Edit -->
+                <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
+                    <h4 class="font-bold text-coffee-800 dark:text-white mb-2">1. Adding & Editing Brews</h4>
+                    <div class="flex flex-col sm:flex-row gap-4 items-center">
+                        <div class="flex-shrink-0 text-coffee-500 text-4xl">
+                            <i class="fa-solid fa-plus-circle"></i>
+                        </div>
+                        <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">Tap the <strong>"Add New Brew"</strong> bar at the top to open the form. Fill in your details (Roaster, Grind, Ratio, etc.). You can use the SCA Flavor Wheel for notes! To edit, simply tap the <i class="fa-solid fa-pencil text-blue-500 text-xs"></i> icon on any row.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Pinning -->
+                <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
+                    <h4 class="font-bold text-coffee-800 dark:text-white mb-2">2. Pinning & Active Brews</h4>
+                    <div class="flex flex-col sm:flex-row gap-4 items-center">
+                        <div class="flex-shrink-0 text-green-600 text-3xl">
+                            <i class="fa-solid fa-thumbtack"></i>
+                        </div>
+                        <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">
+                            Found a recipe you love? Click the <strong>Pin icon</strong> (<i class="fa-solid fa-thumbtack text-xs"></i>) to move it to the top <strong>"Active Brews"</strong> section. This keeps your daily drivers separated from your experiment history.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3: The Card -->
+                <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
+                    <h4 class="font-bold text-coffee-800 dark:text-white mb-2">3. The Coffee Card (Double Tap!)</h4>
+                    <div class="flex flex-col sm:flex-row gap-4 items-center">
+                        <div class="flex-shrink-0 bg-coffee-100 dark:bg-[#44403c] p-3 rounded-lg border border-coffee-200 dark:border-[#57534e]">
+                            <i class="fa-solid fa-id-card text-2xl text-coffee-700 dark:text-[#d6ccc2]"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">This is the magic feature. <strong>Double tap any row</strong> in your table to open the "Coffee Card".</p>
+                            <p class="text-xs text-coffee-500 dark:text-[#78716c] mt-1">This presents a beautiful, summarized view of the recipe, perfect for quickly replicating a brew without scrolling through the table.</p>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Step 4: Social -->
+                 <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
+                    <h4 class="font-bold text-coffee-800 dark:text-white mb-2">4. Social & Sharing</h4>
+                    <div class="flex flex-col sm:flex-row gap-4 items-center">
+                         <div class="flex-shrink-0 text-blue-500 text-3xl">
+                            <i class="fa-solid fa-user-group"></i>
+                        </div>
+                        <div class="flex-1">
+                             <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">Want to see what your friends are brewing? Click the <strong>"Friends"</strong> button.</p>
+                             <ul class="list-disc list-inside text-xs text-coffee-500 dark:text-[#78716c] mt-1 space-y-1">
+                                <li>Enable "Public Profile" to get a Share ID.</li>
+                                <li>Send your ID to a friend so they can follow you.</li>
+                                <li>Enter a friend's ID to follow them.</li>
+                                <li>Use the dropdown menu (top left) to switch views between "My Brews" and your friends' lists.</li>
+                             </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Gallery -->
+                 <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
+                    <h4 class="font-bold text-coffee-800 dark:text-white mb-2">5. Photo Gallery</h4>
+                    <div class="flex flex-col sm:flex-row gap-4 items-center">
+                        <div class="flex-shrink-0 text-purple-500 text-3xl">
+                            <i class="fa-solid fa-camera"></i>
+                        </div>
+                        <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">Use the camera icon on any brew row to upload a photo (latte art, bean bag, setup). You can share these photos specifically with friends, and view them in the global <strong>Photo Gallery</strong> via the main menu.</p>
+                    </div>
+                </div>
+
+            </div>
+            <div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end border-t border-coffee-200 dark:border-[#44403c]">
+                <button onclick="closeHelp()" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] text-white px-6 py-2 rounded-lg text-sm font-medium">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="aboutModal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c] relative">
+            <button onclick="closeAbout()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div class="p-8 text-center flex flex-col items-center">
+                <div class="w-16 h-16 bg-coffee-100 dark:bg-[#44403c] rounded-full flex items-center justify-center mb-4 shadow-inner">
+                    <i class="fa-solid fa-heart text-3xl text-red-500 animate-pulse"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-coffee-900 dark:text-white mb-2">About Coffee Dial</h3>
+                <div class="w-12 h-1 bg-coffee-300 dark:bg-[#57534e] rounded-full mb-6"></div>
+                
+                <p class="text-coffee-700 dark:text-[#d6ccc2] mb-6 leading-relaxed text-sm">
+                    This app is made by two amateur brewers, <strong>Tieme & Robert</strong>, who wanted some method to their madness of home coffee experimentation.
+                </p>
+                <p class="text-coffee-600 dark:text-[#a8a29e] text-sm italic mb-6">
+                    Feel free to spread our love for coffee and share the link to this app with friends and follow each other's brews.
+                </p>
+
+                <div class="text-xs text-coffee-400 dark:text-[#57534e]">
+                    Version 1.2.0 (BETA)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="easterEggModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 animate-in fade-in duration-300" onclick="closeEasterEgg(event)">
+        <div class="relative w-full max-w-4xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/20">
+            <button onclick="closeEasterEgg(null)" class="absolute top-4 right-4 text-white/70 hover:text-white z-10 transition-colors">
+                <i class="fa-solid fa-xmark text-2xl drop-shadow-md"></i>
+            </button>
+            <video id="easterEggVideo" class="w-full h-full object-contain" controls>
+                <source src="img/Cozy_and_Funky_Video_Generation.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
 
     <script type="module">
-        const firebaseConfig = { apiKey: "AIzaSyAjKRgCrNuwaAvjOJPzTrmippI2sv5QG6M", authDomain: "coffee-dial-app-9db38.firebaseapp.com", projectId: "coffee-dial-app-9db38", storageBucket: "coffee-dial-app-9db38.firebasestorage.app", messagingSenderId: "513325852224", appId: "1:513325852224:web:0af5f15c4968a5bfad61a5" };
+        // --- CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAjKRgCrNuwaAvjOJPzTrmippI2sv5QG6M",
+            authDomain: "coffee-dial-app-9db38.firebaseapp.com",
+            projectId: "coffee-dial-app-9db38",
+            storageBucket: "coffee-dial-app-9db38.firebasestorage.app",
+            messagingSenderId: "513325852224",
+            appId: "1:513325852224:web:0af5f15c4968a5bfad61a5"
+        };
         
-        const BAG_URL = "https://us-central1-coffee-dial-app-9db38.cloudfunctions.net/analyzeCoffeeBag";
-        const PROFILE_URL = "https://us-central1-coffee-dial-app-9db38.cloudfunctions.net/summarizeBrews";
+        const CLOUD_FUNCTION_URL = "https://us-central1-coffee-dial-app-9db38.cloudfunctions.net/analyzeCoffeeBag";
+        const AI_SUMMARY_URL = "https://us-central1-coffee-dial-app-9db38.cloudfunctions.net/summarizeBrews";
 
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
@@ -563,136 +792,987 @@
         let unsubscribeNotifications = null;
         let isPublic = false;
         let dragSrcEl = null;
+        let currentUploadCoffeeId = null;
+
+        // --- Gallery Pagination State ---
         let lastGalleryDoc = null;
         let currentGalleryMode = 'mine';
         let isGalleryLoading = false;
-        let chartInstances = {};
 
-        const columnDefs = [ { id: 'roaster', label: 'Roaster' }, { id: 'origin', label: 'Origin' }, { id: 'farmer', label: 'Blend/Farmer' }, { id: 'variety', label: 'Variety' }, { id: 'processing', label: 'Process' }, { id: 'roastType', label: 'Roast' }, { id: 'method', label: 'Method' }, { id: 'grinder', label: 'Grinder' }, { id: 'grind', label: 'Grind' }, { id: 'recipe', label: 'Recipe' }, { id: 'time', label: 'Time' }, { id: 'temp', label: 'Temp' }, { id: 'drink', label: 'Drink' }, { id: 'notes', label: 'Notes' }, { id: 'improve', label: 'Improve' }, { id: 'rating', label: 'Rating' }, { id: 'date', label: 'Date' } ];
+        // --- PREFERENCES CONFIG ---
+        const columnDefs = [
+            { id: 'roaster', label: 'Roaster' },
+            { id: 'origin', label: 'Origin' },
+            { id: 'farmer', label: 'Blend/Farmer' },
+            { id: 'variety', label: 'Variety' },
+            { id: 'processing', label: 'Process' },
+            { id: 'roastType', label: 'Roast' },
+            { id: 'method', label: 'Method' },
+            { id: 'grinder', label: 'Grinder' },
+            { id: 'grind', label: 'Grind' },
+            { id: 'recipe', label: 'Recipe' },
+            { id: 'time', label: 'Time' },
+            { id: 'temp', label: 'Temp' },
+            { id: 'drink', label: 'Drink' },
+            { id: 'notes', label: 'Notes' },
+            { id: 'improve', label: 'Improve' },
+            { id: 'rating', label: 'Rating' },
+            { id: 'date', label: 'Date' }
+        ];
+
+        // Default: All true
         let columnPreferences = columnDefs.reduce((acc, col) => ({...acc, [col.id]: true}), {});
-        const scaData = { "Fruity": { c: "bg-red-400 text-white", s: { "Berry": ["Blackberry", "Raspberry", "Blueberry", "Strawberry"], "Dried Fruit": ["Raisin", "Prune"], "Other Fruit": ["Coconut", "Cherry", "Pomegranate", "Pineapple", "Grape", "Apple", "Peach", "Pear"], "Citrus Fruit": ["Grapefruit", "Orange", "Lemon", "Lime"] }}, "Sour/Fermented": { c: "bg-yellow-400 text-black", s: { "Sour": ["Sour Aromatics", "Acetic Acid", "Butyric Acid", "Isovaleric Acid", "Citric Acid", "Malic Acid"], "Alcohol/Fermented": ["Winey", "Whiskey", "Fermented", "Overripe"] }}, "Green/Vegetative": { c: "bg-green-500 text-white", s: { "Olive Oil": [], "Raw": [], "Green/Vegetative": ["Under-ripe", "Peapod", "Fresh", "Dark Green", "Vegetative", "Hay-like", "Herb-like"] }}, "Floral": { c: "bg-pink-400 text-white", s: { "Floral": ["Chamomile", "Rose", "Jasmine"] }}, "Sweet": { c: "bg-orange-300 text-black", s: { "Overall Sweet": ["Sweet Aromatics"], "Vanilla": [], "Vanillin": [], "Brown Sugar": ["Molasses", "Maple Syrup", "Caramel", "Honey"] }}, "Nutty/Cocoa": { c: "bg-amber-600 text-white", s: { "Nutty": ["Peanuts", "Hazelnut", "Almond"], "Cocoa": ["Chocolate", "Dark Chocolate"] }}, "Spices": { c: "bg-red-700 text-white", s: { "Brown Spice": ["Nutmeg", "Clove", "Cinnamon", "Anise"], "Pepper": [], "Pungent": [] }}, "Roasted": { c: "bg-orange-800 text-white", s: { "Tobacco": ["Pipe Tobacco"], "Burnt": ["Acrid", "Ashy", "Smoky", "Brown Roast"], "Cereal": ["Grain", "Malt", "Toast"] }}, "Other": { c: "bg-gray-400 text-black", s: { "Chemical": ["Rubber", "Skunky", "Petroleum", "Medicinal", "Salty", "Bitter"], "Papery/Musty": ["Phenolic", "Meaty", "Brothy", "Animalic", "Musty/Earthy", "Musty/Dusty", "Moldy/Damp", "Woody", "Papery/Stale", "Cardboard", "Stale"] }} };
+
+        // --- SCA Wheel Data ---
+        const scaData = {
+          "Fruity": { c: "bg-red-400 text-white", s: { "Berry": ["Blackberry", "Raspberry", "Blueberry", "Strawberry"], "Dried Fruit": ["Raisin", "Prune"], "Other Fruit": ["Coconut", "Cherry", "Pomegranate", "Pineapple", "Grape", "Apple", "Peach", "Pear"], "Citrus Fruit": ["Grapefruit", "Orange", "Lemon", "Lime"] }},
+          "Sour/Fermented": { c: "bg-yellow-400 text-black", s: { "Sour": ["Sour Aromatics", "Acetic Acid", "Butyric Acid", "Isovaleric Acid", "Citric Acid", "Malic Acid"], "Alcohol/Fermented": ["Winey", "Whiskey", "Fermented", "Overripe"] }},
+          "Green/Vegetative": { c: "bg-green-500 text-white", s: { "Olive Oil": [], "Raw": [], "Green/Vegetative": ["Under-ripe", "Peapod", "Fresh", "Dark Green", "Vegetative", "Hay-like", "Herb-like"] }},
+          "Floral": { c: "bg-pink-400 text-white", s: { "Floral": ["Chamomile", "Rose", "Jasmine"] }},
+          "Sweet": { c: "bg-orange-300 text-black", s: { "Overall Sweet": ["Sweet Aromatics"], "Vanilla": [], "Vanillin": [], "Brown Sugar": ["Molasses", "Maple Syrup", "Caramel", "Honey"] }},
+          "Nutty/Cocoa": { c: "bg-amber-600 text-white", s: { "Nutty": ["Peanuts", "Hazelnut", "Almond"], "Cocoa": ["Chocolate", "Dark Chocolate"] }},
+          "Spices": { c: "bg-red-700 text-white", s: { "Brown Spice": ["Nutmeg", "Clove", "Cinnamon", "Anise"], "Pepper": [], "Pungent": [] }},
+          "Roasted": { c: "bg-orange-800 text-white", s: { "Tobacco": ["Pipe Tobacco"], "Burnt": ["Acrid", "Ashy", "Smoky", "Brown Roast"], "Cereal": ["Grain", "Malt", "Toast"] }},
+          "Other": { c: "bg-gray-400 text-black", s: { "Chemical": ["Rubber", "Skunky", "Petroleum", "Medicinal", "Salty", "Bitter"], "Papery/Musty": ["Phenolic", "Meaty", "Brothy", "Animalic", "Musty/Earthy", "Musty/Dusty", "Moldy/Damp", "Woody", "Papery/Stale", "Cardboard", "Stale"] }}
+        };
+
         let scaState = { level: 0, path: [], currentNode: null };
 
-        // AI FUNCTIONS
-        const triggerAIScan = () => document.getElementById('aiFileInput').click();
-        const handleAIFile = async (e) => {
-            const file = e.target.files[0]; if (!file) return;
-            const btn = document.getElementById('aiScanBtn'); const orig = btn.innerHTML;
+        // --- Functions ---
+        
+        // AI SCAN FUNCTIONS
+        const triggerAIScan = () => {
+            if (!currentUser) return alert("Please sign in to use AI scanning.");
+            document.getElementById('aiFileInput').click();
+        };
+
+        const handleAIFile = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const btn = document.getElementById('aiScanBtn');
+            const originalContent = btn.innerHTML;
+            
             try {
-                btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...'; btn.classList.add('ai-loading-pulse');
-                const compressedFile = await imageCompression(file, { maxSizeMB: 0.5, maxWidthOrHeight: 1024 });
-                const base64String = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result.split(',')[1]); reader.readAsDataURL(compressedFile); });
-                const resp = await fetch(BAG_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64Image: base64String }) });
-                if (!resp.ok) throw new Error("AI Analysis Failed");
-                const data = await resp.json();
-                ['roaster', 'farmer', 'origin', 'variety', 'processing', 'roastType'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (data[id]) { el.value = data[id]; el.classList.add('ai-flash-effect'); setTimeout(() => el.classList.remove('ai-flash-effect'), 2000); }
+                // UI Loading State
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...';
+                btn.classList.add('ai-loading-pulse');
+
+                // 1. Compress image
+                const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1024, useWebWorker: true };
+                const compressedFile = await imageCompression(file, options);
+                
+                // 2. Base64
+                const base64String = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(compressedFile);
                 });
+
+                // 3. Call Backend
+                const response = await fetch(CLOUD_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ base64Image: base64String })
+                });
+
+                if (!response.ok) throw new Error("AI Analysis Failed.");
+
+                const data = await response.json();
+
+                // 4. Fill and Flash Effect
+                const fieldsToFill = ['roaster', 'farmer', 'origin', 'variety', 'processing', 'roastType'];
+                
+                fieldsToFill.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (data[id]) {
+                        el.value = data[id];
+                        // Apply flash effect
+                        el.classList.add('ai-flash-effect');
+                        // Remove class after animation finishes (2s) so it can be re-triggered later
+                        setTimeout(() => el.classList.remove('ai-flash-effect'), 2000);
+                    }
+                });
+
                 toggleForm(true);
-            } catch (err) { alert("Error scanning: " + err.message); } finally { btn.disabled = false; btn.innerHTML = orig; btn.classList.remove('ai-loading-pulse'); e.target.value = ''; }
+                
+            } catch (error) {
+                console.error(error);
+                alert("Error scanning bag: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+                btn.classList.remove('ai-loading-pulse');
+                event.target.value = ''; // Reset file input
+            }
         };
 
-        const generateAIProfile = async () => {
-            const btn = document.getElementById('aiProfileBtn'); const orig = btn.innerHTML;
-            const area = document.getElementById('aiProfileArea'); const textEl = document.getElementById('aiProfileText');
-            const viewSelect = document.getElementById('statsViewSelect');
-            const userName = viewSelect.options[viewSelect.selectedIndex].text;
-
-            // Gather simple summary data from currently loaded statistics
-            const summary = {
-                totalBrews: document.getElementById('statTotalBrews').innerText,
-                methods: Object.keys(chartInstances['chartMethod'].data.labels.reduce((acc, l, i) => { acc[l] = chartInstances['chartMethod'].data.datasets[0].data[i]; return acc; }, {})),
-                roastPreference: Object.keys(chartInstances['chartRoast'].data.labels.reduce((acc, l, i) => { acc[l] = chartInstances['chartRoast'].data.datasets[0].data[i]; return acc; }, {})),
-                mostBrewed: document.getElementById('mostBrewedName').innerText,
-                uniqueCoffees: document.getElementById('statUniqueCoffees').innerText
-            };
-
-            try {
-                btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.classList.add('ai-loading-pulse');
-                const resp = await fetch(PROFILE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ statsSummary: summary, userName: userName }) });
-                const data = await resp.json();
-                textEl.innerText = data.profile; area.classList.remove('hidden');
-            } catch (err) { alert("Error generating profile."); } finally { btn.disabled = false; btn.innerHTML = orig; btn.classList.remove('ai-loading-pulse'); }
-        };
-
-        // CORE LOGIC (Preserved from original)
         const googleLogin = () => signInWithPopup(auth, provider).catch(e => alert(e.message));
         const googleLogout = () => signOut(auth).then(() => window.location.reload());
+
         const initUserData = async (user) => {
-            const userDocRef = doc(db, 'users', user.uid); const snap = await getDoc(userDocRef);
-            if (snap.exists()) { const data = snap.data(); isPublic = data.isPublic || false; if(data.preferences) columnPreferences = { ...columnPreferences, ...data.preferences }; } 
-            else { await setDoc(userDocRef, { isPublic: false, displayName: user.displayName, preferences: columnPreferences }); }
-            updatePublicToggleUI(); document.getElementById('myShareId').value = user.uid; renderTable();
+            const userDocRef = doc(db, 'users', user.uid);
+            const snap = await getDoc(userDocRef);
+            if (snap.exists()) {
+                const data = snap.data();
+                isPublic = data.isPublic || false;
+                if(data.preferences) columnPreferences = { ...columnPreferences, ...data.preferences };
+                if(data.displayName !== user.displayName) await updateDoc(userDocRef, { displayName: user.displayName });
+            } else {
+                await setDoc(userDocRef, { isPublic: false, displayName: user.displayName, preferences: columnPreferences });
+            }
+            updatePublicToggleUI();
+            document.getElementById('myShareId').value = user.uid;
+            renderTable();
         };
+
         const changeView = (uid) => {
-            currentView = uid; if(unsubscribeData) unsubscribeData(); const targetUid = uid === 'mine' ? currentUser.uid : uid;
-            const isMine = uid === 'mine'; const formContainer = document.getElementById('formContainer'); if (isMine) { formContainer.classList.remove('hidden'); toggleForm(false); } else { formContainer.classList.add('hidden'); toggleForm(false); }
+            currentView = uid;
+            if(unsubscribeData) unsubscribeData(); 
+            const targetUid = uid === 'mine' ? currentUser.uid : uid;
+            const isMine = uid === 'mine';
+            const formContainer = document.getElementById('formContainer');
+            if (isMine) { formContainer.classList.remove('hidden'); toggleForm(false); } else { formContainer.classList.add('hidden'); toggleForm(false); }
+
             const q = collection(db, 'users', targetUid, 'coffees');
-            unsubscribeData = onSnapshot(q, (snapshot) => { coffees = []; snapshot.forEach(doc => coffees.push({ id: doc.id, ...doc.data() })); if (!currentSort.key) coffees.sort((a,b) => (a.customOrder || 0) - (b.customOrder || 0)); renderTable(); updateAutocompleteLists(); }, (error) => { if(error.code === 'permission-denied') { alert("Access Denied"); document.getElementById('viewSelect').value = 'mine'; changeView('mine'); } });
+            unsubscribeData = onSnapshot(q, (snapshot) => {
+                coffees = [];
+                snapshot.forEach(doc => coffees.push({ id: doc.id, ...doc.data() }));
+                if (!currentSort.key) coffees.sort((a,b) => (a.customOrder || 0) - (b.customOrder || 0));
+                renderTable();
+                updateAutocompleteLists();
+            }, (error) => {
+                console.error(error);
+                if(error.code === 'permission-denied') { alert("⚠️ Access Denied: This user's profile is private."); document.getElementById('viewSelect').value = 'mine'; changeView('mine'); }
+            });
         };
+
         const updateAutocompleteLists = () => {
-            const populate = (id, vals) => { const list = document.getElementById(id); if(list) list.innerHTML = [...new Set(vals)].filter(Boolean).sort().map(v => `<option value="${v}"></option>`).join(''); };
-            populate('roasterList', coffees.map(c => c.roaster || c.name)); populate('farmerList', coffees.map(c => c.farmer)); populate('originList', coffees.map(c => c.origin || c.beanType)); populate('grinderList', coffees.map(c => c.grinder));
-        };
-        const handleFormSubmit = async (e) => {
-            e.preventDefault(); if(currentView !== 'mine') return;
-            const f = new FormData(e.target); const eid = f.get('editId');
-            const d = { 
-                roaster: f.get('roaster'), farmer: f.get('farmer'), origin: f.get('origin'), variety: f.get('variety'), processing: f.get('processing'), roastType: f.get('roastType'), 
-                method: f.get('method') === 'Other' ? f.get('methodOther') : f.get('method'), grinder: f.get('grinder'), grind: parseFloat(f.get('grind')) || null, 
-                weight: parseFloat(f.get('weight')) || null, ratio: parseFloat(f.get('ratio')) || null, time: parseFloat(f.get('time')) || null, 
-                temp: f.get('tempMode') === 'profile' ? f.get('tempProfile') : (f.get('tempNumeric') || "M"), drink: f.get('drinkType') === 'Other' ? f.get('drinkOther') : f.get('drinkType'), 
-                notes: f.get('notes') || '', improve: f.get('improve') || '', rating: parseInt(f.get('rating')) || 0, isActive: f.get('isActive') === 'on', updatedAt: new Date().toISOString() 
+            const uniqueRoasters = [...new Set(coffees.map(c => c.roaster || c.name).filter(Boolean))].sort();
+            const uniqueFarmers = [...new Set(coffees.map(c => c.farmer).filter(Boolean))].sort();
+            const uniqueOrigins = [...new Set(coffees.map(c => c.origin || c.beanType).filter(Boolean))].sort();
+            const uniqueGrinders = [...new Set(coffees.map(c => c.grinder).filter(Boolean))].sort();
+            
+            const populate = (id, values) => {
+                const list = document.getElementById(id);
+                if(list) list.innerHTML = values.map(v => `<option value="${v}"></option>`).join('');
             };
-            try { const col = collection(db, 'users', currentUser.uid, 'coffees'); if(eid) { await updateDoc(doc(col, eid), d); } else { d.createdAt = new Date().toISOString(); d.customOrder = coffees.length > 0 ? Math.min(...coffees.map(c => c.customOrder || 0)) - 1 : 0; await addDoc(col, d); } resetFormState(); toggleForm(false); } catch(err){ alert(err.message); }
+            populate('roasterList', uniqueRoasters);
+            populate('farmerList', uniqueFarmers);
+            populate('originList', uniqueOrigins);
+            populate('grinderList', uniqueGrinders);
         };
-        const resetFormState = () => { document.getElementById('coffeeForm').reset(); document.getElementById('editId').value=''; setTempMode('numeric'); setRating(0); document.getElementById('formContainer').classList.remove('editing-mode'); document.getElementById('formTitle').innerHTML='<span>Add New Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Save Brew</span>'; document.getElementById('cancelEditBtn').classList.add('hidden'); document.getElementById('isActiveToggle').checked = false; document.getElementById('drinkOther').classList.add('hidden'); document.getElementById('methodOther').classList.add('hidden'); };
-        const toggleForm = (f=null) => { const c=document.getElementById('formContainer'),o=document.getElementById('formContent'), ai=document.getElementById('aiScanBtn'), e=c.getAttribute('aria-expanded')==='true',s=f!==null?f:!e; c.setAttribute('aria-expanded',s?'true':'false'); if(s){ o.classList.remove('hidden'); ai.classList.remove('hidden'); } else { o.classList.add('hidden'); ai.classList.add('hidden'); } };
-        const openStats = () => { document.getElementById('statsModal').classList.remove('hidden'); const sl = document.getElementById('statsViewSelect'); sl.innerHTML = '<option value="mine">My Brews</option>'; following.forEach(f => { sl.innerHTML += `<option value="${f.uid}">${f.name || f.uid}</option>`; }); sl.value = currentView; document.getElementById('aiProfileArea').classList.add('hidden'); changeStatsView(currentView); };
+
+        const parseNum = (v) => (v === '' || v === null || isNaN(v)) ? null : parseFloat(v);
+
+        const toggleDrinkOther = () => {
+            const val = document.getElementById('drinkType').value;
+            const input = document.getElementById('drinkOther');
+            if(val === 'Other') input.classList.remove('hidden');
+            else input.classList.add('hidden');
+        };
+
+        const toggleMethodOther = () => {
+            const val = document.getElementById('method').value;
+            const input = document.getElementById('methodOther');
+            if(val === 'Other') input.classList.remove('hidden');
+            else input.classList.add('hidden');
+        };
+
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            if(currentView !== 'mine') return;
+            const f = new FormData(e.target); const eid = f.get('editId');
+            const tMode = f.get('tempMode'); const finalTemp = tMode === 'profile' ? f.get('tempProfile') : (f.get('tempNumeric') || "M");
+            const finalNotes = f.get('notes') || '';
+            const isActiveChecked = f.get('isActive') === 'on'; 
+            
+            const rawDrinkType = f.get('drinkType');
+            const rawDrinkOther = f.get('drinkOther');
+            const finalDrink = rawDrinkType === 'Other' ? (rawDrinkOther || 'Other') : rawDrinkType;
+            
+            const rawMethod = f.get('method');
+            const rawMethodOther = f.get('methodOther');
+            const finalMethod = rawMethod === 'Other' ? (rawMethodOther || 'Other') : rawMethod;
+
+            let newOrder = 0; if (coffees.length > 0) { const minOrder = Math.min(...coffees.map(c => c.customOrder || 0)); newOrder = minOrder - 1; }
+            const d = { 
+                roaster: f.get('roaster'), farmer: f.get('farmer'), origin: f.get('origin'), variety: f.get('variety'), processing: f.get('processing'),
+                roastType: f.get('roastType'), method: finalMethod, grinder: f.get('grinder'), grind: parseNum(f.get('grind')), weight: parseNum(f.get('weight')), 
+                ratio: parseNum(f.get('ratio')), time: parseNum(f.get('time')), temp: finalTemp, drink: finalDrink, notes: finalNotes, 
+                improve: f.get('improve') || '', rating: parseInt(f.get('rating')) || 0, isActive: isActiveChecked, updatedAt: new Date().toISOString() 
+            };
+            try {
+                const col = collection(db, 'users', currentUser.uid, 'coffees');
+                if(eid) { await updateDoc(doc(col, eid), d); } else { d.customOrder = newOrder; d.createdAt = new Date().toISOString(); await addDoc(col, d); }
+                resetFormState();
+                toggleForm(false);
+            } catch(err){ alert(err.message); }
+        };
+
+        const discardForm = () => { if(confirm("Discard unsaved changes?")) { resetFormState(); toggleForm(false); } };
+        const toggleActive = async (id, ev) => { if(ev) ev.stopPropagation(); if(currentView !== 'mine') return; const c = coffees.find(x => x.id === id); if(!c) return; try { await updateDoc(doc(db, 'users', currentUser.uid, 'coffees', id), { isActive: !c.isActive }); } catch(e) { console.error(e); } };
+
+        const handleDragStart = (e) => { dragSrcEl = e.target.closest('tr'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/html', dragSrcEl.innerHTML); dragSrcEl.classList.add('opacity-50'); };
+        const handleDragOver = (e) => { if (e.preventDefault) e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; };
+        const handleDrop = async (e) => {
+            if (e.stopPropagation) e.stopPropagation();
+            const targetRow = e.target.closest('tr');
+            if (!targetRow || !dragSrcEl) return false;
+            const srcBody = dragSrcEl.closest('tbody');
+            const targetBody = targetRow.closest('tbody');
+            if (!srcBody || !targetBody) return false;
+            if (dragSrcEl !== targetRow && srcBody.id === targetBody.id && (srcBody.id === 'coffeeTableBody' || srcBody.id === 'activeCoffeeTableBody')) {
+                const oldIndex = parseInt(dragSrcEl.getAttribute('data-index')); const newIndex = parseInt(targetRow.getAttribute('data-index'));
+                const movedItem = coffees.splice(oldIndex, 1)[0]; coffees.splice(newIndex, 0, movedItem);
+                coffees.forEach((c, idx) => c.customOrder = idx);
+                renderTable(); 
+                try {
+                    const batch = writeBatch(db);
+                    coffees.forEach((c) => { const ref = doc(db, 'users', currentUser.uid, 'coffees', c.id); batch.update(ref, { customOrder: c.customOrder }); });
+                    await batch.commit();
+                } catch(err) { console.error("Reorder failed", err); }
+            } return false;
+        };
+        const handleDragEnd = (e) => { if(dragSrcEl) dragSrcEl.classList.remove('opacity-50'); };
+
+        const setNotesMode = (mode) => {
+            const btnMan = document.getElementById('btnNotesManual'), btnSca = document.getElementById('btnNotesSCA'), conMan = document.getElementById('notesManualContainer'), conSca = document.getElementById('notesSCAContainer'), hidden = document.getElementById('notesMode');
+            hidden.value = mode;
+            if (mode === 'manual') {
+                conMan.classList.remove('hidden'); conSca.classList.add('hidden');
+                btnMan.className="px-2 py-0.5 text-[10px] rounded font-bold transition-all bg-white dark:bg-[#1c1917] shadow-sm text-coffee-800 dark:text-white"; 
+                btnSca.className="px-2 py-0.5 text-[10px] rounded font-bold transition-all text-coffee-500 dark:text-[#a8a29e] hover:text-coffee-700";
+            } else {
+                conSca.classList.remove('hidden'); conMan.classList.remove('hidden');
+                btnSca.className="px-2 py-0.5 text-[10px] rounded font-bold transition-all bg-white dark:bg-[#1c1917] shadow-sm text-coffee-800 dark:text-white"; 
+                btnMan.className="px-2 py-0.5 text-[10px] rounded font-bold transition-all text-coffee-500 dark:text-[#a8a29e] hover:text-coffee-700";
+                if (scaState.level === 0 && scaState.path.length === 0) renderScaWheel();
+            }
+        };
+
+        const renderScaWheel = () => {
+            const container = document.getElementById('scaButtonsContainer');
+            const display = document.getElementById('scaSelectionDisplay');
+            container.innerHTML = '';
+            const pathString = scaState.path.join(' > ');
+            const leafNode = scaState.path.length > 0 ? scaState.path[scaState.path.length - 1] : null;
+            if (leafNode) { display.innerHTML = `<div class="flex flex-col sm:flex-row justify-between items-center gap-2 bg-coffee-100 dark:bg-[#292524] p-2 rounded"><span class="text-xs text-coffee-500 italic">${pathString}</span><div class="flex gap-2"><button onclick="resetSca()" class="text-xs text-coffee-600 dark:text-[#a8a29e] hover:text-red-500 underline">Reset</button><button type="button" onclick="addScaToNotes()" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1 rounded shadow-sm transition-colors"><i class="fa-solid fa-plus mr-1"></i> Add "${leafNode}"</button></div></div>`; } 
+            else { display.innerHTML = '<span class="text-coffee-400 font-normal italic text-xs">Tap categories below to build a flavor...</span>'; }
+            if (scaState.level === 0) {
+                Object.keys(scaData).forEach(key => {
+                    const btn = document.createElement('button'); btn.type = 'button'; btn.className = `sca-btn px-3 py-2 rounded text-xs font-bold shadow-sm ${scaData[key].c}`; btn.textContent = key;
+                    btn.onclick = () => { scaState.path = [key]; scaState.level = 1; scaState.currentNode = scaData[key]; renderScaWheel(); }; container.appendChild(btn);
+                });
+            } else if (scaState.level === 1) {
+                const subs = scaState.currentNode.s; const parentColor = scaState.currentNode.c;
+                const backBtn = document.createElement('button'); backBtn.type = 'button'; backBtn.className = "sca-btn px-3 py-2 rounded text-xs font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200"; backBtn.innerHTML = "<i class='fa-solid fa-arrow-left'></i>"; backBtn.onclick = () => { scaState.level = 0; scaState.path = []; scaState.currentNode = null; renderScaWheel(); }; container.appendChild(backBtn);
+                Object.keys(subs).forEach(key => {
+                    const btn = document.createElement('button'); btn.type = 'button'; btn.className = `sca-btn px-3 py-2 rounded text-xs font-bold shadow-sm opacity-90 hover:opacity-100 ${parentColor}`; btn.textContent = key;
+                    btn.onclick = () => { scaState.path.push(key); scaState.level = 2; renderScaWheel(); }; container.appendChild(btn);
+                });
+            } else if (scaState.level === 2) {
+                const parentKey = scaState.path[0]; const subKey = scaState.path[1]; const notes = scaData[parentKey].s[subKey]; const parentColor = scaData[parentKey].c;
+                const backBtn = document.createElement('button'); backBtn.type = 'button'; backBtn.className = "sca-btn px-3 py-2 rounded text-xs font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200"; backBtn.innerHTML = "<i class='fa-solid fa-arrow-left'></i>"; backBtn.onclick = () => { scaState.path.pop(); scaState.level = 1; renderScaWheel(); }; container.appendChild(backBtn);
+                if (notes.length === 0) { container.innerHTML += `<div class="flex-1 text-xs text-coffee-500 italic ml-2 flex items-center">Use 'Add' above to confirm selection.</div>`; } else {
+                    notes.forEach(note => {
+                        const btn = document.createElement('button'); btn.type = 'button'; btn.className = `sca-btn px-3 py-2 rounded text-xs font-bold shadow-sm opacity-80 hover:opacity-100 ${parentColor}`; btn.textContent = note;
+                        btn.onclick = () => { if (scaState.path.length === 3) scaState.path.pop(); scaState.path.push(note); renderScaWheel(); }; container.appendChild(btn);
+                    });
+                }
+            }
+        };
+
+        const addScaToNotes = () => { if (scaState.path.length === 0) return; const flavorToAdd = scaState.path[scaState.path.length - 1]; const input = document.getElementById('notes'); let currentText = input.value.trim(); if (currentText.length > 0) { if(currentText.endsWith(',')) currentText = currentText.slice(0, -1); input.value = `${currentText}, ${flavorToAdd}`; } else { input.value = flavorToAdd; } resetSca(); };
+        const resetSca = () => { scaState = { level: 0, path: [], currentNode: null }; renderScaWheel(); };
+
+        const openFriendsModal = () => { document.getElementById('modalOverlay').classList.remove('hidden'); switchModalTab('profile'); };
+        const closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
+        
+        const switchModalTab = (tab) => { 
+            const tProf = document.getElementById('tabProfile'); const tFoll = document.getElementById('tabFollowing');
+            const cProf = document.getElementById('contentProfile'); const cFoll = document.getElementById('contentFollowing');
+            if(tab === 'profile') {
+                tProf.classList.add('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
+                tProf.classList.remove('text-coffee-500','dark:text-[#78716c]');
+                tFoll.classList.remove('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
+                tFoll.classList.add('text-coffee-500','dark:text-[#78716c]');
+                cProf.classList.remove('hidden'); cFoll.classList.add('hidden');
+                loadFollowersList();
+            } else {
+                tFoll.classList.add('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
+                tFoll.classList.remove('text-coffee-500','dark:text-[#78716c]');
+                tProf.classList.remove('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]');
+                tProf.classList.add('text-coffee-500','dark:text-[#78716c]');
+                cFoll.classList.remove('hidden'); cProf.classList.add('hidden');
+            } 
+        };
+
+        const togglePublicProfile = async () => { if(!currentUser) return; isPublic = !isPublic; updatePublicToggleUI(); await updateDoc(doc(db, 'users', currentUser.uid), { isPublic: isPublic }); };
+        const updatePublicToggleUI = () => { const btn=document.getElementById('togglePublicBtn'),dot=btn.firstElementChild,con=document.getElementById('shareIdContainer');if(isPublic){btn.className="bg-green-500 w-12 h-6 rounded-full p-1 transition-colors relative";dot.className="bg-white w-4 h-4 rounded-full shadow-md transform translate-x-6 transition-transform";con.classList.remove('hidden');}else{btn.className="bg-gray-300 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 transition-colors relative";dot.className="bg-white w-4 h-4 rounded-full shadow-md transform translate-x-0 transition-transform";con.classList.add('hidden');} };
+        const copyShareId = () => { document.getElementById('myShareId').select(); document.execCommand('copy'); alert("ID Copied!"); };
+        
+        const followUser = async (u) => { 
+            const i=document.getElementById('friendIdInput'); const uId=u||i.value.trim();
+            if(!uId||uId===currentUser.uid) return alert("Invalid ID");
+            try {
+                const d = await getDoc(doc(db, 'users', uId));
+                let n = 'Friend'; if(d.exists() && d.data().displayName) n = d.data().displayName;
+                const batch = writeBatch(db);
+                batch.set(doc(db, 'users', currentUser.uid, 'following', uId), { uid: uId, name: n, addedAt: new Date().toISOString() });
+                batch.set(doc(db, 'users', uId, 'followers', currentUser.uid), { uid: currentUser.uid, name: currentUser.displayName || 'Unknown User', addedAt: new Date().toISOString() });
+                await batch.commit();
+                if(i) i.value=''; loadFollowingList(); alert(`Following ${n}!`);
+            } catch(e) { console.error(e); alert("Could not follow user. Check ID or permissions."); } 
+        };
+
+        const unfollowUser = async (u) => { 
+            if(!confirm("Unfollow?")) return;
+            try {
+                const batch = writeBatch(db);
+                batch.delete(doc(db, 'users', currentUser.uid, 'following', u));
+                batch.delete(doc(db, 'users', u, 'followers', currentUser.uid));
+                await batch.commit();
+                loadFollowingList();
+                if(currentView===u){ document.getElementById('viewSelect').value='mine'; changeView('mine'); }
+            } catch(e) { console.error("Unfollow error", e); alert("Error unfollowing"); }
+        };
+
+        const loadFollowingList = async () => { 
+            if(!currentUser) return;
+            const s = await getDocs(collection(db, 'users', currentUser.uid, 'following'));
+            following = []; s.forEach(d => following.push(d.data()));
+            const l = document.getElementById('followingList'); l.innerHTML = '';
+            if(following.length === 0) { l.innerHTML = '<p class="text-xs text-gray-400 italic">You are not following anyone yet.</p>'; } else {
+                following.forEach(f => {
+                    const d = document.createElement('div'); d.className = "flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";
+                    d.innerHTML = `<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate w-40">${f.name||f.uid}</span> <button onclick="unfollowUser('${f.uid}')" class="text-xs text-red-500 hover:text-red-700">Unfollow</button>`;
+                    l.appendChild(d);
+                });
+            }
+            const sl = document.getElementById('viewSelect'); sl.innerHTML = '<option value="mine">My Brews</option>';
+            following.forEach(f => {
+                const o = document.createElement('option'); o.value = f.uid; o.text = f.name || `Friend (${f.uid.substr(0,5)}...)`; sl.appendChild(o);
+            });
+            sl.value = currentView; 
+        };
+
+        const loadFollowersList = async () => {
+            if(!currentUser) return;
+            const listEl = document.getElementById('followersList'); listEl.innerHTML = '<p class="text-xs text-gray-400 italic animate-pulse">Loading...</p>';
+            try {
+                const s = await getDocs(collection(db, 'users', currentUser.uid, 'followers'));
+                followers = []; s.forEach(d => followers.push(d.data()));
+                listEl.innerHTML = '';
+                if(followers.length === 0) { listEl.innerHTML = '<p class="text-xs text-gray-400 italic">No followers yet.</p>'; } else {
+                     followers.forEach(f => {
+                        const d = document.createElement('div'); d.className = "flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-200 dark:border-[#44403c]";
+                        d.innerHTML = `<span class="text-sm font-mono text-coffee-700 dark:text-[#a8a29e] truncate w-full">${f.name||f.uid}</span>`;
+                        listEl.appendChild(d);
+                    });
+                }
+            } catch(e) { console.error("Error loading followers", e); listEl.innerHTML = '<p class="text-xs text-red-400 italic">Error loading followers.</p>'; }
+        };
+
+        const openUploadModal = (coffeeId) => {
+            currentUploadCoffeeId = coffeeId;
+            document.getElementById('uploadPhotoModal').classList.remove('hidden');
+            document.getElementById('photoInput').value = ''; document.getElementById('photoMessage').value = ''; document.getElementById('uploadProgress').classList.add('hidden');
+            const list = document.getElementById('shareWithList'); list.innerHTML = '';
+            if(following.length === 0) { list.innerHTML = '<span class="text-xs text-gray-400 italic">No friends followed yet.</span>'; } else {
+                following.forEach(f => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between p-2 rounded bg-coffee-50 dark:bg-[#1c1917] border border-coffee-100 dark:border-[#44403c]';
+                    div.innerHTML = `<span class="text-sm font-medium text-coffee-800 dark:text-[#d6ccc2]">${f.name || f.uid}</span><div class="relative inline-block w-10 align-middle select-none transition duration-200 ease-in"><input type="checkbox" id="share_${f.uid}" value="${f.uid}" checked class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 dark:border-gray-600"/><label for="share_${f.uid}" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer"></label></div>`;
+                    list.appendChild(div);
+                });
+            }
+        };
+
+        const toggleAllFriends = (state) => { const checkboxes = document.querySelectorAll('#shareWithList input[type="checkbox"]'); checkboxes.forEach(cb => cb.checked = state); };
+        const closeUploadModal = () => document.getElementById('uploadPhotoModal').classList.add('hidden');
+
+        const handlePhotoSubmit = async () => {
+            const fileInput = document.getElementById('photoInput'); let file = fileInput.files[0];
+            const message = document.getElementById('photoMessage').value;
+            if(!file) return alert("Please select a photo."); if(!currentUploadCoffeeId) return;
+            const checkboxes = document.querySelectorAll('#shareWithList input[type="checkbox"]:checked');
+            const sharedWith = Array.from(checkboxes).map(cb => cb.value);
+            const coffeeData = coffees.find(c => c.id === currentUploadCoffeeId); if(!coffeeData) return alert("Coffee data not found.");
+            
+            const coffeeSnapshot = { 
+                roaster: coffeeData.roaster || coffeeData.name || 'Unknown', 
+                origin: coffeeData.origin || coffeeData.beanType || 'Unknown', 
+                farmer: coffeeData.farmer || '-',
+                method: coffeeData.method || '-', 
+                rating: coffeeData.rating || 0 
+            };
+            
+            const progressBar = document.getElementById('uploadProgress'); progressBar.classList.remove('hidden');
+            
+            try {
+                const timestamp = Date.now();
+                const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}_${file.name}_original`);
+                
+                const originalOptions = {
+                    maxSizeMB: 1.5,
+                    maxWidthOrHeight: 1920,
+                    useWebWorker: true
+                };
+                
+                const compressedOriginal = await imageCompression(file, originalOptions);
+                const snapshot = await uploadBytes(storageRef, compressedOriginal);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+
+                let thumbURL = null;
+                const thumbOptions = { maxSizeMB: 0.1, maxWidthOrHeight: 600, useWebWorker: true };
+                try { 
+                    const thumbFile = await imageCompression(file, thumbOptions);
+                    const thumbRef = ref(storage, `photos/${currentUser.uid}/${timestamp}_${file.name}_thumb`);
+                    const thumbSnapshot = await uploadBytes(thumbRef, thumbFile);
+                    thumbURL = await getDownloadURL(thumbSnapshot.ref);
+                } catch (error) { console.log('Thumbnail generation failed:', error); }
+
+                await addDoc(collection(db, 'photos'), { 
+                    uid: currentUser.uid, 
+                    uploaderName: currentUser.displayName || 'Unknown User', 
+                    photoURL: downloadURL, 
+                    thumbURL: thumbURL, 
+                    message: message, 
+                    coffeeId: currentUploadCoffeeId, 
+                    coffeeSnapshot: coffeeSnapshot, 
+                    sharedWith: sharedWith, 
+                    createdAt: new Date().toISOString() 
+                });
+                
+                closeUploadModal(); 
+                alert("Photo uploaded successfully!");
+            } catch (error) { 
+                console.error("Upload failed", error); 
+                alert("Upload failed: " + error.message); 
+            }
+        };
+
+        const openGallery = async () => {
+            document.getElementById('galleryModal').classList.remove('hidden');
+            const hasNotification = !document.getElementById('galleryBadge').classList.contains('hidden');
+            localStorage.setItem('lastGalleryVisit', new Date().toISOString());
+            document.getElementById('menuBadge').classList.add('hidden');
+            document.getElementById('galleryBadge').classList.add('hidden');
+            if(hasNotification) switchGalleryTab('shared'); else switchGalleryTab('mine');
+            lastGalleryDoc = null; document.getElementById('galleryGrid').innerHTML = ''; document.getElementById('galleryEmpty').classList.add('hidden'); document.getElementById('galleryLoadMore').classList.add('hidden');
+            loadMoreGallery();
+        };
+
+        const switchGalleryTab = async (tab) => {
+            const tMine = document.getElementById('tabGalleryMine'); const tShared = document.getElementById('tabGalleryShared');
+            currentGalleryMode = tab; lastGalleryDoc = null; document.getElementById('galleryGrid').innerHTML = ''; document.getElementById('galleryEmpty').classList.add('hidden'); document.getElementById('galleryLoadMore').classList.add('hidden');
+            if(tab === 'mine') { tMine.classList.add('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]'); tMine.classList.remove('text-coffee-500','dark:text-[#78716c]'); tShared.classList.remove('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]'); tShared.classList.add('text-coffee-500','dark:text-[#78716c]'); } else { tShared.classList.add('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]'); tShared.classList.remove('text-coffee-500','dark:text-[#78716c]'); tMine.classList.remove('bg-coffee-50','dark:bg-[#1c1917]','text-coffee-700','dark:text-[#d6ccc2]'); tMine.classList.add('text-coffee-500','dark:text-[#78716c]'); }
+            loadMoreGallery();
+        };
+
+        const loadMoreGallery = async () => {
+            if(isGalleryLoading) return; isGalleryLoading = true;
+            const btn = document.getElementById('galleryLoadMore'); const empty = document.getElementById('galleryEmpty');
+            let q; const constraints = [orderBy('createdAt', 'desc'), limit(9)];
+            if(lastGalleryDoc) constraints.push(startAfter(lastGalleryDoc));
+            if(currentGalleryMode === 'mine') q = query(collection(db, 'photos'), where('uid', '==', currentUser.uid), ...constraints);
+            else q = query(collection(db, 'photos'), where('sharedWith', 'array-contains', currentUser.uid), ...constraints);
+            const snapshot = await getDocs(q);
+            if(!snapshot.empty) {
+                lastGalleryDoc = snapshot.docs[snapshot.docs.length - 1]; renderGalleryGrid(snapshot.docs);
+                if(snapshot.docs.length < 9) btn.classList.add('hidden'); else btn.classList.remove('hidden');
+            } else { btn.classList.add('hidden'); if(!lastGalleryDoc) empty.classList.remove('hidden'); }
+            isGalleryLoading = false;
+        };
+
+        const renderGalleryGrid = (docs) => {
+            const grid = document.getElementById('galleryGrid');
+            docs.forEach(doc => {
+                const data = doc.data(); 
+                const card = document.createElement('div'); 
+                card.className = "bg-white dark:bg-[#292524] rounded-lg shadow-md overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col relative group";
+                const ratingHtml = getStarDisplay(data.coffeeSnapshot?.rating || 0);
+                const displayUrl = data.thumbURL || data.photoURL;
+                
+                const deleteBtn = currentGalleryMode === 'mine' ? 
+                    `<button onclick="deletePhoto('${doc.id}', '${data.photoURL}', '${data.thumbURL || ''}', event)" class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all z-10 opacity-0 group-hover:opacity-100" title="Delete Photo"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
+
+                const secondaryInfo = data.coffeeSnapshot?.farmer || data.coffeeSnapshot?.origin || '-';
+
+                card.innerHTML = `${deleteBtn}<div class="h-48 overflow-hidden bg-gray-100 dark:bg-gray-800 relative cursor-pointer"><img src="${displayUrl}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Brew Photo" onclick="window.open('${data.photoURL}', '_blank')"><div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 text-white text-xs">${new Date(data.createdAt).toLocaleDateString()}</div></div><div class="p-3 flex-1 flex flex-col"><div class="flex justify-between items-start mb-2"><span class="text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase">${data.uploaderName}</span><div class="text-xs">${ratingHtml}</div></div><p class="text-sm italic text-gray-700 dark:text-gray-300 mb-3 flex-1">"${data.message || ''}"</p><div class="bg-coffee-50 dark:bg-[#1c1917] rounded p-2 text-xs border border-coffee-100 dark:border-[#44403c]"><div class="font-bold text-coffee-800 dark:text-white truncate">${data.coffeeSnapshot?.roaster}</div><div class="text-coffee-600 dark:text-[#a8a29e] truncate">${secondaryInfo}</div><div class="mt-1 inline-block px-1.5 py-0.5 bg-white dark:bg-[#292524] rounded border border-coffee-200 dark:border-[#57534e] text-coffee-700 dark:text-[#d6ccc2] font-mono text-[10px]">${data.coffeeSnapshot?.method}</div></div></div>`;
+                grid.appendChild(card);
+            });
+        };
+
+        const deletePhoto = async (photoId, photoURL, thumbURL, ev) => {
+            if(ev) ev.stopPropagation();
+            if(!confirm("Are you sure you want to permanently delete this photo? This cannot be undone.")) return;
+            
+            try {
+                await deleteDoc(doc(db, 'photos', photoId));
+                const photoRef = ref(storage, photoURL);
+                await deleteObject(photoRef);
+                if(thumbURL) {
+                    const thumbRef = ref(storage, thumbURL);
+                    await deleteObject(thumbRef);
+                }
+                alert("Photo deleted successfully.");
+                openGallery();
+            } catch (err) {
+                console.error("Deletion failed", err);
+                alert("Error deleting photo: " + err.message);
+            }
+        };
+
+        const openPreferences = () => {
+            const list = document.getElementById('preferencesList'); list.innerHTML = '';
+            columnDefs.forEach(col => {
+                const isChecked = columnPreferences[col.id] !== false; const div = document.createElement('div'); div.className = "flex items-center justify-between p-2 rounded bg-coffee-50 dark:bg-[#1c1917] border border-coffee-100 dark:border-[#44403c]";
+                div.innerHTML = `<span class="text-sm font-medium text-coffee-800 dark:text-[#d6ccc2]">${col.label}</span><div class="relative inline-block w-10 align-middle select-none"><input type="checkbox" id="pref_${col.id}" ${isChecked ? 'checked' : ''} class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 dark:border-gray-600"/><label for="pref_${col.id}" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer"></label></div>`;
+                list.appendChild(div);
+            });
+            document.getElementById('preferencesModal').classList.remove('hidden');
+        };
+
+        const savePreferences = async () => {
+            const newPrefs = {}; columnDefs.forEach(col => { const cb = document.getElementById(`pref_${col.id}`); newPrefs[col.id] = cb.checked; });
+            columnPreferences = newPrefs;
+            if(currentUser) { try { await updateDoc(doc(db, 'users', currentUser.uid), { preferences: newPrefs }); } catch(e) { console.error("Error saving prefs", e); } }
+            document.getElementById('preferencesModal').classList.add('hidden'); renderTable();
+        };
+
+        const openHelp = () => document.getElementById('helpModal').classList.remove('hidden');
+        const closeHelp = () => { document.getElementById('helpModal').classList.add('hidden'); if(currentUser) localStorage.setItem(`tutorialSeen_${currentUser.uid}`, 'true'); };
+        const openAbout = () => document.getElementById('aboutModal').classList.remove('hidden');
+        const closeAbout = () => document.getElementById('aboutModal').classList.add('hidden');
+
+        const initNotificationListener = (uid) => {
+            if(unsubscribeNotifications) unsubscribeNotifications();
+            const q = query(collection(db, 'photos'), where('sharedWith', 'array-contains', uid), orderBy('createdAt', 'desc'), limit(1));
+            unsubscribeNotifications = onSnapshot(q, (snapshot) => {
+                if(!snapshot.empty) {
+                    const latestPhotoDate = snapshot.docs[0].data().createdAt; const lastVisit = localStorage.getItem('lastGalleryVisit');
+                    if(!lastVisit || new Date(latestPhotoDate) > new Date(lastVisit)) { document.getElementById('menuBadge').classList.remove('hidden'); document.getElementById('galleryBadge').classList.remove('hidden'); } 
+                    else { document.getElementById('menuBadge').classList.add('hidden'); document.getElementById('galleryBadge').classList.add('hidden'); }
+                }
+            });
+        };
+
+        const openEasterEgg = () => { const m = document.getElementById('easterEggModal'); const v = document.getElementById('easterEggVideo'); m.classList.remove('hidden'); v.currentTime = 0; v.play().catch(e => console.log("Autoplay failed", e)); };
+        const closeEasterEgg = (e) => { if(!e || e.target.id === 'easterEggModal' || e.target.closest('button')) { const m = document.getElementById('easterEggModal'); const v = document.getElementById('easterEggVideo'); m.classList.add('hidden'); v.pause(); } };
+
+        let zoomState = { scale: 1, x: 0, y: 0 }; let gesture = { startX: 0, startY: 0, startScale: 1, startDist: 0 };
+        const openImageModal = () => { document.getElementById('imageModalOverlay').classList.remove('hidden'); resetZoom(); };
+        const closeImageModal = (e) => { if (!e || e.target.id === 'imageModalOverlay' || e.target.closest('button')) document.getElementById('imageModalOverlay').classList.add('hidden'); };
+        const resetZoom = () => { zoomState = { scale: 1, x: 0, y: 0 }; const img = document.getElementById('zoomableImage'); img.style.transition = 'transform 0.3s ease-out'; updateImage(); };
+        const updateImage = () => { const img = document.getElementById('zoomableImage'); img.style.transform = `translate(${zoomState.x}px, ${zoomState.y}px) scale(${zoomState.scale})`; };
+        const initZoomListeners = () => {
+            const img = document.getElementById('zoomableImage'); const container = document.getElementById('imageContainer');
+            container.addEventListener('wheel', (e) => { e.preventDefault(); const delta = e.deltaY * -0.01; zoomState.scale = Math.min(Math.max(0.5, zoomState.scale + delta), 5); updateImage(); });
+            container.addEventListener('dblclick', (e) => { e.preventDefault(); resetZoom(); });
+            container.addEventListener('touchstart', (e) => { img.style.transition = 'none'; if (e.touches.length === 2) { e.preventDefault(); gesture.startDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); gesture.startScale = zoomState.scale; } else if (e.touches.length === 1) { gesture.startX = e.touches[0].pageX - zoomState.x; gesture.startY = e.touches[0].pageY - zoomState.y; } }, { passive: false });
+            container.addEventListener('touchmove', (e) => { e.preventDefault(); if (e.touches.length === 2) { const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); if(gesture.startDist > 0) { zoomState.scale = Math.min(Math.max(0.5, gesture.startScale * (dist / gesture.startDist)), 5); updateImage(); } } else if (e.touches.length === 1 && zoomState.scale > 1) { zoomState.x = e.touches[0].pageX - gesture.startX; zoomState.y = e.touches[0].pageY - gesture.startY; updateImage(); } }, { passive: false });
+            container.addEventListener('touchend', (e) => { if (e.touches.length === 0) { img.style.transition = 'transform 0.2s ease-out'; if (zoomState.scale < 1) resetZoom(); } });
+        };
+        initZoomListeners();
+
+        // --- Statistics Logic ---
+        let chartInstances = {};
+        const openStats = () => {
+            if (!currentUser) return alert("Please sign in first.");
+            document.getElementById('statsModal').classList.remove('hidden');
+            const sl = document.getElementById('statsViewSelect'); sl.innerHTML = '<option value="mine">My Brews</option>';
+            following.forEach(f => { const o = document.createElement('option'); o.value = f.uid; o.text = f.name || `Friend (${f.uid.substr(0,5)}...)`; sl.appendChild(o); });
+            sl.value = currentView; toggleStatsUniqueTable(false); changeStatsView(currentView);
+        };
         const closeStats = () => document.getElementById('statsModal').classList.add('hidden');
-        const changeStatsView = async (uid) => { let data = []; if (uid === currentView) data = coffees; else { const snap = await getDocs(collection(db, 'users', uid, 'coffees')); snap.forEach(doc => data.push({ id: doc.id, ...doc.data() })); } calculateStats(data); document.getElementById('aiProfileArea').classList.add('hidden'); };
-        const calculateStats = (data) => {
-            const total = data.length; document.getElementById('statTotalBrews').innerText = total;
-            const agg = (key) => data.reduce((acc, c) => { const val = c[key] || 'Unknown'; acc[val] = (acc[val] || 0) + 1; return acc; }, {});
-            renderCharts(agg('roastType'), agg('method'), agg('drink'), data.reduce((acc, c) => { if(c.rating > 0) acc[c.rating] = (acc[c.rating] || 0) + 1; return acc; }, {}));
-            const uniqueMap = {}; data.forEach(c => { const key = `${c.roaster||'-'}|${c.origin||'-'}|${c.farmer||'-'}`; if(!uniqueMap[key]) uniqueMap[key] = { count: 0, roaster: c.roaster, origin: c.origin, farmer: c.farmer }; uniqueMap[key].count++; });
-            document.getElementById('statUniqueCoffees').innerText = Object.keys(uniqueMap).length;
+
+        const toggleStatsUniqueTable = (show) => {
+            const gen = document.getElementById('statsGeneralView');
+            const uni = document.getElementById('statsUniqueTableView');
+            if (show) { gen.classList.add('hidden'); uni.classList.remove('hidden'); }
+            else { uni.classList.add('hidden'); gen.classList.remove('hidden'); }
         };
+
+        const changeStatsView = async (uid) => {
+            // Clear AI Profile when changing views
+            document.getElementById('aiProfileContainer').classList.add('hidden');
+            
+            let dataToUse = [];
+            if (uid === currentView) dataToUse = coffees;
+            else {
+                const q = collection(db, 'users', uid, 'coffees');
+                const snap = await getDocs(q);
+                snap.forEach(doc => dataToUse.push({ id: doc.id, ...doc.data() }));
+            }
+            if(dataToUse.length === 0) { calculateStats([]); return; }
+            calculateStats(dataToUse);
+        };
+
+        // NEW AI SUMMARY LOGIC
+        const generateAISummary = async () => {
+            const btn = document.getElementById('aiSummaryBtn');
+            const originalContent = btn.innerHTML;
+            const targetUid = document.getElementById('statsViewSelect').value;
+            const userName = document.getElementById('statsViewSelect').options[document.getElementById('statsViewSelect').selectedIndex].text;
+
+            // Gather Data
+            let dataToUse = [];
+            if (targetUid === currentView) dataToUse = coffees;
+            else {
+                const q = collection(db, 'users', targetUid, 'coffees');
+                const snap = await getDocs(q);
+                snap.forEach(doc => dataToUse.push({ id: doc.id, ...doc.data() }));
+            }
+
+            if(dataToUse.length < 3) return alert("Need at least 3 brews to characterize this person!");
+
+            // Prepare Summary Object for Gemini
+            const countOccurrences = (arr, key) => arr.reduce((acc, obj) => { const v = obj[key] || 'Unknown'; acc[v] = (acc[v] || 0) + 1; return acc; }, {});
+            
+            const statsSummary = {
+                totalBrews: dataToUse.length,
+                roasters: countOccurrences(dataToUse, 'roaster'),
+                origins: countOccurrences(dataToUse, 'origin'),
+                methods: countOccurrences(dataToUse, 'method'),
+                drinks: countOccurrences(dataToUse, 'drink'),
+                averageRating: (dataToUse.reduce((acc, c) => acc + (c.rating || 0), 0) / dataToUse.length).toFixed(1),
+                commonNotes: dataToUse.map(c => c.notes).filter(Boolean).slice(-15).join(', ') // Last 15 notes
+            };
+
+            try {
+                // UI Loading State
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Brewing AI...';
+                btn.classList.add('ai-loading-pulse');
+
+                const response = await fetch(AI_SUMMARY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ statsSummary, userName })
+                });
+
+                if (!response.ok) throw new Error("AI Summary Failed.");
+                const result = await response.json();
+
+                // Display
+                const container = document.getElementById('aiProfileContainer');
+                container.innerHTML = `
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 text-indigo-500 mt-1">
+                            <i class="fa-solid fa-quote-left text-2xl"></i>
+                        </div>
+                        <div class="text-sm italic leading-relaxed text-coffee-900 dark:text-indigo-100 pr-6">
+                            ${result.profile}
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.classList.add('hidden')" class="absolute top-2 right-2 text-indigo-400 hover:text-indigo-600 transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="absolute -bottom-2 -right-2 opacity-10 text-6xl text-indigo-600">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                `;
+                container.classList.remove('hidden');
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            } catch (error) {
+                console.error(error);
+                alert("Error generating AI profile: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+                btn.classList.remove('ai-loading-pulse');
+            }
+        };
+
+        const calculateStats = (dataToUse) => {
+            const total = dataToUse.length; const now = new Date(); const oneDay = 24 * 60 * 60 * 1000;
+            const last30 = dataToUse.filter(c => (now - new Date(c.createdAt)) < 30 * oneDay).length;
+            const last7 = dataToUse.filter(c => (now - new Date(c.createdAt)) < 7 * oneDay).length;
+            const firstDate = new Date(Math.min(...dataToUse.map(c => new Date(c.createdAt || now))));
+            const diffDays = Math.max(1, Math.round(Math.abs((now - firstDate) / oneDay)));
+            const avg = (total / diffDays).toFixed(1);
+            document.getElementById('statTotalBrews').innerText = total; document.getElementById('statMonthBrews').innerText = last30; document.getElementById('statWeekBrews').innerText = last7; document.getElementById('statAvgBrews').innerText = avg;
+            const agg = (key) => dataToUse.reduce((acc, c) => { const val = c[key] || 'Unknown'; acc[val] = (acc[val] || 0) + 1; return acc; }, {});
+            const roastData = agg('roastType'); const methodData = agg('method'); const drinkData = agg('drink');
+            const ratingData = dataToUse.reduce((acc, c) => { const r = c.rating || 0; if(r > 0) acc[r] = (acc[r] || 0) + 1; return acc; }, {});
+            renderCharts(roastData, methodData, drinkData, ratingData);
+
+            const uniqueMap = {}; 
+            dataToUse.forEach(c => { 
+                const roaster = c.roaster || c.name || '-';
+                const origin = c.origin || c.beanType || '-';
+                const farmer = c.farmer || '-';
+                const key = `${roaster}|${origin}|${farmer}`; 
+                if(!uniqueMap[key]) uniqueMap[key] = { count: 0, roaster, origin, farmer, totalRating: 0, ratingCount: 0 }; 
+                uniqueMap[key].count++; 
+                if (c.rating > 0) { uniqueMap[key].totalRating += c.rating; uniqueMap[key].ratingCount++; }
+            });
+
+            document.getElementById('statUniqueCoffees').innerText = Object.keys(uniqueMap).length;
+            let maxKey = null; Object.keys(uniqueMap).forEach(k => { if(!maxKey || uniqueMap[k].count > uniqueMap[maxKey].count) maxKey = k; });
+            if(maxKey) { const d = uniqueMap[maxKey]; document.getElementById('mostBrewedName').innerText = `${d.roaster} - ${d.origin} ${d.farmer !== '-' ? '('+d.farmer+')' : ''}`; document.getElementById('mostBrewedCount').innerText = `${d.count} brews`; }
+            
+            const topMap = {}; dataToUse.filter(c => c.rating === 5).forEach(c => { const key = `${c.roaster||''}|${c.origin||''}|${c.farmer||''}`; if(!topMap[key]) topMap[key] = { count: 0, data: c }; topMap[key].count++; });
+            const sortedTopList = Object.values(topMap).sort((a,b) => b.count - a.count); const listEl = document.getElementById('topCoffeesList'); listEl.innerHTML = '';
+            if(sortedTopList.length === 0) listEl.innerHTML = '<p class="text-sm text-gray-400 italic">No 5-star brews yet.</p>';
+            else sortedTopList.forEach(item => { const c = item.data; const div = document.createElement('div'); div.className = "flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917] p-2 rounded border border-coffee-100 dark:border-[#44403c]"; div.innerHTML = `<div class="truncate pr-2"><span class="font-bold text-coffee-800 dark:text-white text-sm block truncate">${c.roaster || 'Unknown'}</span><span class="text-xs text-coffee-500 dark:text-[#78716c] truncate">${c.origin || ''} ${c.farmer ? '• '+c.farmer : ''}</span></div><span class="text-xs font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full whitespace-nowrap">${item.count} <i class="fa-solid fa-mug-hot ml-1"></i></span>`; listEl.appendChild(div); });
+
+            const leaderboardData = Object.values(uniqueMap).map(u => ({
+                ...u,
+                avg: u.ratingCount > 0 ? (u.totalRating / u.ratingCount).toFixed(1) : "0.0"
+            })).sort((a,b) => b.avg - a.avg);
+
+            const lbBody = document.getElementById('uniqueLeaderboardBody');
+            lbBody.innerHTML = leaderboardData.length ? "" : "<tr><td colspan='4' class='text-center py-4 italic text-coffee-400'>No data.</td></tr>";
+            leaderboardData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-bold">${item.roaster}</td>
+                    <td class="px-4 py-3">${item.origin}</td>
+                    <td class="px-4 py-3">${item.farmer}</td>
+                    <td class="px-4 py-3 text-center"><span class="px-2 py-1 rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 font-bold">${item.avg} ★</span></td>
+                `;
+                lbBody.appendChild(tr);
+            });
+        };
+
         const renderCharts = (roast, method, drink, stars) => {
-            const isDark = document.documentElement.classList.contains('dark'); const textColor = isDark ? '#e7e5e4' : '#4a3b32';
-            const createPie = (id, obj, colors) => { if(chartInstances[id]) chartInstances[id].destroy(); chartInstances[id] = new Chart(document.getElementById(id).getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(obj), datasets: [{ data: Object.values(obj), backgroundColor: colors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, font: { size: 10 } } } } } }); };
-            createPie('chartRoast', roast, ['#fcd34d', '#f97316', '#78350f', '#000000']); createPie('chartMethod', method, ['#60a5fa', '#34d399', '#f472b6', '#a78bfa']); createPie('chartDrink', drink, ['#fb923c', '#c084fc', '#22d3ee', '#4ade80']);
-            if(chartInstances['chartStars']) chartInstances['chartStars'].destroy(); chartInstances['chartStars'] = new Chart(document.getElementById('chartStars').getContext('2d'), { type: 'bar', data: { labels: ['1★','2★','3★','4★','5★'], datasets: [{ data: [1,2,3,4,5].map(i => stars[i]||0), backgroundColor: '#fbbf24' }] }, options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { color: textColor } }, x: { ticks: { color: textColor } } } } });
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#e7e5e4' : '#4a3b32'; const gridColor = isDark ? '#44403c' : '#e5e7eb';
+            const createPie = (ctxId, dataObj, colors) => {
+                if(chartInstances[ctxId]) chartInstances[ctxId].destroy(); const ctx = document.getElementById(ctxId).getContext('2d');
+                chartInstances[ctxId] = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(dataObj), datasets: [{ data: Object.values(dataObj), backgroundColor: colors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, font: { size: 10, family: "'Outfit', sans-serif" }, boxWidth: 10 } } } } });
+            };
+            const roastColors = ['#fcd34d', '#f97316', '#78350f', '#000000', '#9ca3af'];
+            const methodColors = ['#60a5fa', '#34d399', '#f472b6', '#a78bfa', '#fbbf24', '#9ca3af', '#f87171', '#2dd4bf'];
+            const drinkColors = ['#fb923c', '#c084fc', '#22d3ee', '#4ade80', '#e879f9', '#9ca3af'];
+            createPie('chartRoast', roast, roastColors); createPie('chartMethod', method, methodColors); createPie('chartDrink', drink, drinkColors);
+            if(chartInstances['chartStars']) chartInstances['chartStars'].destroy(); const ctxStars = document.getElementById('chartStars').getContext('2d');
+            const starCounts = [1,2,3,4,5].map(i => stars[i] || 0);
+            chartInstances['chartStars'] = new Chart(ctxStars, { type: 'bar', data: { labels: ['1★', '2★', '3★', '4★', '5★'], datasets: [{ label: 'Count', data: starCounts, backgroundColor: '#fbbf24', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: textColor, precision:0 }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { display: false } } } } });
+        };
+
+        const setRating = (r) => { const c=document.getElementById('starContainer'); document.getElementById('ratingInput').value=r; for(let i=0;i<c.children.length;i++){ if(i<r)c.children[i].classList.add('active'); else c.children[i].classList.remove('active'); } };
+        const getStarDisplay = (r) => { if(!r)return'-'; let h=''; for(let i=0;i<r;i++)h+='<i class="fa-solid fa-star text-xs text-yellow-400"></i>'; return h; };
+        
+        const exportCSV = () => { 
+            const d = getFilteredCoffees(); if(!d.length) return alert("No data"); 
+            const esc = (t) => { if (t === null || t === undefined) return ''; const str = String(t); if (str.includes(',') || str.includes('"') || str.includes('\n')) return `"${str.replace(/"/g, '""')}"`; return str; };
+            const h = ["Date","Roaster","Origin","Blend/Farmer","Variety","Process","Roast","Method","Grinder","Grind","In(g)","Out(g)","Time(s)","Temp","Drink","Rating","Notes","Improve"]; 
+            const r = d.map(c => [ c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '', esc(c.roaster || c.name), esc(c.origin || c.beanType), esc(c.farmer), esc(c.variety), esc(c.processing), esc(c.roastType), esc(c.method), esc(c.grinder), esc(c.grind), esc(c.weight), (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '', esc(c.time), esc(c.temp), esc(c.drink), esc(c.rating), esc(c.notes), esc(c.improve) ]); 
+            const csvContent = "data:text/csv;charset=utf-8," + h.join(",") + "\n" + r.map(e => e.join(",")).join("\n"); 
+            const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", "coffee_log.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link); 
+        };
+
+        const handleRecipeInput = (s) => { const w=document.getElementById('inputWeight'),r=document.getElementById('inputRatio'),y=document.getElementById('inputYield'); const wv=parseFloat(w.value)||0,rv=parseFloat(r.value)||0,yv=parseFloat(y.value)||0; if(!wv)return; if(s==='weight'){ if(rv>0)y.value=(wv*rv).toFixed(1); else if(yv>0)r.value=(yv/wv).toFixed(1); } else if(s==='ratio')y.value=(wv*rv).toFixed(1); else if(s==='yield'){ if(wv>0)r.value=(yv/wv).toFixed(2); } };
+        const setTempMode = (m) => { 
+            document.getElementById('tempMode').value = m; const btnNum = document.getElementById('btnTempNumeric'); const btnProf = document.getElementById('btnTempProfile'); const conNum = document.getElementById('tempNumericContainer'); const conProf = document.getElementById('tempProfileContainer');
+            const activeClass = "px-2 py-0.5 text-[10px] rounded font-bold transition-all bg-white dark:bg-[#1c1917] shadow-sm text-coffee-800 dark:text-white"; const inactiveClass = "px-2 py-0.5 text-[10px] rounded font-bold transition-all text-coffee-500 dark:text-[#a8a29e] hover:text-coffee-700";
+            if (m === 'numeric') { conNum.classList.remove('hidden'); conProf.classList.add('hidden'); btnNum.className = activeClass; btnProf.className = inactiveClass; } else { conProf.classList.remove('hidden'); conNum.classList.add('hidden'); btnProf.className = activeClass; btnNum.className = inactiveClass; }
         };
         
-        // UTILS
-        const setRating = (r) => { document.getElementById('ratingInput').value=r; const c=document.getElementById('starContainer'); for(let i=0;i<5;i++) c.children[i].classList.toggle('active', i<r); };
-        const getStarDisplay = (r) => { let h=''; for(let i=0;i<r;i++) h+='<i class="fa-solid fa-star text-xs text-yellow-400"></i>'; return h || '-'; };
-        const setTempMode = (m) => { document.getElementById('tempMode').value = m; document.getElementById('tempNumericContainer').classList.toggle('hidden', m!=='numeric'); document.getElementById('tempProfileContainer').classList.toggle('hidden', m==='numeric'); };
-        const handleRecipeInput = (s) => { const w=document.getElementById('inputWeight'),r=document.getElementById('inputRatio'),y=document.getElementById('inputYield'); if(s==='weight'&&r.value) y.value=(w.value*r.value).toFixed(1); if(s==='ratio'&&w.value) y.value=(w.value*r.value).toFixed(1); if(s==='yield'&&w.value) r.value=(y.value/w.value).toFixed(2); };
-        const toggleTheme = () => { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); };
-        const initTheme = () => { if(localStorage.getItem('theme')==='light') document.documentElement.classList.remove('dark'); };
-        const closeMenus = (e) => { if(e.target.id==='modalOverlay') closeModal(); if(!document.getElementById('mainMenuDropdown').contains(e.target) && !e.target.closest('button[onclick*="toggleMainMenu"]')) document.getElementById('mainMenuDropdown').classList.add('hidden'); };
-        const toggleMainMenu = (e) => { e.stopPropagation(); document.getElementById('mainMenuDropdown').classList.toggle('hidden'); };
-        const updatePublicToggleUI = () => { const dot=document.getElementById('togglePublicBtn').firstElementChild; document.getElementById('togglePublicBtn').className = isPublic ? "bg-green-500 w-12 h-6 rounded-full p-1 relative" : "bg-gray-300 dark:bg-[#44403c] w-12 h-6 rounded-full p-1 relative"; dot.style.transform = isPublic ? "translateX(24px)" : "translateX(0)"; document.getElementById('shareIdContainer').classList.toggle('hidden', !isPublic); };
-        const togglePublicProfile = async () => { isPublic = !isPublic; updatePublicToggleUI(); await updateDoc(doc(db, 'users', currentUser.uid), { isPublic }); };
-        const copyShareId = () => { document.getElementById('myShareId').select(); document.execCommand('copy'); alert("Copied!"); };
+        const toggleForm = (f=null) => { 
+            const c=document.getElementById('formContainer'),o=document.getElementById('formContent'),e=c.getAttribute('aria-expanded')==='true',s=f!==null?f:!e; 
+            const aiBtn = document.getElementById('aiScanBtn');
+            c.setAttribute('aria-expanded',s?'true':'false'); 
+            if(s){ 
+                o.classList.remove('hidden'); 
+                aiBtn.classList.remove('hidden');
+                if(document.getElementById('notesMode').value === 'sca') renderScaWheel(); 
+            } else { 
+                o.classList.add('hidden'); 
+                aiBtn.classList.add('hidden');
+            } 
+        };
+        
+        const populateForm = (c) => { 
+            document.getElementById('roaster').value=c.roaster||c.name||''; document.getElementById('farmer').value=c.farmer||''; document.getElementById('origin').value=c.origin||c.beanType||''; document.getElementById('variety').value=c.variety||''; document.getElementById('processing').value=c.processing||''; document.getElementById('roastType').value=c.roastType||''; document.getElementById('grinder').value=c.grinder||''; document.getElementById('grind').value=c.grind||''; document.getElementById('inputWeight').value=c.weight||''; document.getElementById('inputRatio').value=c.ratio||''; document.getElementById('inputYield').value=(c.weight&&c.ratio)?(c.weight*c.ratio).toFixed(1):''; document.getElementById('time').value=c.time||''; document.getElementById('notes').value=c.notes||''; document.getElementById('improve').value=c.improve||'';
+            if(!isNaN(parseFloat(c.temp))&&isFinite(c.temp)){setTempMode('numeric');document.getElementById('tempNumeric').value=c.temp;}else{setTempMode('profile');document.getElementById('tempProfile').value=c.temp||'';} 
+            
+            const stdDrinks = ["Espresso","Lungo", "Americano", "Cappuccino", "Flat White", "Macchiato", "Latte Macchiato"]; const dVal = c.drink || "";
+            if(stdDrinks.includes(dVal)) { document.getElementById('drinkType').value = dVal; document.getElementById('drinkOther').classList.add('hidden'); } 
+            else if (dVal) { document.getElementById('drinkType').value = 'Other'; document.getElementById('drinkOther').value = dVal; document.getElementById('drinkOther').classList.remove('hidden'); } 
+            else { document.getElementById('drinkType').value = ""; document.getElementById('drinkOther').classList.add('hidden'); }
 
-        // INITIALIZE
+            const stdMethods = ["Espresso", "V60", "Clever Dripper", "Aeropress", "OXO Rapid Brewer", "French Press", "Chemex"]; const mVal = c.method || "";
+            if(stdMethods.includes(mVal)) { document.getElementById('method').value = mVal; document.getElementById('methodOther').classList.add('hidden'); } 
+            else if (mVal) { document.getElementById('method').value = 'Other'; document.getElementById('methodOther').value = mVal; document.getElementById('methodOther').classList.remove('hidden'); } 
+            else { document.getElementById('method').value = ""; document.getElementById('methodOther').classList.add('hidden'); }
+
+            setRating(c.rating||0); setNotesMode('manual'); document.getElementById('isActiveToggle').checked = c.isActive || false; 
+        }
+
+        const editCoffee = (id) => { const c=coffees.find(x=>x.id===id); if(!c)return; document.getElementById('editId').value=c.id; populateForm(c); document.getElementById('formContainer').classList.add('editing-mode'); toggleForm(true); document.getElementById('formTitle').innerHTML='<span class="text-orange-500">Edit Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Update</span>'; document.getElementById('submitBtn').className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); };
+        const duplicateCoffee = (id) => { const c=coffees.find(x=>x.id===id); if(!c)return; if(currentView!=='mine'){const d={...c};document.getElementById('viewSelect').value='mine';changeView('mine');setTimeout(()=>{document.getElementById('editId').value='';populateForm(d);toggleForm(true);document.getElementById('formContainer').classList.remove('editing-mode');document.getElementById('formTitle').innerHTML='<span>Duplicate Brew</span>';document.getElementById('submitBtn').innerHTML='<span>Save Copy</span>';window.scrollTo({top:0,behavior:'smooth'});},500);}else{document.getElementById('editId').value='';populateForm(c);toggleForm(true);document.getElementById('formContainer').classList.remove('editing-mode');document.getElementById('formTitle').innerHTML='<span>Duplicate Brew</span>';document.getElementById('submitBtn').innerHTML='<span>Save Copy</span>';window.scrollTo({top:0,behavior:'smooth'});} };
+        const cloneBrew = (id) => duplicateCoffee(id);
+
+        const deleteCoffee = async (id, ev) => { if(ev)ev.stopPropagation(); if(currentView!=='mine')return; if(!confirm('Delete?'))return; await deleteDoc(doc(db,'users',currentUser.uid,'coffees',id)); if(document.getElementById('editId').value==id)resetFormState(); };
+        const resetFormState = (e) => { 
+            if(e)e.stopPropagation(); document.getElementById('coffeeForm').reset(); document.getElementById('editId').value=''; setTempMode('numeric'); setNotesMode('manual'); resetSca(); setRating(0); document.getElementById('formContainer').classList.remove('editing-mode'); document.getElementById('formTitle').innerHTML='<span>Add New Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Save Brew</span>'; document.getElementById('submitBtn').className="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] dark:hover:bg-[#44403c] text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.add('hidden'); document.getElementById('isActiveToggle').checked = false; 
+            document.getElementById('drinkOther').classList.add('hidden');
+            document.getElementById('methodOther').classList.add('hidden');
+        };
+
+        const clearSearch = () => { const input = document.getElementById('globalSearch'); input.value = ''; renderTable(); document.getElementById('searchClearBtn').classList.add('hidden'); input.focus(); };
+        
+        let currentSort = { key: null, direction: 'asc' };
+        let activeFilters = { method: null, temp: null, roastType: null, roaster: null, origin: null, farmer: null, variety: null, processing: null, drink: null, grinder: null };
+        const sortBy = (k) => { if(currentSort.key===k)currentSort.direction=currentSort.direction==='asc'?'desc':'asc'; else {currentSort.key=k;currentSort.direction='asc';} renderTable(); };
+        const openFilterMenu = (e,k) => { e.stopPropagation(); const m=document.getElementById('filterDropdown'); const vals = coffees.map(c => k==='roaster' ? (c.roaster||c.name) : (k==='origin' ? (c.origin||c.beanType) : c[k])); const v=[...new Set(vals)].sort(); if(!v.length)return; let h=`<div class="px-3 py-2 text-xs font-bold text-coffee-400 dark:text-[#78716c] uppercase border-b border-coffee-100 dark:border-[#44403c] mb-1">Filter ${k}</div><button onclick="applyFilter('${k}',null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] font-bold text-coffee-700 dark:text-[#d6ccc2]">All</button>`; v.forEach(val=>{h+=`<button onclick="applyFilter('${k}','${val}')" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-600 dark:text-[#a8a29e]">${val}</button>`}); m.innerHTML=h; const r=e.currentTarget.getBoundingClientRect(); const c=e.currentTarget.closest('.relative').getBoundingClientRect(); m.style.top=(r.bottom-c.top+5)+'px'; m.style.left=(r.left-c.left)+'px'; m.classList.remove('hidden'); }
+        const closeFilterMenu = (e) => { const m=document.getElementById('filterDropdown'); if(!m.contains(e.target))m.classList.add('hidden'); }
+        const applyFilter = (k,v) => { activeFilters[k]=v; document.getElementById('filterDropdown').classList.add('hidden'); renderTable(); renderActiveFilters(); };
+        const clearAllFilters = () => { activeFilters={method:null,temp:null,roastType:null,roaster:null,origin:null,farmer:null,variety:null,processing:null,drink:null,grinder:null}; renderTable(); renderActiveFilters(); }
+        const renderActiveFilters = () => { const c=document.getElementById('activeFiltersContainer'), l=document.getElementById('activeFiltersList'); l.innerHTML=''; let h=false; Object.entries(activeFilters).forEach(([k,v])=>{ if(v){ h=true; l.innerHTML+=`<div class="flex items-center gap-2 bg-coffee-700 dark:bg-[#57534e] text-white text-xs px-3 py-1 rounded-full shadow-sm"><span>${k}:</span><b>${v}</b><button onclick="applyFilter('${k}',null)" class="ml-1 hover:text-red-200">x</button></div>`; } }); c.classList.toggle('hidden',!h); }
+        
+        const getFilteredCoffees = () => { 
+            let f=coffees; const searchInput = document.getElementById('globalSearch');
+            if (searchInput && searchInput.value) { const term = searchInput.value.toLowerCase(); f = f.filter(c => { const searchable = [c.roaster||c.name||'', c.origin||c.beanType||'', c.farmer||'', c.variety||'', c.processing||'', c.method||'', c.drink||'', c.notes||'', c.improve||'', c.grinder||''].join(' ').toLowerCase(); return searchable.includes(term); }); }
+            f=f.filter(c=>{ 
+                const cRoaster = c.roaster || c.name; const cOrigin = c.origin || c.beanType;
+                const m=!activeFilters.method||c.method===activeFilters.method; const t=!activeFilters.temp||String(c.temp)===String(activeFilters.temp); const r=!activeFilters.roastType||c.roastType===activeFilters.roastType; const rost=!activeFilters.roaster||cRoaster===activeFilters.roaster; const orig=!activeFilters.origin||cOrigin===activeFilters.origin; const farm=!activeFilters.farmer||c.farmer===activeFilters.farmer; const varr=!activeFilters.variety||c.variety===activeFilters.variety; const proc=!activeFilters.processing||c.processing===activeFilters.processing; const dr=!activeFilters.drink||c.drink===activeFilters.drink; const gri=!activeFilters.grinder||c.grinder===activeFilters.grinder;
+                return m&&t&&r&&rost&&orig&&farm&&varr&&proc&&dr&&gri; 
+            }); 
+            if(currentSort.key){ f.sort((a,b)=>{ 
+                let va=a[currentSort.key], vb=b[currentSort.key]; 
+                if(currentSort.key==='roaster') { va=a.roaster||a.name; vb=b.roaster||b.name; } if(currentSort.key==='origin') { va=a.origin||a.beanType; vb=b.origin||b.beanType; } if(currentSort.key==='temp'){ const na=parseFloat(va), nb=parseFloat(vb); if(!isNaN(na)&&!isNaN(nb)){va=na;vb=nb;} } 
+                if(typeof va==='string')va=va.toLowerCase(); if(typeof vb==='string')vb=vb.toLowerCase(); 
+                if(va<vb)return currentSort.direction==='asc'?-1:1; if(va>vb)return currentSort.direction==='asc'?1:-1; return 0; 
+            }); } 
+            return f; 
+        };
+        
+        const formatTime = (s) => { if(!s && s !== 0) return '-'; const m=Math.floor(s/60), sc=s%60; return m>0?`${m}m ${sc}s`:`${sc}s`; };
+        const getRoastBadge = (r) => { if(!r)return''; const m={'Light':'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-800','Medium':'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200 dark:border-orange-800','Medium-Dark':'bg-[#d6ccc2] text-[#5e4b41] border-[#c0b4aa] dark:bg-[#57534e]/50 dark:text-[#d6ccc2] dark:border-[#57534e]','Dark':'bg-gray-800 text-gray-100 border-gray-700 dark:bg-black dark:text-gray-300 dark:border-gray-800'}; return `<span class="${m[r]||'bg-gray-100 dark:bg-gray-800'} text-xs font-medium px-2 py-0.5 rounded-full border pointer-events-none select-none">${r}</span>`; };
+        const getTempBadge = (t) => { if(!t) return '-'; if(!isNaN(parseFloat(t))&&isFinite(t)){ let c='bg-gray-100 dark:bg-gray-800';if(t<90)c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';else if(t<94)c='bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';else c='bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-md ${c} text-xs font-bold shadow-sm pointer-events-none select-none font-mono">${t}°C</span>`;} const m={'L4':'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300','L3':'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300','L2':'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-200','L1':'bg-cyan-50 text-cyan-600 border-cyan-100 dark:bg-cyan-900/20 dark:text-cyan-200','M':'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200','H1':'bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-900/20 dark:text-orange-200','H2':'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200','H3':'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300','H4':'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/40 dark:text-rose-300'}; return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${m[t]||'bg-gray-100'} text-xs font-bold shadow-sm pointer-events-none select-none">${t}</span>`; };
+        const closeMenus = (e) => { 
+            if(!document.getElementById('modalOverlay').contains(e.target) && !document.getElementById('modalOverlay').classList.contains('hidden') && e.target.id==='modalOverlay') closeModal(); 
+            if(!document.getElementById('filterDropdown').contains(e.target)) document.getElementById('filterDropdown').classList.add('hidden'); 
+            if(!document.getElementById('mainMenuDropdown').contains(e.target) && !e.target.closest('button[onclick*="toggleMainMenu"]')) document.getElementById('mainMenuDropdown').classList.add('hidden');
+        };
+        const toggleMainMenu = (e) => { if(e) e.stopPropagation(); document.getElementById('mainMenuDropdown').classList.toggle('hidden'); };
+        
+        const openCoffeeCard = (id, e) => {
+            if(window.getSelection().toString().length > 0) return;
+            const c = coffees.find(x => x.id === id); if(!c) return;
+            document.getElementById('cardRoaster').textContent = c.roaster || c.name || 'Unknown Roaster';
+            document.getElementById('cardRating').innerHTML = getStarDisplay(c.rating || 0);
+            document.getElementById('cardOrigin').textContent = c.origin || c.beanType || '-';
+            document.getElementById('cardFarmer').textContent = c.farmer || '-';
+            document.getElementById('cardProcess').textContent = c.processing || '-';
+            document.getElementById('cardRoastType').innerHTML = getRoastBadge(c.roastType);
+            document.getElementById('cardMethod').textContent = c.method || '-';
+            document.getElementById('cardWeight').textContent = (c.weight ? c.weight + 'g' : '-');
+            document.getElementById('cardRatio').textContent = (c.ratio ? '1:' + c.ratio : '-');
+            const outWeight = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
+            document.getElementById('cardOut').textContent = (outWeight !== '-' ? (outWeight.endsWith('.0') ? parseInt(outWeight) : outWeight) + 'g' : '-');
+            
+            // Logic for dynamic Grinder Title and Grind Value
+            const grinderVal = c.grinder || '';
+            const grindVal = c.grind || '-';
+            const titleEl = document.getElementById('cardGrindTitle');
+            const valEl = document.getElementById('cardGrindValue');
+
+            if (grinderVal) {
+                titleEl.textContent = grinderVal;
+            } else {
+                titleEl.textContent = 'Grind';
+            }
+            valEl.textContent = grindVal;
+            
+            document.getElementById('cardTime').textContent = formatTime(c.time);
+            document.getElementById('cardTemp').innerHTML = getTempBadge(c.temp);
+            document.getElementById('cardDrink').textContent = c.drink || '-';
+            const notesEl = document.getElementById('cardNotes');
+            if(c.notes) { notesEl.textContent = '"' + c.notes + '"'; notesEl.classList.remove('hidden'); } else { notesEl.classList.add('hidden'); }
+            const improveEl = document.getElementById('cardImprove'); const improveCon = document.getElementById('cardImproveContainer');
+            if(c.improve) { improveEl.textContent = '"' + c.improve + '"'; improveCon.classList.remove('hidden'); } else { improveCon.classList.add('hidden'); }
+            document.getElementById('cardDate').textContent = 'Brewed: ' + (c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-');
+            document.getElementById('coffeeCardOverlay').classList.remove('hidden');
+        };
+        const closeCoffeeCard = (e) => { if(!e || e.target.id === 'coffeeCardOverlay' || e.target.closest('button')) { document.getElementById('coffeeCardOverlay').classList.add('hidden'); } };
+        const initTheme = () => { const s=localStorage.getItem('theme'); if(s==='light')document.documentElement.classList.remove('dark'); else {document.documentElement.classList.add('dark');localStorage.setItem('theme','dark');} };
+        const toggleTheme = () => { const h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.setItem('theme','light');}else{h.classList.add('dark');localStorage.setItem('theme','dark');} };
+
+        const renderTable = () => { 
+            const t = document.getElementById('coffeeTableBody'); const activeT = document.getElementById('activeCoffeeTableBody'); const e = document.getElementById('emptyState'); 
+            columnDefs.forEach(col => { const th = document.getElementById(`th-${col.id}`); if(th) { if(columnPreferences[col.id] === false) th.classList.add('hidden'); else th.classList.remove('hidden'); } });
+            t.innerHTML=''; activeT.innerHTML=''; const filteredCoffees = getFilteredCoffees();
+            if(coffees.length === 0){ e.classList.remove('hidden'); activeT.classList.add('hidden'); return; } e.classList.add('hidden');
+            const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !Object.values(activeFilters).some(v=>v!==null);
+            let hasActive = false;
+            filteredCoffees.forEach((c, index) => {
+                const w = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
+                const displayRoaster = c.roaster || c.name || '-'; const displayOrigin = c.origin || c.beanType || '-'; const displayDate = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-';
+                const gripIcon = isDraggable ? 'fa-grip-vertical cursor-grab' : 'fa-lock opacity-30';
+                let actions = '';
+                if(currentView === 'mine') {
+                    const pinBtn = c.isActive ? `<button onclick="toggleActive('${c.id}',event)" class="text-green-600 hover:bg-green-50 p-2 rounded" title="Unpin from Active"><i class="fa-solid fa-thumbtack"></i></button>` : `<button onclick="toggleActive('${c.id}',event)" class="text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded" title="Pin to Active"><i class="fa-solid fa-thumbtack"></i></button>`;
+                    actions = `<button onclick="editCoffee('${c.id}'); event.stopPropagation();" class="text-blue-500 hover:bg-blue-50 p-2 rounded" title="Edit"><i class="fa-solid fa-pencil"></i></button><button onclick="duplicateCoffee('${c.id}'); event.stopPropagation();" class="text-green-500 hover:bg-green-50 p-2 rounded" title="Duplicate"><i class="fa-regular fa-copy"></i></button>${pinBtn}<button onclick="openUploadModal('${c.id}'); event.stopPropagation();" class="text-purple-500 hover:bg-purple-50 p-2 rounded" title="Upload Photo"><i class="fa-solid fa-camera"></i></button><button onclick="deleteCoffee('${c.id}',event); event.stopPropagation();" class="text-red-500 hover:bg-red-50 p-2 rounded" title="Delete"><i class="fa-solid fa-trash"></i></button>`;
+                } else { actions = `<button onclick="cloneBrew('${c.id}'); event.stopPropagation();" class="text-green-600 hover:bg-green-50 p-2 rounded" title="Clone to My Brews"><i class="fa-solid fa-file-import"></i></button>`; }
+                const recipeCol = `<div class="whitespace-nowrap text-xs"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight || '-'}g</span><span class="text-coffee-300 dark:text-[#57534e] mx-0.5">•</span><span class="font-bold text-coffee-900 dark:text-white">${w === '-' ? '-' : (w.endsWith('.0')?parseInt(w):w) + 'g'}</span><span class="text-coffee-400 dark:text-[#78716c] ml-0.5">(1:${c.ratio || '-'})</span></div>`;
+                let rowHTML = `<td class="px-4 py-2 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td>`;
+                if(columnPreferences.roaster !== false) rowHTML += `<td class="px-4 py-2 font-semibold text-coffee-900 dark:text-[#e7e5e4]">${displayRoaster}</td>`;
+                if(columnPreferences.origin !== false) rowHTML += `<td class="px-4 py-2 text-sm">${displayOrigin}</td>`;
+                if(columnPreferences.farmer !== false) rowHTML += `<td class="px-4 py-2 text-sm">${c.farmer || '-'}</td>`;
+                if(columnPreferences.variety !== false) rowHTML += `<td class="px-4 py-2 text-sm">${c.variety || '-'}</td>`;
+                if(columnPreferences.processing !== false) rowHTML += `<td class="px-4 py-2 text-sm">${c.processing || '-'}</td>`;
+                if(columnPreferences.roastType !== false) rowHTML += `<td class="px-4 py-2">${getRoastBadge(c.roastType)}</td>`;
+                if(columnPreferences.method !== false) rowHTML += `<td class="px-4 py-2"><span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method || '-'}</span></td>`;
+                if(columnPreferences.grinder !== false) rowHTML += `<td class="px-4 py-2 text-sm">${c.grinder || '-'}</td>`;
+                if(columnPreferences.grind !== false) rowHTML += `<td class="px-4 py-2 text-right font-mono text-coffee-700 dark:text-[#d6ccc2]">${c.grind || '-'}</td>`;
+                if(columnPreferences.recipe !== false) rowHTML += `<td class="px-4 py-2 text-center">${recipeCol}</td>`;
+                if(columnPreferences.time !== false) rowHTML += `<td class="px-4 py-2 text-right">${formatTime(c.time)}</td>`;
+                if(columnPreferences.temp !== false) rowHTML += `<td class="px-4 py-2 text-center">${getTempBadge(c.temp)}</td>`;
+                if(columnPreferences.drink !== false) rowHTML += `<td class="px-4 py-2 text-sm font-medium text-center">${c.drink || '-'}</td>`;
+                if(columnPreferences.notes !== false) rowHTML += `<td class="px-4 py-2 text-sm max-w-xs truncate" title="${c.notes}">${c.notes || '-'}</td>`;
+                if(columnPreferences.improve !== false) rowHTML += `<td class="px-4 py-2 text-sm italic text-red-400 dark:text-red-400/80 max-w-xs truncate" title="${c.improve || ''}">${c.improve || '-'}</td>`;
+                if(columnPreferences.rating !== false) rowHTML += `<td class="px-4 py-2 text-center whitespace-nowrap">${getStarDisplay(c.rating)}</td>`;
+                if(columnPreferences.date !== false) rowHTML += `<td class="px-4 py-2 text-xs font-mono text-coffee-500">${displayDate}</td>`;
+                rowHTML += `<td class="px-4 py-2 text-center flex justify-center gap-2" onclick="event.stopPropagation()">${actions}</td>`;
+                const r = document.createElement('tr'); r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0 cursor-pointer'; r.ondblclick = (e) => openCoffeeCard(c.id, e);
+                if (isDraggable) { r.setAttribute('draggable', 'true'); r.setAttribute('data-index', index); r.classList.add('cursor-grab'); r.addEventListener('dragstart', handleDragStart); r.addEventListener('dragover', handleDragOver); r.addEventListener('drop', handleDrop); r.addEventListener('dragend', handleDragEnd); }
+                r.innerHTML = rowHTML; t.appendChild(r);
+                if(c.isActive) {
+                    hasActive = true; const rActive = document.createElement('tr'); rActive.className='bg-white dark:bg-[#292524] hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-green-50 dark:border-green-900/10 last:border-b-0 cursor-pointer'; rActive.ondblclick = (e) => openCoffeeCard(c.id, e);
+                    if (isDraggable) { rActive.setAttribute('draggable', 'true'); rActive.setAttribute('data-index', index); rActive.classList.add('cursor-grab'); rActive.addEventListener('dragstart', handleDragStart); rActive.addEventListener('dragover', handleDragOver); rActive.addEventListener('drop', handleDrop); rActive.addEventListener('dragend', handleDragEnd); rActive.innerHTML = rowHTML.replace(gripIcon, 'fa-grip-vertical text-green-500 cursor-grab'); } 
+                    else { rActive.innerHTML = rowHTML.replace(gripIcon, 'fa-star text-green-500'); }
+                    activeT.appendChild(rActive);
+                }
+            });
+            const totalCols = 2 + columnDefs.filter(c => columnPreferences[c.id] !== false).length;
+            if(hasActive) {
+                const activeHeader = document.createElement('tr'); activeHeader.className = "bg-green-50/50 dark:bg-green-900/20"; activeHeader.innerHTML = `<td colspan="${totalCols}" class="px-4 py-2 font-bold text-green-700 dark:text-green-400 text-xs uppercase tracking-wide"><i class="fa-solid fa-thumbtack mr-2"></i>Active Brews</td>`; activeT.insertBefore(activeHeader, activeT.firstChild);
+                const histHeader = document.createElement('tr'); histHeader.className = "bg-coffee-50/50 dark:bg-[#201d1b]"; histHeader.innerHTML = `<td colspan="${totalCols}" class="px-4 py-2 font-bold text-coffee-600 dark:text-[#a8a29e] text-xs uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</td>`; t.insertBefore(histHeader, t.firstChild); activeT.classList.remove('hidden');
+            } else { activeT.classList.add('hidden'); }
+        };
+
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
-                document.getElementById('authContainer').innerHTML = `<div class="flex items-center gap-3"><button onclick="openFriendsModal()" class="px-3 py-1.5 rounded-lg bg-coffee-50 dark:bg-[#34302e] border border-coffee-200 dark:border-[#44403c] text-sm font-medium"><i class="fa-solid fa-user-group"></i> Friends</button><img src="${user.photoURL}" class="w-8 h-8 rounded-full border"></div>`;
-                document.getElementById('viewSelectorContainer').classList.remove('hidden'); await initUserData(user); changeView('mine');
+                document.getElementById('authContainer').innerHTML = `<div class="flex items-center gap-3"><button onclick="openFriendsModal()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coffee-50 dark:bg-[#34302e] hover:bg-coffee-100 dark:hover:bg-[#44403c] border border-coffee-200 dark:border-[#44403c] transition-colors text-sm font-medium text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-solid fa-user-group"></i> Friends</button><img src="${user.photoURL}" class="w-8 h-8 rounded-full border border-coffee-200 dark:border-[#44403c]" title="${user.displayName}"></div>`;
+                document.getElementById('syncStatus').classList.remove('hidden'); document.getElementById('viewSelectorContainer').classList.remove('hidden'); 
+                await initUserData(user); loadFollowingList(); changeView('mine'); initNotificationListener(user.uid);
+                const hasSeen = localStorage.getItem(`tutorialSeen_${user.uid}`); if (!hasSeen) openHelp();
             } else {
-                document.getElementById('authContainer').innerHTML = `<button onclick="googleLogin()" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium">Sign In</button>`;
-                document.getElementById('emptyState').classList.remove('hidden');
+                document.getElementById('authContainer').innerHTML = `<button onclick="googleLogin()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"><i class="fa-brands fa-google"></i> Sign In</button>`;
+                document.getElementById('viewSelectorContainer').classList.add('hidden'); document.getElementById('coffeeTableBody').innerHTML = ''; document.getElementById('emptyState').classList.remove('hidden');
+                if(unsubscribeNotifications) unsubscribeNotifications();
             }
         });
 
-        Object.assign(window, { triggerAIScan, handleAIFile, generateAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, togglePublicProfile, copyShareId, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setRating, toggleTheme, toggleMainMenu, openStats, closeStats, changeStatsView, closeMenus });
+        Object.assign(window, { 
+            triggerAIScan, 
+            handleAIFile,
+            googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, generateAISummary
+        });
+
         initTheme();
+        const searchInput = document.getElementById('globalSearch'); 
+        if(searchInput) { searchInput.addEventListener('input', (e) => { const clearBtn = document.getElementById('searchClearBtn'); if(e.target.value.length > 0) clearBtn.classList.remove('hidden'); else clearBtn.classList.add('hidden'); renderTable(); }); }
     </script>
 </body>
 </html>
