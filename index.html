@@ -391,21 +391,12 @@
                     <select id="statsViewSelect" onchange="changeStatsView(this.value)" class="bg-white dark:bg-[#292524] border border-coffee-200 dark:border-[#44403c] text-coffee-900 dark:text-white text-xs rounded-lg block p-2 shadow-sm font-bold min-w-[150px]">
                         <option value="mine">My Brews</option>
                     </select>
-                    <!-- NEW AI SUMMARY BUTTON -->
-                    <button type="button" onclick="generateAISummary()" id="aiSummaryBtn" class="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI Profile
-                    </button>
                 </div>
                 <button onclick="closeStats()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white absolute top-5 right-5 sm:static"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
             <div id="statsModalContent" class="p-6 overflow-y-auto bg-coffee-50/50 dark:bg-[#1c1917]">
                 
-                <!-- NEW AI SOMMELIER PROFILE AREA -->
-                <div id="aiProfileContainer" class="hidden mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl relative overflow-hidden transition-all duration-500">
-                    <!-- Text inserted via JS -->
-                </div>
-
                 <!-- 1. General Charts View -->
                 <div id="statsGeneralView" class="space-y-8">
                     <!-- General Stats Grid -->
@@ -770,7 +761,6 @@
         };
         
         const CLOUD_FUNCTION_URL = "https://analyzecoffeebag-p522o3qtpa-uc.a.run.app";
-        const AI_SUMMARY_URL = "https://us-central1-coffee-dial-app-9db38.cloudfunctions.net/summarizeBrews";
 
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
@@ -1397,9 +1387,6 @@
         };
 
         const changeStatsView = async (uid) => {
-            // Clear AI Profile when changing views
-            document.getElementById('aiProfileContainer').classList.add('hidden');
-            
             let dataToUse = [];
             if (uid === currentView) dataToUse = coffees;
             else {
@@ -1409,83 +1396,6 @@
             }
             if(dataToUse.length === 0) { calculateStats([]); return; }
             calculateStats(dataToUse);
-        };
-
-        // NEW AI SUMMARY LOGIC
-        const generateAISummary = async () => {
-            const btn = document.getElementById('aiSummaryBtn');
-            const originalContent = btn.innerHTML;
-            const targetUid = document.getElementById('statsViewSelect').value;
-            const userName = document.getElementById('statsViewSelect').options[document.getElementById('statsViewSelect').selectedIndex].text;
-
-            // Gather Data
-            let dataToUse = [];
-            if (targetUid === currentView) dataToUse = coffees;
-            else {
-                const q = collection(db, 'users', targetUid, 'coffees');
-                const snap = await getDocs(q);
-                snap.forEach(doc => dataToUse.push({ id: doc.id, ...doc.data() }));
-            }
-
-            if(dataToUse.length < 3) return alert("Need at least 3 brews to characterize this person!");
-
-            // Prepare Summary Object for Gemini
-            const countOccurrences = (arr, key) => arr.reduce((acc, obj) => { const v = obj[key] || 'Unknown'; acc[v] = (acc[v] || 0) + 1; return acc; }, {});
-            
-            const statsSummary = {
-                totalBrews: dataToUse.length,
-                roasters: countOccurrences(dataToUse, 'roaster'),
-                origins: countOccurrences(dataToUse, 'origin'),
-                methods: countOccurrences(dataToUse, 'method'),
-                drinks: countOccurrences(dataToUse, 'drink'),
-                averageRating: (dataToUse.reduce((acc, c) => acc + (c.rating || 0), 0) / dataToUse.length).toFixed(1),
-                commonNotes: dataToUse.map(c => c.notes).filter(Boolean).slice(-15).join(', ') // Last 15 notes
-            };
-
-            try {
-                // UI Loading State
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Brewing AI...';
-                btn.classList.add('ai-loading-pulse');
-
-                const response = await fetch(AI_SUMMARY_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ statsSummary, userName })
-                });
-
-                if (!response.ok) throw new Error("AI Summary Failed.");
-                const result = await response.json();
-
-                // Display
-                const container = document.getElementById('aiProfileContainer');
-                container.innerHTML = `
-                    <div class="flex gap-4">
-                        <div class="flex-shrink-0 text-indigo-500 mt-1">
-                            <i class="fa-solid fa-quote-left text-2xl"></i>
-                        </div>
-                        <div class="text-sm italic leading-relaxed text-coffee-900 dark:text-indigo-100 pr-6">
-                            ${result.profile}
-                        </div>
-                    </div>
-                    <button onclick="this.parentElement.classList.add('hidden')" class="absolute top-2 right-2 text-indigo-400 hover:text-indigo-600 transition-colors">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                    <div class="absolute -bottom-2 -right-2 opacity-10 text-6xl text-indigo-600">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    </div>
-                `;
-                container.classList.remove('hidden');
-                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            } catch (error) {
-                console.error(error);
-                alert("Error generating AI profile: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalContent;
-                btn.classList.remove('ai-loading-pulse');
-            }
         };
 
         const calculateStats = (dataToUse) => {
@@ -1767,7 +1677,7 @@
         Object.assign(window, { 
             triggerAIScan, 
             handleAIFile,
-            googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, generateAISummary
+            googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable 
         });
 
         initTheme();
