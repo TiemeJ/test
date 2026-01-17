@@ -774,7 +774,7 @@
         };
         
         const BAG_AI_URL = "https://analyzecoffeebag-p522o3qtpa-uc.a.run.app";
-        const STATS_AI_URL = "https://us-central1-coffee-dial-app-9db38.cloudfunctions.net/analyzeBrewProfile";
+        const STATS_AI_URL = "https://analyzebrewprofile-p522o3qtpa-uc.a.run.app";
 
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
@@ -915,7 +915,7 @@
             }
         };
 
-        // STATS AI PROFILER FUNCTION (Fixed to use local data)
+        // STATS AI PROFILER FUNCTION (Updated with 9 fields & 100 limit)
         const triggerAIProfile = async () => {
             if (currentStatsData.length === 0) return alert("No brews found for this user to analyze.");
 
@@ -932,9 +932,9 @@
                 btn.classList.add('ai-loading-pulse');
                 container.classList.add('hidden');
 
-                // 1. Prepare Data to Send (Using currentStatsData, NOT global coffees)
-                const dataString = currentStatsData.slice(0, 50).map(c => 
-                    `${c.roaster || c.name} (${c.origin || c.beanType}): ${c.rating} stars, notes: ${c.notes || 'None'}`
+                // 1. Prepare Data (Using 100 most recent with 9 fields)
+                const dataString = currentStatsData.slice(0, 100).map(c => 
+                    `Roaster: ${c.roaster || c.name || '-'}, Origin: ${c.origin || c.beanType || '-'}, Farmer: ${c.farmer || '-'}, Process: ${c.processing || '-'}, Roast: ${c.roastType || '-'}, Method: ${c.method || '-'}, Drink: ${c.drink || '-'}, Rating: ${c.rating || 0}/5, Notes: ${c.notes || 'None'}`
                 ).join('\n');
 
                 // 2. Call Backend
@@ -1678,7 +1678,7 @@
             document.getElementById('cardDrink').textContent = c.drink || '-';
             const notesEl = document.getElementById('cardNotes');
             if(c.notes) { notesEl.textContent = '"' + c.notes + '"'; notesEl.classList.remove('hidden'); } else { notesEl.classList.add('hidden'); }
-            const improveEl = document.getElementById('cardImprove'); const improveCon = document.getElementById('cardImproveContainer');
+            const improveEl = document.getElementById('cardNotes'); const improveCon = document.getElementById('cardImproveContainer');
             if(c.improve) { improveEl.textContent = '"' + c.improve + '"'; improveCon.classList.remove('hidden'); } else { improveCon.classList.add('hidden'); }
             document.getElementById('cardDate').textContent = 'Brewed: ' + (c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-');
             document.getElementById('coffeeCardOverlay').classList.remove('hidden');
