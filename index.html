@@ -1228,7 +1228,8 @@
                 `;
 
                 // 4. Call API
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                // CHANGE: Using specific version to help avoid "Not Found" errors
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
                 const result = await model.generateContent([prompt, imagePart]);
                 const response = await result.response;
                 const text = response.text();
@@ -1260,7 +1261,8 @@
 
             } catch (error) {
                 console.error("AI Scan Error:", error);
-                alert("Could not analyze image. Check your API key or internet connection.");
+                // CHANGE: Detailed alert for debugging
+                alert("Error: " + error.message + "\n\n(If you are in the EU, you likely need to link a Billing Account in Google Cloud Console due to free-tier restrictions)");
             } finally {
                 // Hide Loading
                 overlay.classList.add('hidden');
