@@ -411,8 +411,8 @@
 
                     <!-- Photo Section (Hidden by default) -->
                     <div id="cardPhotoSection" class="hidden relative h-64 bg-coffee-50 dark:bg-[#1c1917] rounded-xl overflow-hidden border border-coffee-100 dark:border-[#44403c] flex items-center justify-center group cursor-pointer" onclick="triggerCardPhoto()">
-                        <!-- Replaced img with div for background-image to fix html2canvas stretching -->
-                        <div id="cardDisplayedPhoto" class="absolute inset-0 w-full h-full bg-center bg-cover bg-no-repeat hidden z-10"></div>
+                        <!-- Replaced div with img for better html2canvas rendering -->
+                        <img id="cardDisplayedPhoto" class="absolute inset-0 w-full h-full object-cover hidden z-10" alt="Brew Photo">
                         <div id="cardPhotoPlaceholder" class="text-center p-4">
                             <i class="fa-solid fa-camera text-3xl text-coffee-200 dark:text-[#44403c] mb-2"></i>
                             <p class="text-xs text-coffee-400 dark:text-[#57534e] font-medium">Tap to add brew photo</p>
@@ -1574,9 +1574,21 @@
             document.getElementById('cardDate').textContent = 'Brewed: ' + (c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-');
         };
 
+        const resetCardPhotoState = () => {
+             // Reset Photo View
+             const img = document.getElementById('cardDisplayedPhoto');
+             const ph = document.getElementById('cardPhotoPlaceholder');
+             const input = document.getElementById('cardPhotoInput');
+             img.src = '';
+             img.classList.add('hidden');
+             ph.classList.remove('hidden');
+             input.value = ''; // Clear file selection
+        };
+
         const openCoffeeCard = (id, e) => {
             if(window.getSelection().toString().length > 0) return;
             const c = coffees.find(x => x.id === id); if(!c) return;
+            resetCardPhotoState(); // Clear previous photo state
             // Always default to 'stats' view when opening normally (not share mode)
             toggleCardMode('stats');
             document.getElementById('shareControls').classList.add('hidden');
@@ -1587,6 +1599,7 @@
         const shareCoffeeCard = (id, e) => {
             if(e) e.stopPropagation(); 
             const c = coffees.find(x => x.id === id); if(!c) return;
+            resetCardPhotoState(); // Clear previous photo state
             // Reset to Stats Mode initially
             toggleCardMode('stats');
             document.getElementById('shareControls').classList.remove('hidden');
@@ -1626,11 +1639,11 @@
             if(file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    // Update to set backgroundImage for html2canvas compatibility
-                    const div = document.getElementById('cardDisplayedPhoto');
+                    const img = document.getElementById('cardDisplayedPhoto');
                     const ph = document.getElementById('cardPhotoPlaceholder');
-                    div.style.backgroundImage = `url(${e.target.result})`;
-                    div.classList.remove('hidden');
+                    // Set src of img tag instead of background of div for better quality
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
                     ph.classList.add('hidden');
                 };
                 reader.readAsDataURL(file);
@@ -1652,7 +1665,13 @@
 
             try {
                 await new Promise(r => setTimeout(r, 100)); // allow UI to update
-                const canvas = await html2canvas(content, { scale: 2, backgroundColor: getComputedStyle(content).backgroundColor, useCORS: true });
+                // Increase scale to 3 for better quality
+                const canvas = await html2canvas(content, { 
+                    scale: 3, 
+                    backgroundColor: getComputedStyle(content).backgroundColor, 
+                    useCORS: true,
+                    allowTaint: true 
+                });
                 
                 // Restore UI
                 shareControls.classList.remove('hidden');
@@ -1801,7 +1820,7 @@
         });
 
         Object.assign(window, { 
-            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, toggleCardMode, triggerCardPhoto, handleCardPhoto, generateShareImage
+            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, toggleCardMode, triggerCardPhoto, handleCardPhoto, generateShareImage, resetCardPhotoState
         });
 
         initTheme();
