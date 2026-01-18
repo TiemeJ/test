@@ -365,7 +365,7 @@
     <div id="coffeeCardOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onclick="closeCoffeeCard(event)">
         <div id="coffeeCardContent" class="bg-white dark:bg-[#292524] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden transform transition-all border border-coffee-200 dark:border-[#44403c] flex flex-col max-h-[90vh]">
             <div class="bg-coffee-100 dark:bg-[#1c1917] p-5 border-b border-coffee-200 dark:border-[#44403c] relative">
-                <button onclick="closeCoffeeCard(null)" class="absolute top-4 right-4 text-coffee-400 hover:text-coffee-800 dark:text-[#57534e] dark:hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button id="cardCloseBtn" onclick="closeCoffeeCard(null)" class="absolute top-4 right-4 text-coffee-400 hover:text-coffee-800 dark:text-[#57534e] dark:hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
                 <div class="pr-6"><h3 id="cardRoaster" class="text-xl font-bold text-coffee-900 dark:text-white leading-tight mb-1"></h3><div id="cardRating" class="text-sm"></div></div>
             </div>
             <div class="p-5 overflow-y-auto space-y-5">
@@ -373,9 +373,10 @@
                     <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Origin</span><span id="cardOrigin" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
                     <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Blend/Farmer</span><span id="cardFarmer" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
                     <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Process</span><span id="cardProcess" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
-                    <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Roast</span><div id="cardRoastType"></div></div>
+                    <!-- Updated Roast/Method Display for better alignment and sharing -->
+                    <div class="flex flex-col items-start"><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-1">Roast</span><div id="cardRoastType"></div></div>
                     <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Drink</span><span id="cardDrink" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
-                    <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Method</span><span id="cardMethod" class="inline-block px-2 py-0.5 rounded bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-bold"></span></div>
+                    <div class="flex flex-col items-start"><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-1">Method</span><span id="cardMethod" class="inline-block px-2 py-0.5 rounded bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-bold whitespace-nowrap"></span></div>
                 </div>
                 <div class="bg-coffee-50 dark:bg-[#1c1917] rounded-xl p-4 border border-coffee-100 dark:border-[#44403c]">
                     <div class="flex justify-between items-center mb-3"><span class="text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase"><i class="fa-solid fa-flask mr-1"></i> Brew Stats</span></div>
@@ -393,7 +394,7 @@
                 <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-1">Notes</span><p id="cardNotes" class="text-sm text-coffee-800 dark:text-[#d6ccc2] italic bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-lg border border-yellow-100 dark:border-yellow-900/20"></p></div>
                 <div id="cardImproveContainer" class="hidden"><span class="block text-xs font-bold text-red-500 dark:text-red-400 uppercase mb-1">To Improve</span><p id="cardImprove" class="text-sm text-coffee-800 dark:text-[#d6ccc2] bg-red-50 dark:bg-red-900/10 p-2 rounded-lg border border-red-100 dark:border-red-900/20"></p></div>
             </div>
-            <div class="bg-coffee-50 dark:bg-[#1c1917] p-4 border-t border-coffee-200 dark:border-[#44403c] flex justify-between items-center text-xs text-coffee-400 dark:text-[#57534e]"><span id="cardDate"></span><button onclick="closeCoffeeCard(null)" class="font-bold text-coffee-600 dark:text-[#a8a29e] hover:text-coffee-900 dark:hover:white">Close</button></div>
+            <div id="cardBottomBar" class="bg-coffee-50 dark:bg-[#1c1917] p-4 border-t border-coffee-200 dark:border-[#44403c] flex justify-between items-center text-xs text-coffee-400 dark:text-[#57534e]"><span id="cardDate"></span><button onclick="closeCoffeeCard(null)" class="font-bold text-coffee-600 dark:text-[#a8a29e] hover:text-coffee-900 dark:hover:white">Close</button></div>
         </div>
     </div>
 
@@ -1733,7 +1734,7 @@
         };
         
         const formatTime = (s) => { if(!s && s !== 0) return '-'; const m=Math.floor(s/60), sc=s%60; return m>0?`${m}m ${sc}s`:`${sc}s`; };
-        const getRoastBadge = (r) => { if(!r)return''; const m={'Light':'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-800','Medium':'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200 dark:border-orange-800','Medium-Dark':'bg-[#d6ccc2] text-[#5e4b41] border-[#c0b4aa] dark:bg-[#57534e]/50 dark:text-[#d6ccc2] dark:border-[#57534e]','Dark':'bg-gray-800 text-gray-100 border-gray-700 dark:bg-black dark:text-gray-300 dark:border-gray-800'}; return `<span class="${m[r]||'bg-gray-100 dark:bg-gray-800'} text-xs font-medium px-2 py-0.5 rounded-full border pointer-events-none select-none">${r}</span>`; };
+        const getRoastBadge = (r) => { if(!r)return''; const m={'Light':'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-800','Medium':'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200 dark:border-orange-800','Medium-Dark':'bg-[#d6ccc2] text-[#5e4b41] border-[#c0b4aa] dark:bg-[#57534e]/50 dark:text-gray-200 dark:border-[#57534e]','Dark':'bg-gray-800 text-gray-100 border-gray-700 dark:bg-black dark:text-gray-300 dark:border-gray-800'}; return `<span class="${m[r]||'bg-gray-100 dark:bg-gray-800'} text-xs font-medium px-2 py-0.5 rounded-full border pointer-events-none select-none">${r}</span>`; };
         const getTempBadge = (t) => { if(!t) return '-'; if(!isNaN(parseFloat(t))&&isFinite(t)){ let c='bg-gray-100 dark:bg-gray-800';if(t<90)c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';else if(t<94)c='bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';else c='bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-md ${c} text-xs font-bold shadow-sm pointer-events-none select-none font-mono">${t}°C</span>`;} const m={'L4':'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300','L3':'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300','L2':'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-200','L1':'bg-cyan-50 text-cyan-600 border-cyan-100 dark:bg-cyan-900/20 dark:text-cyan-200','M':'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200','H1':'bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-900/20 dark:text-orange-200','H2':'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200','H3':'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300','H4':'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/40 dark:text-rose-300'}; return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${m[t]||'bg-gray-100'} text-xs font-bold shadow-sm pointer-events-none select-none">${t}</span>`; };
         const closeMenus = (e) => { 
             if(!document.getElementById('modalOverlay').contains(e.target) && !document.getElementById('modalOverlay').classList.contains('hidden') && e.target.id==='modalOverlay') closeModal(); 
@@ -1787,31 +1788,46 @@
             const c = coffees.find(x => x.id === id); 
             if(!c) return;
 
-            // 1. Populate the UI elements for the card (this works even if hidden)
+            // 1. Populate the UI elements
             populateCardData(c);
 
             const overlay = document.getElementById('coffeeCardOverlay');
             const content = document.getElementById('coffeeCardContent');
+            const improveContainer = document.getElementById('cardImproveContainer');
+            const closeBtn = document.getElementById('cardCloseBtn'); // Top X button
+            const bottomBar = document.getElementById('cardBottomBar'); // Bottom bar containing Close text
+            
             const wasHidden = overlay.classList.contains('hidden');
+            const wasImproveVisible = !improveContainer.classList.contains('hidden');
 
-            // 2. Temporarily show the overlay but keep it invisible to user (opacity 0) so html2canvas can render it
+            // 2. Temporarily show overlay (hidden from view) & Hide unwanted elements
             if(wasHidden) {
                 overlay.classList.remove('hidden');
-                overlay.style.opacity = '0'; // Hide from user eye
-                overlay.style.zIndex = '-10'; // Move behind
+                overlay.style.opacity = '0'; 
+                overlay.style.zIndex = '-10'; 
             }
+            
+            // Hide "To Improve" and Close buttons for the screenshot
+            if(wasImproveVisible) improveContainer.classList.add('hidden');
+            closeBtn.classList.add('hidden');
+            bottomBar.style.display = 'none'; // Use display none to cut it off completely
 
             try {
-                // Wait briefly for styles/images to settle
+                // Wait briefly for layout
                 await new Promise(r => setTimeout(r, 100));
 
                 const canvas = await html2canvas(content, {
-                    scale: 2, // High resolution
+                    scale: 2, 
                     backgroundColor: getComputedStyle(content).backgroundColor,
                     useCORS: true
                 });
 
-                // Reset visibility
+                // Restore visibility of elements
+                if(wasImproveVisible) improveContainer.classList.remove('hidden');
+                closeBtn.classList.remove('hidden');
+                bottomBar.style.display = '';
+
+                // Restore overlay state
                 if(wasHidden) {
                     overlay.classList.add('hidden');
                     overlay.style.opacity = '';
@@ -1844,7 +1860,10 @@
 
             } catch (err) {
                 console.error("Card generation failed", err);
-                // Reset visibility in case of error
+                // Ensure UI is reset on error
+                if(wasImproveVisible) improveContainer.classList.remove('hidden');
+                closeBtn.classList.remove('hidden');
+                bottomBar.style.display = '';
                 if(wasHidden) {
                     overlay.classList.add('hidden');
                     overlay.style.opacity = '';
