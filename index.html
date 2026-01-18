@@ -8,6 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Image Compression Library -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <!-- HTML2Canvas for Sharing -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <!-- Chart.js for Statistics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -27,7 +29,7 @@
         th.filterable { position: relative; cursor: context-menu; touch-action: manipulation; }
         
         #filterDropdown, #mainMenuDropdown, #aiMenuDropdown, .action-menu { z-index: 50; animation: fadeIn 0.1s ease-out; }
-        #modalOverlay, #statsModal, #imageModalOverlay, #coffeeCardOverlay, #uploadPhotoModal, #galleryModal, #easterEggModal, #preferencesModal, #helpModal, #aboutModal { animation: fadeIn 0.2s ease-out; }
+        #modalOverlay, #statsModal, #imageModalOverlay, #coffeeCardOverlay, #uploadPhotoModal, #galleryModal, #easterEggModal, #preferencesModal, #helpModal, #aboutModal, #shareModal { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .chevron-rotate { transition: transform 0.3s ease; }
         .group[aria-expanded="true"] .chevron-rotate { transform: rotate(180deg); }
@@ -360,7 +362,102 @@
         </div>
     </main>
 
+    <!-- Hidden Share Template (Off-screen) -->
+    <div id="hiddenShareContainer" class="fixed top-0 left-[-9999px] w-[400px] bg-[#fcfbf9] dark:bg-[#1c1917] p-0 font-sans text-coffee-900 dark:text-white border border-coffee-200 dark:border-[#44403c] rounded-xl overflow-hidden shadow-none pointer-events-none z-0">
+        <div class="p-6 flex flex-col gap-4">
+            <!-- Header -->
+            <div class="flex items-start justify-between border-b border-coffee-200 dark:border-[#44403c] pb-4">
+                <div>
+                    <h2 id="shareRoaster" class="text-xl font-bold leading-tight mb-1"></h2>
+                    <div id="shareOrigin" class="text-xs text-coffee-500 dark:text-[#a8a29e] uppercase tracking-wide"></div>
+                </div>
+                <div class="text-right">
+                    <div class="flex items-center gap-1 text-coffee-700 dark:text-[#d6ccc2]">
+                        <i class="fa-solid fa-mug-hot"></i>
+                        <span class="font-bold text-sm">Coffee Dial</span>
+                    </div>
+                    <div id="shareDate" class="text-[10px] text-coffee-400 dark:text-[#57534e] mt-1"></div>
+                </div>
+            </div>
+
+            <!-- Main Stats -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-coffee-50 dark:bg-[#292524] p-3 rounded-lg">
+                    <div class="text-[10px] text-coffee-500 dark:text-[#78716c] uppercase mb-1">Recipe (In : Out)</div>
+                    <div class="font-mono font-bold text-lg"><span id="shareIn"></span> <span class="text-coffee-400 mx-1">:</span> <span id="shareOut"></span></div>
+                </div>
+                <div class="bg-coffee-50 dark:bg-[#292524] p-3 rounded-lg">
+                    <div class="text-[10px] text-coffee-500 dark:text-[#78716c] uppercase mb-1">Time & Temp</div>
+                    <div class="font-mono font-bold text-lg"><span id="shareTime"></span> <span class="text-coffee-400 mx-1">/</span> <span id="shareTemp"></span></div>
+                </div>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="grid grid-cols-3 gap-y-3 text-xs">
+                <div><span class="block text-[10px] text-coffee-400 uppercase">Method</span><span id="shareMethod" class="font-bold"></span></div>
+                <div><span class="block text-[10px] text-coffee-400 uppercase">Grinder</span><span id="shareGrinder" class="font-bold truncate pr-2"></span></div>
+                <div><span class="block text-[10px] text-coffee-400 uppercase">Grind</span><span id="shareGrind" class="font-bold"></span></div>
+                <div class="col-span-3"><span class="block text-[10px] text-coffee-400 uppercase">Bean Details</span><span id="shareBeanDetails" class="italic"></span></div>
+            </div>
+
+            <!-- Photo Container -->
+            <div id="sharePhotoContainer" class="hidden rounded-lg overflow-hidden h-48 w-full mt-2 relative">
+                <img id="sharePhotoImg" src="" class="w-full h-full object-cover" crossorigin="anonymous">
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                    <span class="text-white text-[10px] font-bold"><i class="fa-solid fa-camera mr-1"></i> Brew Snap</span>
+                </div>
+            </div>
+
+            <!-- Notes & Rating -->
+            <div class="bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-lg border border-yellow-100 dark:border-yellow-900/20">
+                <div id="shareNotes" class="text-sm italic text-coffee-800 dark:text-[#d6ccc2] mb-2 leading-snug"></div>
+                <div id="shareRating" class="text-sm"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Preview Modal -->
+    <div id="shareModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col">
+            <div class="p-4 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917]">
+                <h3 class="font-bold text-coffee-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-share-nodes text-coffee-600 dark:text-[#d6ccc2]"></i> Share Brew Card
+                </h3>
+                <button onclick="document.getElementById('shareModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-5 flex flex-col gap-4">
+                <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">Generate an image of this brew to share on WhatsApp, Signal, or save to your gallery.</p>
+                
+                <!-- Toggle Photo Option -->
+                <div id="shareTogglePhotoContainer" class="hidden flex items-center justify-between bg-coffee-50 dark:bg-[#1c1917] p-3 rounded-lg border border-coffee-100 dark:border-[#44403c]">
+                    <span class="text-sm font-bold text-coffee-800 dark:text-[#d6ccc2]">Include Brew Photo</span>
+                    <div class="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" id="shareIncludePhoto" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 dark:border-gray-600"/>
+                        <label for="shareIncludePhoto" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 mt-2">
+                    <button onclick="generateAndShare('share')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-share-from-square"></i> Share Image (WhatsApp/Signal)
+                    </button>
+                    <button onclick="generateAndShare('download')" class="w-full bg-coffee-100 hover:bg-coffee-200 dark:bg-[#34302e] dark:hover:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-download"></i> Save to Device
+                    </button>
+                </div>
+                
+                <div class="text-[10px] text-center text-gray-400 italic">
+                    *Tapping "Share Image" opens your system sharing menu where you can select WhatsApp, Signal, etc.
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="coffeeCardOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onclick="closeCoffeeCard(event)">
+        <!-- ... (Rest of Coffee Card Content remains the same) ... -->
         <div id="coffeeCardContent" class="bg-white dark:bg-[#292524] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden transform transition-all border border-coffee-200 dark:border-[#44403c] flex flex-col max-h-[90vh]">
             <div class="bg-coffee-100 dark:bg-[#1c1917] p-5 border-b border-coffee-200 dark:border-[#44403c] relative">
                 <button onclick="closeCoffeeCard(null)" class="absolute top-4 right-4 text-coffee-400 hover:text-coffee-800 dark:text-[#57534e] dark:hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -395,6 +492,7 @@
         </div>
     </div>
 
+    <!-- ... (Rest of existing modals: statsModal, modalOverlay, etc. kept as is) ... -->
     <!-- Statistics Modal -->
     <div id="statsModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col my-8 max-h-[90vh]">
@@ -543,8 +641,10 @@
         </div>
     </div>
 
+    <!-- ... (Rest of existing modals: modalOverlay, imageModalOverlay, uploadPhotoModal, galleryModal, preferencesModal, helpModal, aboutModal, easterEggModal are kept same) ... -->
     <div id="modalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
+       <!-- ... content ... -->
+       <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
             <div class="flex border-b border-coffee-200 dark:border-[#44403c]">
                 <button onclick="switchModalTab('profile')" id="tabProfile" class="flex-1 py-3 text-sm font-semibold text-coffee-700 dark:text-[#d6ccc2] bg-coffee-50 dark:bg-[#1c1917]">My Profile</button>
                 <button onclick="switchModalTab('following')" id="tabFollowing" class="flex-1 py-3 text-sm font-semibold text-coffee-500 dark:text-[#78716c] hover:bg-coffee-50 dark:hover:bg-[#1c1917]">Following</button>
@@ -573,23 +673,22 @@
         </div>
     </div>
 
-    <!-- Image Modal with Zoom & Pan -->
+    <!-- Image Modal -->
     <div id="imageModalOverlay" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden relative flex flex-col h-[80vh]">
             <div class="absolute top-0 right-0 p-4 z-20">
                 <button onclick="closeImageModal(null)" class="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors">&times;</button>
             </div>
-            
             <div class="flex-1 overflow-hidden relative bg-coffee-50 dark:bg-[#1c1917] flex items-center justify-center" id="imageContainer" style="touch-action: none;">
                 <img id="zoomableImage" src="img/SCA_wheel.png" alt="SCA Flavor Wheel" class="max-w-full max-h-full object-contain cursor-grab" style="transform-origin: center center;">
             </div>
-
             <div class="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                  <span class="bg-black/50 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-sm">Drag to Pan • Pinch to Zoom • Double Tap to Reset</span>
             </div>
         </div>
     </div>
 
+    <!-- Upload Modal -->
     <div id="uploadPhotoModal" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c]">
             <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center">
@@ -628,6 +727,7 @@
         </div>
     </div>
 
+    <!-- Gallery Modal -->
     <div id="galleryModal" class="hidden fixed inset-0 z-[75] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col">
             <div class="flex border-b border-coffee-200 dark:border-[#44403c]">
@@ -650,6 +750,7 @@
         </div>
     </div>
 
+    <!-- Preferences Modal -->
     <div id="preferencesModal" class="hidden fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-coffee-200 dark:border-[#44403c]">
             <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center">
@@ -670,6 +771,7 @@
         </div>
     </div>
 
+    <!-- Help Modal -->
     <div id="helpModal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col">
             <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center">
@@ -677,13 +779,12 @@
                 <button onclick="closeHelp()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 overflow-y-auto space-y-8 bg-coffee-50 dark:bg-[#1c1917]">
-                
-                <!-- Intro -->
+                <!-- ... content ... -->
                 <div class="space-y-2">
                     <h4 class="font-bold text-coffee-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-hand-sparkles text-yellow-500"></i> Your Brew, Your Way</h4>
                     <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">Coffee Dial is flexible. You can use it to log <strong>every single shot</strong> you make to track consistency, OR you can just save your <strong>favourite recipes</strong> (Golden Cups) and update them as you dial in a new bean. It's your laboratory!</p>
                 </div>
-
+                <!-- ... more sections ... -->
                 <!-- Step 1: Add/Edit -->
                 <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
                     <h4 class="font-bold text-coffee-800 dark:text-white mb-2">1. Adding & Editing Brews</h4>
@@ -694,7 +795,6 @@
                         <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">Tap the <strong>"Add New Brew"</strong> bar at the top to open the form. Fill in your details (Roaster, Grind, Ratio, etc.). You can use the SCA Flavor Wheel for notes! To edit, simply tap the <i class="fa-solid fa-pencil text-blue-500 text-xs"></i> icon on any row.</p>
                     </div>
                 </div>
-
                 <!-- Step 2: Pinning -->
                 <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
                     <h4 class="font-bold text-coffee-800 dark:text-white mb-2">2. Pinning & Active Brews</h4>
@@ -707,7 +807,6 @@
                         </p>
                     </div>
                 </div>
-
                 <!-- Step 3: The Card -->
                 <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
                     <h4 class="font-bold text-coffee-800 dark:text-white mb-2">3. The Coffee Card (Double Tap!)</h4>
@@ -721,7 +820,6 @@
                         </div>
                     </div>
                 </div>
-
                  <!-- Step 4: Social -->
                  <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
                     <h4 class="font-bold text-coffee-800 dark:text-white mb-2">4. Social & Sharing</h4>
@@ -740,7 +838,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Step 5: Gallery -->
                  <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
                     <h4 class="font-bold text-coffee-800 dark:text-white mb-2">5. Photo Gallery</h4>
@@ -751,7 +848,6 @@
                         <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">Use the camera icon on any brew row to upload a photo (latte art, bean bag, setup). You can share these photos specifically with friends, and view them in the global <strong>Photo Gallery</strong> via the main menu.</p>
                     </div>
                 </div>
-
                 <!-- Step 6: Statistics -->
                 <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
                     <h4 class="font-bold text-coffee-800 dark:text-white mb-2">6. Statistics & Insights</h4>
@@ -764,7 +860,6 @@
                         </p>
                     </div>
                 </div>
-
                 <!-- Step 7: AI Features -->
                 <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
                     <h4 class="font-bold text-coffee-800 dark:text-white mb-2">7. AI Power <span class="text-xs bg-gradient-to-r from-amber-400 to-orange-500 text-white px-2 py-0.5 rounded-full ml-2">New!</span></h4>
@@ -780,7 +875,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end border-t border-coffee-200 dark:border-[#44403c]">
                 <button onclick="closeHelp()" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] text-white px-6 py-2 rounded-lg text-sm font-medium">Got it!</button>
@@ -788,6 +882,7 @@
         </div>
     </div>
 
+    <!-- About Modal -->
     <div id="aboutModal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-coffee-200 dark:border-[#44403c] relative">
             <button onclick="closeAbout()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -859,6 +954,7 @@
         let isPublic = false;
         let dragSrcEl = null;
         let currentUploadCoffeeId = null;
+        let shareCoffeeData = null; // Store data for sharing
 
         // --- Stats Specific Tracker ---
         let currentStatsData = [];
@@ -906,6 +1002,116 @@
         };
 
         let scaState = { level: 0, path: [], currentNode: null };
+
+        // --- Sharing Logic ---
+        
+        const initShare = async (coffeeId) => {
+            const c = coffees.find(x => x.id === coffeeId); if(!c) return;
+            shareCoffeeData = c;
+            
+            // Populate Hidden Template
+            document.getElementById('shareRoaster').textContent = c.roaster || c.name || 'Unknown Roaster';
+            document.getElementById('shareOrigin').textContent = c.origin || c.beanType || '';
+            document.getElementById('shareDate').textContent = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '';
+            
+            document.getElementById('shareIn').textContent = (c.weight ? c.weight + 'g' : '-');
+            document.getElementById('shareOut').textContent = ((c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-') + 'g';
+            
+            document.getElementById('shareTime').textContent = formatTime(c.time);
+            document.getElementById('shareTemp').textContent = c.temp || '-';
+            
+            document.getElementById('shareMethod').textContent = c.method || '-';
+            document.getElementById('shareGrinder').textContent = c.grinder || '-';
+            document.getElementById('shareGrind').textContent = c.grind || '-';
+            
+            const farmers = c.farmer ? `Produced by ${c.farmer}. ` : '';
+            const proc = c.processing ? `Process: ${c.processing}. ` : '';
+            const varr = c.variety ? `Variety: ${c.variety}.` : '';
+            document.getElementById('shareBeanDetails').textContent = farmers + proc + varr;
+            
+            document.getElementById('shareNotes').textContent = c.notes ? `"${c.notes}"` : '';
+            document.getElementById('shareRating').innerHTML = getStarDisplay(c.rating || 0);
+
+            // Reset Photo UI
+            document.getElementById('sharePhotoImg').src = '';
+            document.getElementById('sharePhotoContainer').classList.add('hidden');
+            document.getElementById('shareTogglePhotoContainer').classList.add('hidden');
+            document.getElementById('shareIncludePhoto').checked = false;
+
+            // Check for Photo
+            try {
+                const q = query(collection(db, 'photos'), where('coffeeId', '==', coffeeId), limit(1));
+                const snapshot = await getDocs(q);
+                if (!snapshot.empty) {
+                    const photoData = snapshot.docs[0].data();
+                    const photoUrl = photoData.thumbURL || photoData.photoURL;
+                    document.getElementById('sharePhotoImg').src = photoUrl;
+                    document.getElementById('shareTogglePhotoContainer').classList.remove('hidden');
+                    // Pre-load image for canvas
+                    await new Promise((resolve) => {
+                        const img = document.getElementById('sharePhotoImg');
+                        if(img.complete) resolve();
+                        else img.onload = resolve;
+                    });
+                }
+            } catch (e) { console.error("Error fetching photo for share", e); }
+
+            document.getElementById('shareModal').classList.remove('hidden');
+        };
+
+        const generateAndShare = async (action) => {
+            const includePhoto = document.getElementById('shareIncludePhoto').checked;
+            const container = document.getElementById('hiddenShareContainer');
+            const photoContainer = document.getElementById('sharePhotoContainer');
+            
+            if (includePhoto) photoContainer.classList.remove('hidden');
+            else photoContainer.classList.add('hidden');
+
+            try {
+                const canvas = await html2canvas(container, {
+                    allowTaint: true,
+                    useCORS: true,
+                    scale: 2, // Better quality
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#1c1917' : '#fcfbf9'
+                });
+
+                canvas.toBlob(async (blob) => {
+                    if (!blob) return alert("Error generating image.");
+                    
+                    if (action === 'share') {
+                        if (navigator.share) {
+                            const file = new File([blob], "brew-card.png", { type: "image/png" });
+                            try {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'My Brew Card',
+                                    text: `Brewed: ${shareCoffeeData.roaster} - ${shareCoffeeData.method}`
+                                });
+                            } catch (err) {
+                                if (err.name !== 'AbortError') alert("Sharing failed. Try saving to device.");
+                            }
+                        } else {
+                            alert("Web Sharing not supported on this browser. Downloading instead.");
+                            saveAs(blob, "brew-card.png");
+                        }
+                    } else {
+                        // Download
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.download = `brew-${shareCoffeeData.roaster}-${Date.now()}.png`;
+                        link.href = url;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    }
+                    
+                    document.getElementById('shareModal').classList.add('hidden');
+                }, 'image/png');
+
+            } catch (err) {
+                console.error("Canvas generation failed", err);
+                alert("Could not generate image. " + err.message);
+            }
+        };
 
         // --- Functions ---
         
@@ -1820,6 +2026,9 @@
                                 <button onclick="openUploadModal('${c.id}');" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
                                     <i class="fa-solid fa-camera text-purple-500 w-4"></i> Upload Photo
                                 </button>
+                                <button onclick="initShare('${c.id}');" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
+                                    <i class="fa-solid fa-share-nodes text-orange-500 w-4"></i> Share Card
+                                </button>
                                 <hr class="border-coffee-100 dark:border-[#44403c]">
                                 <button onclick="deleteCoffee('${c.id}', event);" class="w-full text-left px-4 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-3">
                                     <i class="fa-solid fa-trash w-4"></i> Delete
@@ -1895,8 +2104,10 @@
         Object.assign(window, { 
             triggerAIScan, 
             handleAIFile,
-            toggleAiMenu, // Added
+            toggleAiMenu, 
             triggerAIProfile,
+            initShare,
+            generateAndShare,
             googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, closeFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu
         });
 
