@@ -412,7 +412,7 @@
                     <!-- Photo Section (Hidden by default) -->
                     <div id="cardPhotoSection" class="hidden relative h-64 bg-coffee-50 dark:bg-[#1c1917] rounded-xl overflow-hidden border border-coffee-100 dark:border-[#44403c] flex items-center justify-center group cursor-pointer" onclick="triggerCardPhoto()">
                         <!-- Replaced img with div for background-image to fix html2canvas stretching -->
-                        <div id="cardDisplayedPhoto" class="absolute inset-0 w-full h-full bg-center bg-cover bg-no-repeat hidden z-10"></div>
+                        <img id="cardDisplayedPhoto" class="w-full h-full object-cover hidden rounded-xl" alt="Brew Photo" style="object-fit: cover;">
                         <div id="cardPhotoPlaceholder" class="text-center p-4">
                             <i class="fa-solid fa-camera text-3xl text-coffee-200 dark:text-[#44403c] mb-2"></i>
                             <p class="text-xs text-coffee-400 dark:text-[#57534e] font-medium">Tap to add brew photo</p>
@@ -1576,11 +1576,11 @@
 
         const resetCardPhotoState = () => {
              // Reset Photo View
-             const div = document.getElementById('cardDisplayedPhoto');
+             const img = document.getElementById('cardDisplayedPhoto');
              const ph = document.getElementById('cardPhotoPlaceholder');
              const input = document.getElementById('cardPhotoInput');
-             div.style.backgroundImage = '';
-             div.classList.add('hidden');
+             img.src = '';
+             img.classList.add('hidden');
              ph.classList.remove('hidden');
              input.value = ''; // Clear file selection
         };
@@ -1639,10 +1639,11 @@
             if(file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const div = document.getElementById('cardDisplayedPhoto');
+                    const img = document.getElementById('cardDisplayedPhoto');
                     const ph = document.getElementById('cardPhotoPlaceholder');
-                    div.style.backgroundImage = `url(${e.target.result})`;
-                    div.classList.remove('hidden');
+                    // Set src of img tag instead of background of div for better quality
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
                     ph.classList.add('hidden');
                 };
                 reader.readAsDataURL(file);
@@ -1663,10 +1664,10 @@
             bottomBar.style.display = 'none';
 
             try {
-                await new Promise(r => setTimeout(r, 100)); // allow UI to update
-                // Increase scale to 3 for better quality
+                await new Promise(r => setTimeout(r, 200)); // allow UI to update
+                // Increase scale to 4 for ultra-high quality
                 const canvas = await html2canvas(content, { 
-                    scale: 3, 
+                    scale: 4, 
                     backgroundColor: getComputedStyle(content).backgroundColor, 
                     useCORS: true,
                     allowTaint: true 
