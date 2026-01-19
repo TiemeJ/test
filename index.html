@@ -1625,43 +1625,37 @@
         const generateShareImage = async () => {
             const c = currentCardCoffee;
             const content = document.getElementById('coffeeCardContent');
-            const shareBtn = document.querySelector('#shareControls button[onclick*="generateShareImage"]');
-            const originalText = shareBtn.innerHTML;
-
-            // Visual feedback on the button only
-            shareBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            shareBtn.disabled = true;
-
+            
+            // FIX: Refactored to use onclone to prevent screen flash on Android
+            // We no longer modify the visible DOM here.
+            
             try {
                 const canvas = await html2canvas(content, { 
                     scale: 4, 
                     backgroundColor: getComputedStyle(content).backgroundColor, 
                     useCORS: true,
                     allowTaint: true,
-                    // The magic fix: Modify the clone, not the real DOM
                     onclone: (clonedDoc) => {
+                        // Find elements inside the CLONED document
                         const clContent = clonedDoc.getElementById('coffeeCardContent');
-                        const clControls = clonedDoc.getElementById('shareControls');
-                        const clClose = clonedDoc.getElementById('cardCloseBtn'); 
+                        const clClose = clonedDoc.getElementById('cardCloseBtn');
                         const clBottom = clonedDoc.getElementById('cardBottomBar');
                         const clImprove = clonedDoc.getElementById('cardImproveContainer');
-                        
-                        // Hide UI elements in the clone
-                        if (clControls) clControls.style.display = 'none';
-                        if (clClose) clClose.style.display = 'none'; 
-                        if (clBottom) clBottom.style.display = 'none';
-                        
-                        // Logic from previous code: hide improve container for the share image
-                        if (clImprove) clImprove.classList.add('hidden');
 
-                        // Reset transforms to ensure crisp rendering
+                        // Reset positioning on the container to ensure full capture
                         if (clContent) {
                             clContent.style.transform = 'none';
-                            clContent.style.margin = '0';
+                            clContent.style.boxShadow = 'none';
                         }
+
+                        // Hide the internal UI elements we don't want in the photo
+                        // We do this on the clone, so the user never sees it happen
+                        if (clClose) clClose.style.display = 'none';
+                        if (clBottom) clBottom.style.display = 'none';
+                        if (clImprove) clImprove.style.display = 'none'; // Ensure improve is hidden in share
                     }
                 });
-
+                
                 canvas.toBlob(async (blob) => {
                     if (!blob) return alert('Failed to generate image');
                     const file = new File([blob], `brew_${c.roaster || 'coffee'}_${Date.now()}.png`, { type: 'image/png' });
@@ -1674,9 +1668,6 @@
             } catch (err) {
                 console.error("Card generation failed", err); 
                 alert("Could not generate card image.");
-            } finally {
-                shareBtn.innerHTML = originalText;
-                shareBtn.disabled = false;
             }
         };
 
