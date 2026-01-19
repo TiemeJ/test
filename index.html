@@ -411,8 +411,8 @@
 
                     <!-- Photo Section (Hidden by default) -->
                     <div id="cardPhotoSection" class="hidden relative h-64 bg-coffee-50 dark:bg-[#1c1917] rounded-xl overflow-hidden border border-coffee-100 dark:border-[#44403c] flex items-center justify-center group cursor-pointer" onclick="triggerCardPhoto()">
-                        <!-- Use IMG for better html2canvas quality, object-cover prevents stretching -->
-                        <img id="cardDisplayedPhoto" class="absolute inset-0 w-full h-full object-cover hidden z-10" src="" alt="Brew Photo">
+                        <!-- Reverted to DIV with bg-cover for robust aspect ratio handling in html2canvas -->
+                        <div id="cardDisplayedPhoto" class="absolute inset-0 w-full h-full bg-center bg-cover bg-no-repeat hidden z-10"></div>
                         <div id="cardPhotoPlaceholder" class="text-center p-4">
                             <i class="fa-solid fa-camera text-3xl text-coffee-200 dark:text-[#44403c] mb-2"></i>
                             <p class="text-xs text-coffee-400 dark:text-[#57534e] font-medium">Tap to add brew photo</p>
@@ -1513,12 +1513,12 @@
         };
 
         const resetCardPhotoState = () => {
-             // Reset Photo View
-             const img = document.getElementById('cardDisplayedPhoto');
+             // Reset Photo View - USING BACKGROUND IMAGE (DIV)
+             const div = document.getElementById('cardDisplayedPhoto');
              const ph = document.getElementById('cardPhotoPlaceholder');
              const input = document.getElementById('cardPhotoInput');
-             img.src = '';
-             img.classList.add('hidden');
+             div.style.backgroundImage = '';
+             div.classList.add('hidden');
              ph.classList.remove('hidden');
              input.value = ''; // Clear file selection
         };
@@ -1577,10 +1577,10 @@
             if(file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const img = document.getElementById('cardDisplayedPhoto');
+                    const div = document.getElementById('cardDisplayedPhoto'); // Using DIV
                     const ph = document.getElementById('cardPhotoPlaceholder');
-                    img.src = e.target.result;
-                    img.classList.remove('hidden');
+                    div.style.backgroundImage = `url(${e.target.result})`; // Set Background Image
+                    div.classList.remove('hidden');
                     ph.classList.add('hidden');
                 };
                 reader.readAsDataURL(file);
