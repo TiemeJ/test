@@ -1625,37 +1625,41 @@
         const generateShareImage = async () => {
             const c = currentCardCoffee;
             const content = document.getElementById('coffeeCardContent');
+            const shareControls = document.getElementById('shareControls');
+            const closeBtn = document.getElementById('cardCloseBtn'); 
+            const bottomBar = document.getElementById('cardBottomBar');
+            const improveContainer = document.getElementById('cardImproveContainer');
             
-            // FIX: Refactored to use onclone to prevent screen flash on Android
-            // We no longer modify the visible DOM here.
+            // Temporary UI adjustments for snapshot
+            shareControls.classList.add('hidden');
+            closeBtn.classList.add('hidden'); 
+            bottomBar.style.display = 'none';
             
+            // Hide Improve Container if it's visible, for the shared image
+            const wasImproveVisible = !improveContainer.classList.contains('hidden');
+            if (wasImproveVisible) improveContainer.classList.add('hidden');
+            
+            // Disable transforms temporarily to avoid blur
+            const originalTransform = content.style.transform;
+            content.style.transform = 'none';
+
             try {
+                await new Promise(r => setTimeout(r, 100)); // allow UI to update
+                // Use scale 4 for high resolution
                 const canvas = await html2canvas(content, { 
                     scale: 4, 
                     backgroundColor: getComputedStyle(content).backgroundColor, 
                     useCORS: true,
-                    allowTaint: true,
-                    onclone: (clonedDoc) => {
-                        // Find elements inside the CLONED document
-                        const clContent = clonedDoc.getElementById('coffeeCardContent');
-                        const clClose = clonedDoc.getElementById('cardCloseBtn');
-                        const clBottom = clonedDoc.getElementById('cardBottomBar');
-                        const clImprove = clonedDoc.getElementById('cardImproveContainer');
-
-                        // Reset positioning on the container to ensure full capture
-                        if (clContent) {
-                            clContent.style.transform = 'none';
-                            clContent.style.boxShadow = 'none';
-                        }
-
-                        // Hide the internal UI elements we don't want in the photo
-                        // We do this on the clone, so the user never sees it happen
-                        if (clClose) clClose.style.display = 'none';
-                        if (clBottom) clBottom.style.display = 'none';
-                        if (clImprove) clImprove.style.display = 'none'; // Ensure improve is hidden in share
-                    }
+                    allowTaint: true 
                 });
                 
+                // Restore UI
+                shareControls.classList.remove('hidden');
+                closeBtn.classList.remove('hidden'); 
+                bottomBar.style.display = '';
+                content.style.transform = originalTransform;
+                if (wasImproveVisible) improveContainer.classList.remove('hidden');
+
                 canvas.toBlob(async (blob) => {
                     if (!blob) return alert('Failed to generate image');
                     const file = new File([blob], `brew_${c.roaster || 'coffee'}_${Date.now()}.png`, { type: 'image/png' });
@@ -1667,6 +1671,11 @@
                 }, 'image/png');
             } catch (err) {
                 console.error("Card generation failed", err); 
+                shareControls.classList.remove('hidden');
+                closeBtn.classList.remove('hidden'); 
+                bottomBar.style.display = '';
+                content.style.transform = originalTransform;
+                if (wasImproveVisible) improveContainer.classList.remove('hidden');
                 alert("Could not generate card image.");
             }
         };
