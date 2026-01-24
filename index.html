@@ -376,10 +376,8 @@
         </div>
 
         <div class="mt-3 text-xs text-coffee-500 dark:text-[#78716c] italic flex flex-col gap-1 px-1">
-            <span><i class="fa-solid fa-filter mr-1"></i> Tap headers to filter.</span>
-            <span><i class="fa-solid fa-hand-pointer mr-1"></i> Single tap any row to view a card of that brew.</span>
-            <span><i class="fa-solid fa-hand-pointer mr-1"></i> Double tap any row to duplicate that brew.</span>
-            <span><i class="fa-solid fa-hand-pointer mr-1"></i> Long press any row to bring up the actions menu.</span>
+            <span><i class="fa-solid fa-filter mr-1"></i> Double tap Headers to filter.</span>
+            <span><i class="fa-solid fa-hand-pointer mr-1"></i> Double tap any row to view Card.</span>
             <span><i class="fa-solid fa-info-circle mr-1"></i> Drag rows to reorder.</span>
         </div>
     </main>
@@ -777,14 +775,14 @@
 
                 <!-- Step 3: The Card -->
                 <div class="bg-white dark:bg-[#292524] p-4 rounded-lg border border-coffee-100 dark:border-[#44403c] shadow-sm">
-                    <h4 class="font-bold text-coffee-800 dark:text-white mb-2">3. The Coffee Card (tap!)</h4>
+                    <h4 class="font-bold text-coffee-800 dark:text-white mb-2">3. The Coffee Card (Double Tap!)</h4>
                     <div class="flex flex-col sm:flex-row gap-4 items-center">
                         <div class="flex-shrink-0 bg-coffee-100 dark:bg-[#44403c] p-3 rounded-lg border border-coffee-200 dark:border-[#57534e]">
                             <i class="fa-solid fa-id-card text-2xl text-coffee-700 dark:text-[#d6ccc2]"></i>
                         </div>
                         <div class="flex-1">
-                            <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">This is the magic feature. <strong>Tap any row</strong> in your table to open the "Coffee Card".</p>
-                            <p class="text-xs text-coffee-500 dark:text-[#78716c] mt-1">This presents a beautiful, summarized view of the recipe, perfect for quickly replicating a brew without side scrolling through the table.</p>
+                            <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">This is the magic feature. <strong>Double tap any row</strong> in your table to open the "Coffee Card".</p>
+                            <p class="text-xs text-coffee-500 dark:text-[#78716c] mt-1">This presents a beautiful, summarized view of the recipe, perfect for quickly replicating a brew without scrolling through the table.</p>
                         </div>
                     </div>
                 </div>
@@ -1934,7 +1932,7 @@
 
         const toggleActionMenu = (menuId, e) => {
             e.stopPropagation(); document.querySelectorAll('.action-menu').forEach(el => { if(el.id !== menuId) el.classList.add('hidden'); });
-            const menu = document.getElementById(menuId); if(menu) { if(menu.classList.contains('hidden')) { menu.style.position = ''; menu.style.top = ''; menu.style.left = ''; } menu.classList.toggle('hidden'); }
+            const menu = document.getElementById(menuId); if(menu) menu.classList.toggle('hidden');
         };
 
         const renderTable = () => { 
@@ -1961,12 +1959,6 @@
                                 <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
                             </button>
                             <div id="${menuId}" class="action-menu hidden absolute right-0 mt-1 w-48 bg-white dark:bg-[#292524] rounded-lg shadow-xl border border-coffee-200 dark:border-[#57534e] z-50 overflow-hidden">
-                                <div class="flex items-center justify-between px-4 py-2 border-b border-coffee-100 dark:border-[#44403c]">
-                                    <span class="text-xs font-semibold text-coffee-600 dark:text-[#a8a29e] uppercase tracking-wide">Actions</span>
-                                    <button onclick="toggleActionMenu('${menuId}', event)" class="p-0 text-coffee-400 dark:text-[#78716c] hover:text-coffee-600 dark:hover:text-[#d6ccc2] transition-colors">
-                                        <i class="fa-solid fa-xmark text-lg"></i>
-                                    </button>
-                                </div>
                                 <button onclick="editCoffee('${c.id}');" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
                                     <i class="fa-solid fa-pencil text-blue-500 w-4"></i> Edit
                                 </button>
@@ -1996,12 +1988,6 @@
                                 <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
                             </button>
                              <div id="${menuId}" class="action-menu hidden absolute right-0 mt-1 w-48 bg-white dark:bg-[#292524] rounded-lg shadow-xl border border-coffee-200 dark:border-[#57534e] z-50 overflow-hidden">
-                                <div class="flex items-center justify-between px-4 py-2 border-b border-coffee-100 dark:border-[#44403c]">
-                                    <span class="text-xs font-semibold text-coffee-600 dark:text-[#a8a29e] uppercase tracking-wide">Actions</span>
-                                    <button onclick="toggleActionMenu('${menuId}', event)" class="p-0 text-coffee-400 dark:text-[#78716c] hover:text-coffee-600 dark:hover:text-[#d6ccc2] transition-colors">
-                                        <i class="fa-solid fa-xmark text-lg"></i>
-                                    </button>
-                                </div>
                                 <button onclick="shareCoffeeCard('${c.id}', event);" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
                                     <i class="fa-solid fa-share-nodes text-purple-500 w-4"></i> Share Card
                                 </button>
@@ -2033,86 +2019,14 @@
                 if(columnPreferences.rating !== false) rowHTML += `<td class="px-3 py-1 whitespace-nowrap">${getStarDisplay(c.rating)}</td>`;
                 if(columnPreferences.date !== false) rowHTML += `<td class="px-3 py-1 text-xs font-mono text-coffee-500">${displayDate}</td>`;
                 rowHTML += `<td class="px-3 py-1 text-center w-16" onclick="event.stopPropagation()">${actions}</td>`;
-                const r = document.createElement('tr'); r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0 cursor-pointer select-none'; 
-                let clickTimeout = null;
-                let longPressTimeout = null;
-                let isLongPress = false;
-                r.addEventListener('pointerdown', (e) => {
-                    if (e.target.closest('[draggable="true"]') || e.target.closest('.action-menu') || e.target.closest('button')) return;
-                    isLongPress = false;
-                    longPressTimeout = setTimeout(() => {
-                        isLongPress = true;
-                        const menuId = `action-menu-${c.id}`;
-                        const menu = document.getElementById(menuId);
-                        if (menu) {
-                            const rect = r.getBoundingClientRect();
-                            menu.style.position = 'fixed';
-                            menu.style.top = (e.clientY) + 'px';
-                            menu.style.left = (e.clientX) + 'px';
-                            menu.classList.remove('hidden');
-                        }
-                    }, 500);
-                });
-                r.addEventListener('pointerup', () => {
-                    if (longPressTimeout) clearTimeout(longPressTimeout);
-                });
-                r.addEventListener('pointercancel', () => {
-                    if (longPressTimeout) clearTimeout(longPressTimeout);
-                });
-                r.addEventListener('click', (e) => {
-                    if (isLongPress) { isLongPress = false; e.stopPropagation(); return; }
-                    if (e.target.closest('[draggable="true"]') || e.target.closest('.action-menu') || e.target.closest('button')) return;
-                    if (clickTimeout) { clearTimeout(clickTimeout); clickTimeout = null; return; }
-                    clickTimeout = setTimeout(() => { openCoffeeCard(c.id, e); clickTimeout = null; }, 300);
-                });
-                r.addEventListener('dblclick', (e) => {
-                    if (e.target.closest('[draggable="true"]') || e.target.closest('.action-menu') || e.target.closest('button')) return;
-                    if (clickTimeout) { clearTimeout(clickTimeout); clickTimeout = null; }
-                    duplicateCoffee(c.id);
-                });
+                const r = document.createElement('tr'); r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0 cursor-pointer'; r.ondblclick = (e) => openCoffeeCard(c.id, e);
                 r.setAttribute('data-index', index); 
                 if (isDraggable) { r.addEventListener('dragover', handleDragOver); r.addEventListener('drop', handleDrop); }
                 r.innerHTML = rowHTML; 
                 if (isDraggable) { const gripHandle = r.querySelector('[draggable="true"]'); if (gripHandle) { gripHandle.addEventListener('dragstart', handleDragStart); gripHandle.addEventListener('dragend', handleDragEnd); } }
                 t.appendChild(r);
                 if(c.isActive) {
-                    hasActive = true; const rActive = document.createElement('tr'); rActive.className='bg-white dark:bg-[#292524] hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-green-50 dark:border-green-900/10 last:border-b-0 cursor-pointer select-none'; 
-                    let clickTimeout = null;
-                    let longPressTimeout = null;
-                    let isLongPress = false;
-                    rActive.addEventListener('pointerdown', (e) => {
-                        if (e.target.closest('[draggable="true"]') || e.target.closest('.action-menu') || e.target.closest('button')) return;
-                        isLongPress = false;
-                        longPressTimeout = setTimeout(() => {
-                            isLongPress = true;
-                            const menuId = `action-menu-${c.id}`;
-                            const menu = document.getElementById(menuId);
-                            if (menu) {
-                                const rect = rActive.getBoundingClientRect();
-                                menu.style.position = 'fixed';
-                                menu.style.top = (e.clientY) + 'px';
-                                menu.style.left = (e.clientX) + 'px';
-                                menu.classList.remove('hidden');
-                            }
-                        }, 500);
-                    });
-                    rActive.addEventListener('pointerup', () => {
-                        if (longPressTimeout) clearTimeout(longPressTimeout);
-                    });
-                    rActive.addEventListener('pointercancel', () => {
-                        if (longPressTimeout) clearTimeout(longPressTimeout);
-                    });
-                    rActive.addEventListener('click', (e) => {
-                        if (isLongPress) { isLongPress = false; e.stopPropagation(); return; }
-                        if (e.target.closest('[draggable="true"]') || e.target.closest('.action-menu') || e.target.closest('button')) return;
-                        if (clickTimeout) { clearTimeout(clickTimeout); clickTimeout = null; return; }
-                        clickTimeout = setTimeout(() => { openCoffeeCard(c.id, e); clickTimeout = null; }, 300);
-                    });
-                    rActive.addEventListener('dblclick', (e) => {
-                        if (e.target.closest('[draggable="true"]') || e.target.closest('.action-menu') || e.target.closest('button')) return;
-                        if (clickTimeout) { clearTimeout(clickTimeout); clickTimeout = null; }
-                        duplicateCoffee(c.id);
-                    });
+                    hasActive = true; const rActive = document.createElement('tr'); rActive.className='bg-white dark:bg-[#292524] hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-green-50 dark:border-green-900/10 last:border-b-0 cursor-pointer'; rActive.ondblclick = (e) => openCoffeeCard(c.id, e);
                     rActive.setAttribute('data-index', index);
                     if (isDraggable) { 
                         rActive.addEventListener('dragover', handleDragOver); rActive.addEventListener('drop', handleDrop); 
