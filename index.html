@@ -45,6 +45,25 @@
         .dark .sortable-ghost { background-color: #44403c; }
         .sortable-drag { cursor: grabbing; opacity: 1; background-color: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .dark .sortable-drag { background-color: #292524; }
+        
+        /* --- DRAG HANDLE IMPROVEMENTS --- */
+        .drag-handle {
+            touch-action: none; /* Prevents scrolling/zooming while touching the handle */
+            -webkit-touch-callout: none; /* Disables iOS Context Menu (Copy/Share) */
+            -webkit-user-select: none; /* Disables text selection */
+            user-select: none;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 10px 0; /* Increase touch target size vertically */
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        /* -------------------------------- */
 
         input:focus, select:focus, textarea:focus { outline: none; ring: 2px; border-color: #b08968; box-shadow: 0 0 0 3px rgba(176, 137, 104, 0.2); }
         .editing-mode { border: 2px solid #ea580c !important; }
@@ -56,8 +75,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .chevron-rotate { transition: transform 0.3s ease; }
         .group[aria-expanded="true"] .chevron-rotate { transform: rotate(180deg); }
-        .cursor-grab { cursor: grab; }
-        .cursor-grabbing { cursor: grabbing; }
         
         .star-rating i { cursor: pointer; transition: color 0.2s; }
         .star-rating i:hover, .star-rating i.active { color: #fbbf24; }
@@ -2004,7 +2021,12 @@
             filteredCoffees.forEach((c, index) => {
                 const w = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
                 const displayRoaster = c.roaster || c.name || '-'; const displayOrigin = c.origin || c.beanType || '-'; const displayDate = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-';
-                const gripIcon = isDraggable ? 'fa-grip-vertical cursor-grab' : 'fa-lock opacity-30';
+                
+                // Drag handle logic: Only show drag handle if draggable, otherwise lock icon
+                const gripIconHTML = isDraggable 
+                    ? `<div class="drag-handle w-full h-full flex items-center justify-center" oncontextmenu="return false;"><i class="fa-solid fa-grip-vertical text-coffee-300 dark:text-[#57534e]"></i></div>`
+                    : `<div class="w-full h-full flex items-center justify-center"><i class="fa-solid fa-lock opacity-30 text-coffee-300 dark:text-[#57534e]"></i></div>`;
+
                 const menuId = `action-menu-${c.id}`;
                 let actions = '';
                 
@@ -2057,7 +2079,10 @@
                 }
 
                 const recipeCol = `<div class="whitespace-nowrap text-xs"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight || '-'}g</span><span class="text-coffee-300 dark:text-[#57534e] mx-0.5">•</span><span class="font-bold text-coffee-900 dark:text-white">${w === '-' ? '-' : (w.endsWith('.0')?parseInt(w):w) + 'g'}</span><span class="text-coffee-400 dark:text-[#78716c] ml-0.5">(1:${c.ratio || '-'})</span></div>`;
-                let rowHTML = `<td class="px-3 py-1 text-center"><i class="fa-solid ${gripIcon} text-coffee-300 dark:text-[#57534e]"></i></td>`;
+                
+                // Construct Row HTML
+                let rowHTML = `<td class="px-0 py-0 text-center w-10">${gripIconHTML}</td>`; // Modified for drag handle
+                
                 if(columnPreferences.roaster !== false) rowHTML += `<td class="px-3 py-1 font-semibold text-coffee-900 dark:text-[#e7e5e4]">${displayRoaster}</td>`;
                 if(columnPreferences.origin !== false) rowHTML += `<td class="px-3 py-1 text-sm">${displayOrigin}</td>`;
                 if(columnPreferences.farmer !== false) rowHTML += `<td class="px-3 py-1 text-sm">${c.farmer || '-'}</td>`;
@@ -2081,7 +2106,7 @@
                 const r = document.createElement('tr'); 
                 r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0 cursor-pointer'; 
                 r.ondblclick = (e) => openCoffeeCard(c.id, e);
-                r.setAttribute('data-id', c.id); // Critical for Sortable
+                r.setAttribute('data-id', c.id); 
                 r.innerHTML = rowHTML; 
                 t.appendChild(r);
                 
@@ -2090,12 +2115,16 @@
                     const rActive = document.createElement('tr'); 
                     rActive.className='bg-white dark:bg-[#292524] hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-green-50 dark:border-green-900/10 last:border-b-0 cursor-pointer'; 
                     rActive.ondblclick = (e) => openCoffeeCard(c.id, e);
-                    rActive.setAttribute('data-id', c.id); // Critical for Sortable
+                    rActive.setAttribute('data-id', c.id); 
                     
+                    // Slightly modify active row icon if needed, but keep logic consistent
                     if (isDraggable) { 
-                        rActive.innerHTML = rowHTML.replace(gripIcon, 'fa-grip-vertical text-green-500 cursor-grab'); 
+                        rActive.innerHTML = rowHTML.replace('text-coffee-300 dark:text-[#57534e]', 'text-green-500'); 
                     } else { 
-                        rActive.innerHTML = rowHTML.replace(gripIcon, 'fa-star text-green-500'); 
+                        // If not draggable, show star
+                        const starIcon = `<div class="w-full h-full flex items-center justify-center"><i class="fa-solid fa-star text-green-500"></i></div>`;
+                        rActive.innerHTML = rowHTML;
+                        rActive.cells[0].innerHTML = starIcon;
                     }
                     activeT.appendChild(rActive);
                 }
@@ -2118,7 +2147,6 @@
                     // Reassign sequential customOrder to all items
                     // Batch update Firebase
                     
-                    // 1. Get ordered IDs
                     const activeRows = Array.from(document.querySelectorAll('#activeCoffeeTableBody tr:not(.static-header)'));
                     const historyRows = Array.from(document.querySelectorAll('#coffeeTableBody tr:not(.static-header)'));
                     const allRows = [...activeRows, ...historyRows];
@@ -2132,7 +2160,6 @@
 
                         const coffee = coffees.find(c => c.id === id);
                         if(coffee) {
-                            // Only update if changed (though updating all is safer for consistency)
                             coffee.customOrder = index;
                             const ref = doc(db, 'users', currentUser.uid, 'coffees', id);
                             batch.update(ref, { customOrder: index });
@@ -2153,10 +2180,13 @@
 
                 const sortableOptions = {
                     animation: 150,
-                    handle: '.fa-grip-vertical',
+                    handle: '.drag-handle', // Updated handle selector
                     ghostClass: 'sortable-ghost',
                     dragClass: 'sortable-drag',
-                    filter: '.static-header', // Disable dragging header rows
+                    filter: '.static-header',
+                    delay: 150, // Added delay for touch devices to distinguish tap vs drag
+                    delayOnTouchOnly: true, // Only delay on touch, mouse is instant
+                    touchStartThreshold: 5, // Allow 5px movement before cancelling tap
                     onEnd: handleSort
                 };
 
