@@ -15,6 +15,8 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- SortableJS for Touch-Friendly Drag & Drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <!-- Image Compression Library -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <!-- Chart.js for Statistics -->
@@ -28,9 +30,7 @@
             font-family: 'Outfit', sans-serif; 
             transition: background-color 0.3s ease, color 0.3s ease; 
             -webkit-tap-highlight-color: transparent;
-            /* Prevents pull-to-refresh on mobile for a more app-like feel */
             overscroll-behavior-y: contain; 
-            /* Fix for iPhone safe areas (notch) */
             padding-top: env(safe-area-inset-top);
         }
 
@@ -39,8 +39,13 @@
         .dark ::-webkit-scrollbar-thumb { background: #57534e; }
         ::-webkit-scrollbar-thumb { background: #d6ccc2; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #a18e84; }
-        .dragging { opacity: 0.5; background-color: #e6dfd9; border: 2px dashed #8c7365; }
-        .dark .dragging { background-color: #44403c; border-color: #a8a29e; }
+        
+        /* SortableJS Styling */
+        .sortable-ghost { opacity: 0.4; background-color: #eaddd7; }
+        .dark .sortable-ghost { background-color: #44403c; }
+        .sortable-drag { cursor: grabbing; opacity: 1; background-color: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .dark .sortable-drag { background-color: #292524; }
+
         input:focus, select:focus, textarea:focus { outline: none; ring: 2px; border-color: #b08968; box-shadow: 0 0 0 3px rgba(176, 137, 104, 0.2); }
         .editing-mode { border: 2px solid #ea580c !important; }
         
@@ -54,31 +59,26 @@
         .cursor-grab { cursor: grab; }
         .cursor-grabbing { cursor: grabbing; }
         
-        /* Star Rating Styles */
         .star-rating i { cursor: pointer; transition: color 0.2s; }
         .star-rating i:hover, .star-rating i.active { color: #fbbf24; }
         .dark .star-rating i:hover, .star-rating i.active { color: #f59e0b; }
 
-        /* SCA Wheel Styles */
         .sca-btn { transition: all 0.2s; }
         .sca-btn:active { transform: scale(0.95); }
 
-        /* Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #68D391; }
         .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
 
-        /* AI Loading and Flash Animations */
         .ai-loading-pulse { animation: ai-pulse 1.5s infinite; }
         @keyframes ai-pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
         @keyframes ai-flash {
             0% { background-color: transparent; }
-            30% { background-color: rgba(199, 210, 254, 0.5); } /* Light Indigo */
+            30% { background-color: rgba(199, 210, 254, 0.5); } 
             100% { background-color: transparent; }
         }
         .ai-flash-effect { animation: ai-flash 2s ease-out; }
 
-        /* Typewriter: No border-right or blinking animation */
         .typewriter p { overflow: hidden; white-space: normal; margin: 0 auto; letter-spacing: .05em; animation: typing 3.5s steps(40, end); }
         @keyframes typing { from { width: 0 } to { width: 100% } }
     </style>
@@ -378,7 +378,7 @@
         <div class="mt-3 text-xs text-coffee-500 dark:text-[#78716c] italic flex flex-col gap-1 px-1">
             <span><i class="fa-solid fa-filter mr-1"></i> Double tap Headers to filter.</span>
             <span><i class="fa-solid fa-hand-pointer mr-1"></i> Double tap any row to view Card.</span>
-            <span><i class="fa-solid fa-info-circle mr-1"></i> Drag rows to reorder.</span>
+            <span><i class="fa-solid fa-grip-vertical mr-1"></i> Drag handle to reorder rows.</span>
         </div>
     </main>
 
@@ -932,7 +932,6 @@
         let unsubscribeData = null; 
         let unsubscribeNotifications = null;
         let isPublic = false;
-        let dragSrcEl = null;
         let currentUploadCoffeeId = null;
         let currentShareMode = 'stats'; // 'stats' or 'photo'
         let currentCardCoffee = null;
@@ -945,6 +944,10 @@
         let lastGalleryDoc = null;
         let currentGalleryMode = 'mine';
         let isGalleryLoading = false;
+        
+        // --- Sortable Instances ---
+        let sortableHistory = null;
+        let sortableActive = null;
 
         // --- PREFERENCES CONFIG ---
         const columnDefs = [
@@ -1148,28 +1151,6 @@
 
         const discardForm = () => { if(confirm("Discard unsaved changes?")) { resetFormState(); toggleForm(false); } };
         const toggleActive = async (id, ev) => { if(ev) ev.stopPropagation(); if(currentView !== 'mine') return; const c = coffees.find(x => x.id === id); if(!c) return; try { await updateDoc(doc(db, 'users', currentUser.uid, 'coffees', id), { isActive: !c.isActive }); } catch(e) { console.error(e); } };
-
-        const handleDragStart = (e) => { dragSrcEl = e.target.closest('tr'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/html', dragSrcEl.innerHTML); dragSrcEl.classList.add('opacity-50'); };
-        const handleDragOver = (e) => { if (e.preventDefault) e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; };
-        const handleDrop = async (e) => {
-            if (e.stopPropagation) e.stopPropagation();
-            const targetRow = e.target.closest('tr');
-            if (!targetRow || !dragSrcEl) return false;
-            const srcBody = dragSrcEl.closest('tbody'); const targetBody = targetRow.closest('tbody');
-            if (!srcBody || !targetBody) return false;
-            if (dragSrcEl !== targetRow && srcBody.id === targetBody.id && (srcBody.id === 'coffeeTableBody' || srcBody.id === 'activeCoffeeTableBody')) {
-                const oldIndex = parseInt(dragSrcEl.getAttribute('data-index')); const newIndex = parseInt(targetRow.getAttribute('data-index'));
-                const movedItem = coffees.splice(oldIndex, 1)[0]; coffees.splice(newIndex, 0, movedItem);
-                coffees.forEach((c, idx) => c.customOrder = idx);
-                renderTable(); 
-                try {
-                    const batch = writeBatch(db);
-                    coffees.forEach((c) => { const ref = doc(db, 'users', currentUser.uid, 'coffees', c.id); batch.update(ref, { customOrder: c.customOrder }); });
-                    await batch.commit();
-                } catch(err) { console.error("Reorder failed", err); }
-            } return false;
-        };
-        const handleDragEnd = (e) => { if(dragSrcEl) dragSrcEl.classList.remove('opacity-50'); };
 
         const setNotesMode = (mode) => {
             const btnMan = document.getElementById('btnNotesManual'), btnSca = document.getElementById('btnNotesSCA'), conMan = document.getElementById('notesManualContainer'), conSca = document.getElementById('notesSCAContainer'), hidden = document.getElementById('notesMode');
@@ -2000,8 +1981,6 @@
             renderActiveFilters();
 
             // 6. Re-fetch/Re-render
-            // Calling changeView(currentView) is robust as it tears down and sets up the listener again,
-            // ensuring the table order matches the database order (customOrder) and fetching fresh data.
             changeView(currentView);
 
             // 7. Remove Spin after delay
@@ -2009,12 +1988,19 @@
         };
 
         const renderTable = () => { 
-            const t = document.getElementById('coffeeTableBody'); const activeT = document.getElementById('activeCoffeeTableBody'); const e = document.getElementById('emptyState'); 
+            const t = document.getElementById('coffeeTableBody'); 
+            const activeT = document.getElementById('activeCoffeeTableBody'); 
+            const e = document.getElementById('emptyState'); 
+            
             columnDefs.forEach(col => { const th = document.getElementById(`th-${col.id}`); if(th) { if(columnPreferences[col.id] === false) th.classList.add('hidden'); else th.classList.remove('hidden'); } });
-            t.innerHTML=''; activeT.innerHTML=''; const filteredCoffees = getFilteredCoffees();
+            
+            t.innerHTML=''; activeT.innerHTML=''; 
+            const filteredCoffees = getFilteredCoffees();
             if(coffees.length === 0){ e.classList.remove('hidden'); activeT.classList.add('hidden'); return; } e.classList.add('hidden');
+            
             const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !Object.values(activeFilters).some(v=>v!==null);
             let hasActive = false;
+            
             filteredCoffees.forEach((c, index) => {
                 const w = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
                 const displayRoaster = c.roaster || c.name || '-'; const displayOrigin = c.origin || c.beanType || '-'; const displayDate = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-';
@@ -2025,7 +2011,6 @@
                 if(currentView === 'mine') {
                     const pinLabel = c.isActive ? 'Unpin' : 'Pin to Active';
                     const pinIcon = c.isActive ? 'fa-thumbtack text-green-600' : 'fa-thumbtack text-gray-400';
-                    // Reordered Action Menu
                     actions = `
                         <div class="relative">
                             <button onclick="toggleActionMenu('${menuId}', event)" class="p-1.5 text-coffee-500 hover:text-coffee-800 dark:text-[#a8a29e] dark:hover:text-white transition-colors rounded-full hover:bg-coffee-50 dark:hover:bg-[#34302e]">
@@ -2091,21 +2076,94 @@
                 if(columnPreferences.rating !== false) rowHTML += `<td class="px-3 py-1 whitespace-nowrap">${getStarDisplay(c.rating)}</td>`;
                 if(columnPreferences.date !== false) rowHTML += `<td class="px-3 py-1 text-xs font-mono text-coffee-500">${displayDate}</td>`;
                 rowHTML += `<td class="px-3 py-1 text-center w-16" onclick="event.stopPropagation()">${actions}</td>`;
-                const r = document.createElement('tr'); r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0 cursor-pointer'; r.ondblclick = (e) => openCoffeeCard(c.id, e);
-                if (isDraggable) { r.setAttribute('draggable', 'true'); r.setAttribute('data-index', index); r.classList.add('cursor-grab'); r.addEventListener('dragstart', handleDragStart); r.addEventListener('dragover', handleDragOver); r.addEventListener('drop', handleDrop); r.addEventListener('dragend', handleDragEnd); }
-                r.innerHTML = rowHTML; t.appendChild(r);
+                
+                // Base Row Config
+                const r = document.createElement('tr'); 
+                r.className='bg-white dark:bg-[#292524] hover:bg-coffee-50 dark:hover:bg-[#1c1917] border-b border-coffee-50 dark:border-[#44403c] last:border-b-0 cursor-pointer'; 
+                r.ondblclick = (e) => openCoffeeCard(c.id, e);
+                r.setAttribute('data-id', c.id); // Critical for Sortable
+                r.innerHTML = rowHTML; 
+                t.appendChild(r);
+                
                 if(c.isActive) {
-                    hasActive = true; const rActive = document.createElement('tr'); rActive.className='bg-white dark:bg-[#292524] hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-green-50 dark:border-green-900/10 last:border-b-0 cursor-pointer'; rActive.ondblclick = (e) => openCoffeeCard(c.id, e);
-                    if (isDraggable) { rActive.setAttribute('draggable', 'true'); rActive.setAttribute('data-index', index); rActive.classList.add('cursor-grab'); rActive.addEventListener('dragstart', handleDragStart); rActive.addEventListener('dragover', handleDragOver); rActive.addEventListener('drop', handleDrop); rActive.addEventListener('dragend', handleDragEnd); rActive.innerHTML = rowHTML.replace(gripIcon, 'fa-grip-vertical text-green-500 cursor-grab'); } 
-                    else { rActive.innerHTML = rowHTML.replace(gripIcon, 'fa-star text-green-500'); }
+                    hasActive = true; 
+                    const rActive = document.createElement('tr'); 
+                    rActive.className='bg-white dark:bg-[#292524] hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-green-50 dark:border-green-900/10 last:border-b-0 cursor-pointer'; 
+                    rActive.ondblclick = (e) => openCoffeeCard(c.id, e);
+                    rActive.setAttribute('data-id', c.id); // Critical for Sortable
+                    
+                    if (isDraggable) { 
+                        rActive.innerHTML = rowHTML.replace(gripIcon, 'fa-grip-vertical text-green-500 cursor-grab'); 
+                    } else { 
+                        rActive.innerHTML = rowHTML.replace(gripIcon, 'fa-star text-green-500'); 
+                    }
                     activeT.appendChild(rActive);
                 }
             });
+
             const totalCols = 2 + columnDefs.filter(c => columnPreferences[c.id] !== false).length;
             if(hasActive) {
-                const activeHeader = document.createElement('tr'); activeHeader.className = "bg-green-50/50 dark:bg-green-900/20"; activeHeader.innerHTML = `<td colspan="${totalCols}" class="px-3 py-1 font-bold text-green-700 dark:text-green-400 text-xs uppercase tracking-wide"><i class="fa-solid fa-thumbtack mr-2"></i>Active Brews</td>`; activeT.insertBefore(activeHeader, activeT.firstChild);
-                const histHeader = document.createElement('tr'); histHeader.className = "bg-coffee-50/50 dark:bg-[#201d1b]"; histHeader.innerHTML = `<td colspan="${totalCols}" class="px-3 py-1 font-bold text-coffee-600 dark:text-[#a8a29e] text-xs uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</td>`; t.insertBefore(histHeader, t.firstChild); activeT.classList.remove('hidden');
+                const activeHeader = document.createElement('tr'); activeHeader.className = "bg-green-50/50 dark:bg-green-900/20 pointer-events-none static-header"; activeHeader.innerHTML = `<td colspan="${totalCols}" class="px-3 py-1 font-bold text-green-700 dark:text-green-400 text-xs uppercase tracking-wide"><i class="fa-solid fa-thumbtack mr-2"></i>Active Brews</td>`; activeT.insertBefore(activeHeader, activeT.firstChild);
+                const histHeader = document.createElement('tr'); histHeader.className = "bg-coffee-50/50 dark:bg-[#201d1b] pointer-events-none static-header"; histHeader.innerHTML = `<td colspan="${totalCols}" class="px-3 py-1 font-bold text-coffee-600 dark:text-[#a8a29e] text-xs uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</td>`; t.insertBefore(histHeader, t.firstChild); activeT.classList.remove('hidden');
             } else { activeT.classList.add('hidden'); }
+
+            // --- INITIALIZE SORTABLEJS ---
+            if(sortableActive) sortableActive.destroy();
+            if(sortableHistory) sortableHistory.destroy();
+
+            if (isDraggable) {
+                const handleSort = async (evt) => {
+                    // Logic: Get *all* rows from both Active and History tables in visual order
+                    // Exclude headers (static-header class)
+                    // Reassign sequential customOrder to all items
+                    // Batch update Firebase
+                    
+                    // 1. Get ordered IDs
+                    const activeRows = Array.from(document.querySelectorAll('#activeCoffeeTableBody tr:not(.static-header)'));
+                    const historyRows = Array.from(document.querySelectorAll('#coffeeTableBody tr:not(.static-header)'));
+                    const allRows = [...activeRows, ...historyRows];
+
+                    const batch = writeBatch(db);
+                    let hasUpdates = false;
+
+                    allRows.forEach((row, index) => {
+                        const id = row.getAttribute('data-id');
+                        if (!id) return;
+
+                        const coffee = coffees.find(c => c.id === id);
+                        if(coffee) {
+                            // Only update if changed (though updating all is safer for consistency)
+                            coffee.customOrder = index;
+                            const ref = doc(db, 'users', currentUser.uid, 'coffees', id);
+                            batch.update(ref, { customOrder: index });
+                            hasUpdates = true;
+                        }
+                    });
+
+                    if (hasUpdates) {
+                        try {
+                            await batch.commit();
+                            // Update local array sort to prevent jumps on next render
+                            coffees.sort((a,b) => (a.customOrder || 0) - (b.customOrder || 0));
+                        } catch(err) {
+                            console.error("Reorder failed", err);
+                        }
+                    }
+                };
+
+                const sortableOptions = {
+                    animation: 150,
+                    handle: '.fa-grip-vertical',
+                    ghostClass: 'sortable-ghost',
+                    dragClass: 'sortable-drag',
+                    filter: '.static-header', // Disable dragging header rows
+                    onEnd: handleSort
+                };
+
+                // Initialize on both tables
+                if (t) sortableHistory = Sortable.create(t, sortableOptions);
+                if (activeT && hasActive) sortableActive = Sortable.create(activeT, sortableOptions);
+            }
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -2123,7 +2181,7 @@
         });
 
         Object.assign(window, { 
-            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, duplicateFromCard, fastDuplicateFromCard, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, handleDragStart, handleDragOver, handleDrop, handleDragEnd, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, toggleCardMode, triggerCardPhoto, handleCardPhoto, generateShareImage, resetCardPhotoState, updateBeanMeter, refreshTableData
+            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, duplicateFromCard, fastDuplicateFromCard, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, getFilteredCoffees, setRating, exportCSV, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, toggleCardMode, triggerCardPhoto, handleCardPhoto, generateShareImage, resetCardPhotoState, updateBeanMeter, refreshTableData
         });
 
         initTheme();
