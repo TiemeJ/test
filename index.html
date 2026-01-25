@@ -49,7 +49,7 @@
         /* --- DRAG HANDLE IMPROVEMENTS --- */
         .drag-handle {
             touch-action: none; /* Prevents scrolling/zooming while touching the handle */
-            -webkit-touch-callout: none; /* Disables iOS Context Menu (Copy/Share) */
+            -webkit-touch-callout: none; /* Disables iOS Context Menu */
             -webkit-user-select: none; /* Disables text selection */
             user-select: none;
             cursor: grab;
@@ -63,7 +63,6 @@
         .drag-handle:active {
             cursor: grabbing;
         }
-        /* -------------------------------- */
 
         input:focus, select:focus, textarea:focus { outline: none; ring: 2px; border-color: #b08968; box-shadow: 0 0 0 3px rgba(176, 137, 104, 0.2); }
         .editing-mode { border: 2px solid #ea580c !important; }
@@ -349,6 +348,7 @@
             </div>
         </div>
 
+        <!-- Corrected Filter Container -->
         <div id="activeFiltersContainer" class="hidden mb-4 p-3 bg-coffee-100 dark:bg-[#292524] rounded-lg border border-coffee-200 dark:border-[#44403c] flex items-center justify-between">
             <div class="flex items-center gap-2 flex-wrap" id="activeFiltersList"></div>
             <button onclick="clearAllFilters()" class="text-xs text-coffee-600 dark:text-[#a8a29e] hover:text-red-500 whitespace-nowrap ml-2">Clear All</button>
@@ -1981,26 +1981,22 @@
             const icon = el.querySelector('i');
             if(icon) icon.classList.add('fa-spin');
 
-            // 2. Reset Sort to default (which enables drag handles in My Brews)
+            // 2. Reset States
             currentSort = { key: null, direction: 'asc' };
-
-            // 3. Reset Filters
             activeFilters = { method: null, temp: null, roastType: null, roaster: null, origin: null, farmer: null, variety: null, processing: null, drink: null, grinder: null };
-
-            // 4. Reset Search Input
+            
+            // 3. Reset Search Input
             const searchInput = document.getElementById('globalSearch');
             if(searchInput) {
                 searchInput.value = '';
                 document.getElementById('searchClearBtn').classList.add('hidden');
             }
 
-            // 5. Update Filter UI (remove pills)
-            renderActiveFilters();
+            // 4. Update UI
+            renderActiveFilters(); // Will hide the filter bar since filters are empty
+            renderTable(); // Will re-render table with default sort (index), enabling drag handles
 
-            // 6. Re-fetch/Re-render
-            changeView(currentView);
-
-            // 7. Remove Spin after delay
+            // 5. Remove Spin after delay
             setTimeout(() => { if(icon) icon.classList.remove('fa-spin'); }, 800);
         };
 
@@ -2022,7 +2018,7 @@
                 const w = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
                 const displayRoaster = c.roaster || c.name || '-'; const displayOrigin = c.origin || c.beanType || '-'; const displayDate = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-';
                 
-                // Drag handle logic: Only show drag handle if draggable, otherwise lock icon
+                // Drag handle logic
                 const gripIconHTML = isDraggable 
                     ? `<div class="drag-handle w-full h-full flex items-center justify-center" oncontextmenu="return false;"><i class="fa-solid fa-grip-vertical text-coffee-300 dark:text-[#57534e]"></i></div>`
                     : `<div class="w-full h-full flex items-center justify-center"><i class="fa-solid fa-lock opacity-30 text-coffee-300 dark:text-[#57534e]"></i></div>`;
@@ -2081,7 +2077,7 @@
                 const recipeCol = `<div class="whitespace-nowrap text-xs"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight || '-'}g</span><span class="text-coffee-300 dark:text-[#57534e] mx-0.5">•</span><span class="font-bold text-coffee-900 dark:text-white">${w === '-' ? '-' : (w.endsWith('.0')?parseInt(w):w) + 'g'}</span><span class="text-coffee-400 dark:text-[#78716c] ml-0.5">(1:${c.ratio || '-'})</span></div>`;
                 
                 // Construct Row HTML
-                let rowHTML = `<td class="px-0 py-0 text-center w-10">${gripIconHTML}</td>`; // Modified for drag handle
+                let rowHTML = `<td class="px-0 py-0 text-center w-10">${gripIconHTML}</td>`; 
                 
                 if(columnPreferences.roaster !== false) rowHTML += `<td class="px-3 py-1 font-semibold text-coffee-900 dark:text-[#e7e5e4]">${displayRoaster}</td>`;
                 if(columnPreferences.origin !== false) rowHTML += `<td class="px-3 py-1 text-sm">${displayOrigin}</td>`;
@@ -2117,9 +2113,9 @@
                     rActive.ondblclick = (e) => openCoffeeCard(c.id, e);
                     rActive.setAttribute('data-id', c.id); 
                     
-                    // Slightly modify active row icon if needed, but keep logic consistent
                     if (isDraggable) { 
-                        rActive.innerHTML = rowHTML.replace('text-coffee-300 dark:text-[#57534e]', 'text-green-500'); 
+                        // Drag handle is kept as standard grey, not forced to green
+                        rActive.innerHTML = rowHTML; 
                     } else { 
                         // If not draggable, show star
                         const starIcon = `<div class="w-full h-full flex items-center justify-center"><i class="fa-solid fa-star text-green-500"></i></div>`;
@@ -2142,11 +2138,6 @@
 
             if (isDraggable) {
                 const handleSort = async (evt) => {
-                    // Logic: Get *all* rows from both Active and History tables in visual order
-                    // Exclude headers (static-header class)
-                    // Reassign sequential customOrder to all items
-                    // Batch update Firebase
-                    
                     const activeRows = Array.from(document.querySelectorAll('#activeCoffeeTableBody tr:not(.static-header)'));
                     const historyRows = Array.from(document.querySelectorAll('#coffeeTableBody tr:not(.static-header)'));
                     const allRows = [...activeRows, ...historyRows];
@@ -2170,7 +2161,6 @@
                     if (hasUpdates) {
                         try {
                             await batch.commit();
-                            // Update local array sort to prevent jumps on next render
                             coffees.sort((a,b) => (a.customOrder || 0) - (b.customOrder || 0));
                         } catch(err) {
                             console.error("Reorder failed", err);
@@ -2180,17 +2170,16 @@
 
                 const sortableOptions = {
                     animation: 150,
-                    handle: '.drag-handle', // Updated handle selector
+                    handle: '.drag-handle', 
                     ghostClass: 'sortable-ghost',
                     dragClass: 'sortable-drag',
                     filter: '.static-header',
-                    delay: 150, // Added delay for touch devices to distinguish tap vs drag
-                    delayOnTouchOnly: true, // Only delay on touch, mouse is instant
-                    touchStartThreshold: 5, // Allow 5px movement before cancelling tap
+                    delay: 150, 
+                    delayOnTouchOnly: true, 
+                    touchStartThreshold: 5, 
                     onEnd: handleSort
                 };
 
-                // Initialize on both tables
                 if (t) sortableHistory = Sortable.create(t, sortableOptions);
                 if (activeT && hasActive) sortableActive = Sortable.create(activeT, sortableOptions);
             }
