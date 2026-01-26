@@ -2139,13 +2139,13 @@
             // Note: Now we also use this to show the green handle on active rows, but force lock on history rows
             const isActiveDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !Object.values(activeFilters).some(v=>v!==null);
             
+            // Default Icon for History (Time/Clock) - Visible but subtle
+            const gripIcon = 'fa-clock text-coffee-300 dark:text-[#57534e] text-xs'; 
+            
             let hasActive = false;
             filteredCoffees.forEach((c, index) => {
                 const w = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
                 const displayRoaster = c.roaster || c.name || '-'; const displayOrigin = c.origin || c.beanType || '-'; const displayDate = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-';
-                
-                // HISTORY ROW IS ALWAYS LOCKED NOW (Per user request)
-                const gripIcon = 'fa-lock opacity-10'; 
                 
                 const menuId = `action-menu-${c.id}`;
                 let actions = '';
@@ -2199,7 +2199,7 @@
                 }
 
                 const recipeCol = `<div class="whitespace-nowrap text-xs"><span class="font-semibold text-coffee-700 dark:text-[#a8a29e]">${c.weight || '-'}g</span><span class="text-coffee-300 dark:text-[#57534e] mx-0.5">•</span><span class="font-bold text-coffee-900 dark:text-white">${w === '-' ? '-' : (w.endsWith('.0')?parseInt(w):w) + 'g'}</span><span class="text-coffee-400 dark:text-[#78716c] ml-0.5">(1:${c.ratio || '-'})</span></div>`;
-                let rowHTML = `<td class="px-3 py-1 text-center"><i class="fa-solid ${gripIcon} text-coffee-200 dark:text-[#34302e]"></i></td>`;
+                let rowHTML = `<td class="px-3 py-1 text-center"><i class="fa-solid ${gripIcon}"></i></td>`;
                 if(columnPreferences.roaster !== false) rowHTML += `<td class="px-3 py-1 font-semibold text-coffee-900 dark:text-[#e7e5e4]">${displayRoaster}</td>`;
                 if(columnPreferences.origin !== false) rowHTML += `<td class="px-3 py-1 text-sm">${displayOrigin}</td>`;
                 if(columnPreferences.farmer !== false) rowHTML += `<td class="px-3 py-1 text-sm">${c.farmer || '-'}</td>`;
@@ -2224,8 +2224,8 @@
                 if(c.isActive) {
                     hasActive = true; const rActive = document.createElement('tr'); rActive.className='bg-white dark:bg-[#292524] hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-green-50 dark:border-green-900/10 last:border-b-0 cursor-pointer'; rActive.ondblclick = (e) => openCoffeeCard(c.id, e);
                     rActive.setAttribute('data-id', c.id);
-                    // ACTIVE ROW GRIP: Use drag handle if applicable
-                    const activeGripIcon = isActiveDraggable ? 'fa-grip-vertical text-green-500 drag-handle cursor-grab' : 'fa-lock opacity-30';
+                    // ACTIVE ROW GRIP: Use drag handle if applicable, otherwise lock
+                    const activeGripIcon = isActiveDraggable ? 'fa-grip-vertical text-green-500 hover:text-green-600 cursor-grab text-sm' : 'fa-lock text-green-300 opacity-50';
                     rActive.innerHTML = rowHTML.replace(gripIcon, activeGripIcon);
                     activeT.appendChild(rActive);
                 }
