@@ -110,7 +110,10 @@
                         <button onclick="openFriendsModal()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coffee-50 dark:bg-[#34302e] hover:bg-coffee-100 dark:hover:bg-[#44403c] border border-coffee-200 dark:border-[#44403c] transition-colors text-sm font-medium text-coffee-700 dark:text-[#d6ccc2]">
                             <i class="fa-solid fa-user-group"></i> Friends
                         </button>
-                        <img id="userAvatar" src="" alt="User" class="w-8 h-8 rounded-full border border-coffee-200 dark:border-[#44403c]">
+                        <div class="relative">
+                            <img id="userAvatar" src="" alt="User" class="w-8 h-8 rounded-full border border-coffee-200 dark:border-[#44403c]">
+                            <div id="avatarBadge" class="hidden absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-[#292524] shadow-md"></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -152,6 +155,14 @@
             </div>
         </div>
     </header>
+
+    <div id="coffeeWithdrawalNotification" class="hidden bg-red-50 dark:bg-red-900/20 border-l-4 border-red-600 text-red-700 dark:text-red-300 p-4 mx-auto max-w-[95%] mt-4 rounded shadow-md flex items-start gap-3">
+        <i class="fa-solid fa-triangle-exclamation text-xl mt-0.5 flex-shrink-0"></i>
+        <div class="flex-1">
+            <p class="font-bold">Coffee Withdrawal Alert!</p>
+            <p class="text-sm">You have been without coffee for <span id="withdrawalHours">-</span> hours. Time for a brew?</p>
+        </div>
+    </div>
 
     <main class="max-w-[95%] mx-auto px-2 sm:px-6 lg:px-8 py-8 relative">
         
@@ -296,6 +307,8 @@
                             <option value="Macchiato">Macchiato</option>
                             <option value="Latte Macchiato">Latte Macchiato</option>
                             <option value="Filter Coffee">Filter Coffee</option>
+                            <option value="Soup">Soup</option>
+                            <option value="Long Soup">Long Soup</option>
                             <option value="Other">Other</option>
                         </select>
                         <input type="text" id="drinkOther" name="drinkOther" placeholder="e.g. Cortado" class="hidden mt-2 w-full bg-coffee-50 dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] rounded-lg px-3 py-2 text-sm text-coffee-900 dark:text-white placeholder-coffee-400 dark:placeholder-[#57534e] focus:bg-white dark:focus:bg-[#0c0a09] transition-colors">
@@ -504,12 +517,12 @@
                 <div id="statsGeneralView" class="space-y-8">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm text-center">
-                            <div class="text-xs text-coffee-500 dark:text-[#78716c] uppercase font-bold mb-1">Total Brews</div>
-                            <div id="statTotalBrews" class="text-3xl font-bold text-coffee-900 dark:text-white">-</div>
+                            <div class="text-xs text-coffee-500 dark:text-[#78716c] uppercase font-bold mb-1">Hours Without Coffee</div>
+                            <div id="statMonthBrews" class="text-3xl font-bold text-coffee-900 dark:text-white">-</div>
                         </div>
                         <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm text-center">
-                            <div class="text-xs text-coffee-500 dark:text-[#78716c] uppercase font-bold mb-1">Last 30 Days</div>
-                            <div id="statMonthBrews" class="text-3xl font-bold text-coffee-900 dark:text-white">-</div>
+                            <div class="text-xs text-coffee-500 dark:text-[#78716c] uppercase font-bold mb-1">Total Brews</div>
+                            <div id="statTotalBrews" class="text-3xl font-bold text-coffee-900 dark:text-white">-</div>
                         </div>
                         <div class="bg-white dark:bg-[#292524] p-4 rounded-xl border border-coffee-100 dark:border-[#44403c] shadow-sm text-center">
                             <div class="text-xs text-coffee-500 dark:text-[#78716c] uppercase font-bold mb-1">Last 7 Days</div>
@@ -1620,16 +1633,17 @@
         const calculateStats = (dataToUse) => {
             currentStatsData = dataToUse; const total = dataToUse.length; 
             if(total === 0) {
-                 document.getElementById('statTotalBrews').innerText = '0'; document.getElementById('statMonthBrews').innerText = '0'; document.getElementById('statWeekBrews').innerText = '0'; document.getElementById('statAvgBrews').innerText = '0';
+                 document.getElementById('statTotalBrews').innerText = '0'; document.getElementById('statMonthBrews').innerText = '∞'; document.getElementById('statWeekBrews').innerText = '0'; document.getElementById('statAvgBrews').innerText = '0';
                  document.getElementById('statUniqueCoffees').innerText = '0'; document.getElementById('mostBrewedName').innerText = '-'; document.getElementById('mostBrewedCount').innerText = '0 brews';
                  document.getElementById('topCoffeesList').innerHTML = '<p class="text-sm text-gray-400 italic">No brews found.</p>'; document.getElementById('uniqueLeaderboardBody').innerHTML = "<tr><td colspan='4' class='text-center py-4 italic text-coffee-400'>No data.</td></tr>";
                  renderCharts({}, {}, {}, {}); return;
             }
             const now = new Date(); const oneDay = 24 * 60 * 60 * 1000;
-            const last30 = dataToUse.filter(c => (now - new Date(c.createdAt)) < 30 * oneDay).length;
             const last7 = dataToUse.filter(c => (now - new Date(c.createdAt)) < 7 * oneDay).length;
             const firstDate = new Date(Math.min(...dataToUse.map(c => new Date(c.createdAt || now)))); const diffDays = Math.max(1, Math.round(Math.abs((now - firstDate) / oneDay))); const avg = (total / diffDays).toFixed(1);
-            document.getElementById('statTotalBrews').innerText = total; document.getElementById('statMonthBrews').innerText = last30; document.getElementById('statWeekBrews').innerText = last7; document.getElementById('statAvgBrews').innerText = avg;
+            const lastBrewDate = new Date(Math.max(...dataToUse.map(c => new Date(c.createdAt || now)))); const hoursSinceLastBrew = Math.round((now - lastBrewDate) / (60 * 60 * 1000));
+            document.getElementById('statTotalBrews').innerText = total; document.getElementById('statMonthBrews').innerText = hoursSinceLastBrew; document.getElementById('statWeekBrews').innerText = last7; document.getElementById('statAvgBrews').innerText = avg;
+            const badge = document.getElementById('avatarBadge'); if(badge) { badge.innerText = hoursSinceLastBrew; if(hoursSinceLastBrew > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden'); } updateCoffeeWithdrawalNotification(hoursSinceLastBrew);
             const agg = (key) => dataToUse.reduce((acc, c) => { const val = c[key] || 'Unknown'; acc[val] = (acc[val] || 0) + 1; return acc; }, {});
             const roastData = agg('roastType'); const methodData = agg('method'); const drinkData = agg('drink');
             const ratingData = dataToUse.reduce((acc, c) => { const r = c.rating || 0; if(r > 0) acc[r] = (acc[r] || 0) + 1; return acc; }, {});
@@ -1820,7 +1834,7 @@
             };
             const h = ["Date","Roaster","Origin","Blend/Farmer","Variety","Process","Roast","Method","Grinder","Grind","In(g)","Out(g)","Time(s)","Temp","Drink","Rating","Notes","Improve"]; 
             const r = brews.map(c => [ 
-                c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '', 
+                c.createdAt || '', 
                 esc(c.roaster || c.name), 
                 esc(c.origin || c.beanType), 
                 esc(c.farmer), 
@@ -1882,7 +1896,7 @@
                 '',                                                     // Beverage quantity
                 '',                                                     // Total dissolved solids %
                 '',                                                     // Extraction Yield %
-                esc(c.createdAt ? new Date(c.createdAt).toLocaleDateString('de-DE') : ''), // Creation Date
+                esc(c.createdAt || ''),                                // Creation Date
                 esc(c.ratio ? `1 / ${c.ratio.toFixed(2)}` : ''),       // Brew Ratio
                 '',                                                     // Bean Age
                 '',                                                     // Archived
@@ -2005,7 +2019,7 @@
             const d = getFilteredCoffees(); if(!d.length) return alert("No data"); 
             const esc = (t) => { if (t === null || t === undefined) return ''; const str = String(t); if (str.includes(',') || str.includes('"') || str.includes('\n')) return `"${str.replace(/"/g, '""')}"`; return str; };
             const h = ["Date","Roaster","Origin","Blend/Farmer","Variety","Process","Roast","Method","Grinder","Grind","In(g)","Out(g)","Time(s)","Temp","Drink","Rating","Notes","Improve"]; 
-            const r = d.map(c => [ c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '', esc(c.roaster || c.name), esc(c.origin || c.beanType), esc(c.farmer), esc(c.variety), esc(c.processing), esc(c.roastType), esc(c.method), esc(c.grinder), esc(c.grind), esc(c.weight), (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '', esc(c.time), esc(c.temp), esc(c.drink), esc(c.rating), esc(c.notes), esc(c.improve) ]); 
+            const r = d.map(c => [ c.createdAt || '', esc(c.roaster || c.name), esc(c.origin || c.beanType), esc(c.farmer), esc(c.variety), esc(c.processing), esc(c.roastType), esc(c.method), esc(c.grinder), esc(c.grind), esc(c.weight), (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '', esc(c.time), esc(c.temp), esc(c.drink), esc(c.rating), esc(c.notes), esc(c.improve) ]); 
             const csvContent = "data:text/csv;charset=utf-8," + h.join(",") + "\n" + r.map(e => e.join(",")).join("\n"); 
             const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", "coffee_log.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link); 
         };
@@ -2262,7 +2276,7 @@
         const populateForm = (c) => { 
             document.getElementById('roaster').value=c.roaster||c.name||''; document.getElementById('farmer').value=c.farmer||''; document.getElementById('origin').value=c.origin||c.beanType||''; document.getElementById('variety').value=c.variety||''; document.getElementById('processing').value=c.processing||''; document.getElementById('roastType').value=c.roastType||''; document.getElementById('grinder').value=c.grinder||''; document.getElementById('grind').value=c.grind||''; document.getElementById('inputWeight').value=c.weight||''; document.getElementById('inputRatio').value=c.ratio||''; document.getElementById('inputYield').value=(c.weight&&c.ratio)?(c.weight*c.ratio).toFixed(1):''; document.getElementById('time').value=c.time||''; document.getElementById('notes').value=c.notes||''; document.getElementById('improve').value=c.improve||'';
             if(!isNaN(parseFloat(c.temp))&&isFinite(c.temp)){setTempMode('numeric');document.getElementById('tempNumeric').value=c.temp;}else{setTempMode('profile');document.getElementById('tempProfile').value=c.temp||'';} 
-            const stdDrinks = ["Espresso","Lungo", "Americano", "Cappuccino", "Flat White", "Macchiato", "Latte Macchiato", "Filter Coffee"]; const dVal = c.drink || "";
+            const stdDrinks = ["Espresso","Lungo", "Americano", "Cappuccino", "Flat White", "Macchiato", "Latte Macchiato", "Filter Coffee", "Soup", "Long Soup"]; const dVal = c.drink || "";
             if(stdDrinks.includes(dVal)) { document.getElementById('drinkType').value = dVal; document.getElementById('drinkOther').classList.add('hidden'); } 
             else if (dVal) { document.getElementById('drinkType').value = 'Other'; document.getElementById('drinkOther').value = dVal; document.getElementById('drinkOther').classList.remove('hidden'); } 
             else { document.getElementById('drinkType').value = ""; document.getElementById('drinkOther').classList.add('hidden'); }
@@ -2404,7 +2418,16 @@
             setTimeout(() => { if(icon) icon.classList.remove('fa-spin'); }, 800);
         };
 
+        const updateCoffeeWithdrawalNotification = (hoursSinceLastBrew) => {
+            const notif = document.getElementById('coffeeWithdrawalNotification'); if(!notif) return; if(hoursSinceLastBrew > 10) { document.getElementById('withdrawalHours').innerText = hoursSinceLastBrew; notif.classList.remove('hidden'); } else { notif.classList.add('hidden'); }
+        };
+
+        const updateAvatarBadge = () => {
+            if (currentView !== 'mine' || coffees.length === 0) return; const now = new Date(); const lastBrewDate = new Date(Math.max(...coffees.map(c => new Date(c.createdAt || now)))); const hoursSinceLastBrew = Math.round((now - lastBrewDate) / (60 * 60 * 1000)); const badge = document.getElementById('avatarBadge'); if(badge) { badge.innerText = hoursSinceLastBrew; if(hoursSinceLastBrew > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden'); } updateCoffeeWithdrawalNotification(hoursSinceLastBrew);
+        };
+
         const renderTable = () => { 
+            updateAvatarBadge();
             const t = document.getElementById('coffeeTableBody'); 
             const activeT = document.getElementById('activeCoffeeTableBody'); 
             const e = document.getElementById('emptyState'); 
@@ -2599,7 +2622,7 @@
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
-                document.getElementById('authContainer').innerHTML = `<div class="flex items-center gap-3"><button onclick="openFriendsModal()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coffee-50 dark:bg-[#34302e] hover:bg-coffee-100 dark:hover:bg-[#44403c] border border-coffee-200 dark:border-[#44403c] transition-colors text-sm font-medium text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-solid fa-user-group"></i> Friends</button><img src="${user.photoURL}" class="w-8 h-8 rounded-full border border-coffee-200 dark:border-[#44403c]" title="${user.displayName}"></div>`;
+                document.getElementById('authContainer').innerHTML = `<div class="flex items-center gap-3"><button onclick="openFriendsModal()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coffee-50 dark:bg-[#34302e] hover:bg-coffee-100 dark:hover:bg-[#44403c] border border-coffee-200 dark:border-[#44403c] transition-colors text-sm font-medium text-coffee-700 dark:text-[#d6ccc2]"><i class="fa-solid fa-user-group"></i> Friends</button><button onclick="openStats()" class="relative hover:opacity-80 transition-opacity"><img src="${user.photoURL}" class="w-8 h-8 rounded-full border border-coffee-200 dark:border-[#44403c]" title="${user.displayName}"><div id="avatarBadge" class="hidden absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-[#292524] shadow-md"></div></button></div>`;
                 document.getElementById('syncStatus').classList.remove('hidden'); document.getElementById('viewSelectorContainer').classList.remove('hidden'); 
                 await initUserData(user); loadFollowingList(); changeView('mine'); initNotificationListener(user.uid);
                 const hasSeen = localStorage.getItem(`tutorialSeen_${user.uid}`); if (!hasSeen) openHelp();
