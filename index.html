@@ -346,7 +346,7 @@
             <h3 class="text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase tracking-wide mb-3 flex items-center gap-2">
                 <i class="fa-solid fa-thumbtack text-green-600"></i> Active Brews
             </h3>
-            <div id="pinnedGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div id="pinnedGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 <!-- Tiles injected here -->
             </div>
         </div>
@@ -2459,7 +2459,7 @@
                 
                 activeBrews.forEach(c => {
                     const tile = document.createElement('div');
-                    tile.className = "bg-white dark:bg-[#292524] p-4 rounded-xl shadow-sm border border-coffee-200 dark:border-[#44403c] relative group select-none cursor-pointer hover:shadow-md transition-all";
+                    tile.className = "bg-white dark:bg-[#292524] p-3 rounded-lg shadow-sm border border-coffee-200 dark:border-[#44403c] relative group select-none cursor-pointer hover:shadow-md transition-all";
                     tile.setAttribute('data-id', c.id);
                     tile.ondblclick = (ev) => openCoffeeCard(c.id, ev);
                     
@@ -2471,13 +2471,13 @@
                     // Drag handle logic
                     const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !Object.values(activeFilters).some(v => v !== null);
                     const dragIcon = isDraggable 
-                        ? `<div class="absolute top-3 right-3 text-coffee-300 dark:text-[#57534e] hover:text-coffee-600 dark:hover:text-[#a8a29e] drag-handle p-1"><i class="fa-solid fa-grip-vertical"></i></div>` 
+                        ? `<div class="absolute top-2 right-2 text-coffee-300 dark:text-[#57534e] hover:text-coffee-600 dark:hover:text-[#a8a29e] drag-handle p-1"><i class="fa-solid fa-grip-vertical text-xs"></i></div>` 
                         : '';
 
                     // Menu Button for Tile
                     const menuId = `tile-menu-${c.id}`;
                     const menuBtn = currentView === 'mine' 
-                        ? `<button onclick="toggleActionMenu('${menuId}', event)" class="absolute bottom-3 right-3 text-coffee-400 hover:text-coffee-800 dark:text-[#57534e] dark:hover:text-[#a8a29e] transition-colors"><i class="fa-solid fa-ellipsis-vertical"></i></button>`
+                        ? `<button onclick="toggleActionMenu('${menuId}', event)" class="absolute bottom-2 right-2 text-coffee-300 hover:text-coffee-800 dark:text-[#57534e] dark:hover:text-[#a8a29e] transition-colors"><i class="fa-solid fa-ellipsis-vertical text-xs"></i></button>`
                         : '';
                     
                     const menu = currentView === 'mine'
@@ -2489,12 +2489,12 @@
 
                     tile.innerHTML = `
                         ${dragIcon}
-                        <div class="pr-6">
-                            <h3 class="font-bold text-coffee-900 dark:text-white truncate text-base mb-0.5" title="${roaster}">${roaster}</h3>
-                            <p class="text-xs text-coffee-500 dark:text-[#a8a29e] truncate font-medium mb-3">${farmer}</p>
-                            <div class="flex flex-col gap-1.5 items-start">
-                                <span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-[10px] font-bold px-2 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] uppercase tracking-wide">${method}</span>
-                                <span class="text-xs text-coffee-700 dark:text-[#d6ccc2] font-medium pl-0.5 truncate max-w-full">${drink}</span>
+                        <div class="pr-4">
+                            <h3 class="font-bold text-coffee-900 dark:text-white truncate text-sm leading-tight" title="${roaster}">${roaster}</h3>
+                            <p class="text-[10px] text-coffee-500 dark:text-[#a8a29e] truncate font-medium mb-2">${farmer}</p>
+                            <div class="flex flex-col gap-0.5 items-start">
+                                <span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-[9px] font-bold px-1.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] uppercase tracking-wide">${method}</span>
+                                <span class="text-[10px] text-coffee-700 dark:text-[#d6ccc2] font-medium truncate max-w-full leading-tight">${drink}</span>
                             </div>
                         </div>
                         ${menuBtn}
