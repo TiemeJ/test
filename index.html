@@ -365,7 +365,7 @@
         <!-- Active Brews Section (New Pinned Tiles) -->
         <div id="pinnedSection" class="hidden mb-8">
             <h3 class="text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase tracking-wide mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-thumbtack text-green-600"></i> Active Brews
+                <i class="fa-solid fa-thumbtack text-green-600"></i> Pinned Brews
             </h3>
             <div id="pinnedGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
                 <!-- Tiles injected here -->
@@ -838,7 +838,7 @@
                             <i class="fa-solid fa-thumbtack"></i>
                         </div>
                         <p class="text-sm text-coffee-600 dark:text-[#a8a29e]">
-                            Found a recipe you love? Click the <strong>Pin icon</strong> (<i class="fa-solid fa-thumbtack text-xs"></i>) to move it to the <strong>"Active Brews"</strong> tiles. This keeps your daily drivers separated from your experiment history.
+                            Found a recipe you love? Click the <strong>Pin icon</strong> (<i class="fa-solid fa-thumbtack text-xs"></i>) to move it to the <strong>"Pinned Brews"</strong> tiles. This keeps your daily drivers separated from your experiment history.
                         </p>
                     </div>
                 </div>
@@ -2495,13 +2495,13 @@
                     // Drag handle logic
                     const isDraggable = currentView === 'mine' && currentSort.key === null && !activeFilters.method && !Object.values(activeFilters).some(v => v !== null);
                     const dragIcon = isDraggable 
-                        ? `<div class="absolute top-2 right-2 text-coffee-300 dark:text-[#57534e] hover:text-coffee-600 dark:hover:text-[#a8a29e] drag-handle p-1"><i class="fa-solid fa-grip-vertical text-xs"></i></div>` 
+                        ? `<div class="absolute top-1 right-1 text-coffee-300 dark:text-[#57534e] hover:text-coffee-600 dark:hover:text-[#a8a29e] drag-handle p-2"><i class="fa-solid fa-grip-vertical text-base"></i></div>` 
                         : '';
 
                     // Menu Button for Tile
                     const menuId = `tile-menu-${c.id}`;
                     const menuBtn = currentView === 'mine' 
-                        ? `<button onclick="toggleActionMenu('${menuId}', event)" class="absolute bottom-2 right-2 text-coffee-300 hover:text-coffee-800 dark:text-[#57534e] dark:hover:text-[#a8a29e] transition-colors"><i class="fa-solid fa-ellipsis-vertical text-xs"></i></button>`
+                        ? `<button onclick="toggleActionMenu('${menuId}', event)" class="absolute bottom-1 right-1 p-2 text-coffee-300 hover:text-coffee-800 dark:text-[#57534e] dark:hover:text-[#a8a29e] transition-colors"><i class="fa-solid fa-ellipsis-vertical text-base"></i></button>`
                         : '';
                     
                     // Unified Actions Menu (Same as Table)
@@ -2511,23 +2511,23 @@
                         const pinIcon = 'fa-thumbtack text-green-600';
                         menu = `
                             <div id="${menuId}" class="action-menu hidden absolute right-2 bottom-8 w-48 bg-white dark:bg-[#292524] rounded-lg shadow-xl border border-coffee-200 dark:border-[#57534e] z-50 overflow-hidden">
-                                <button onclick="editCoffee('${c.id}');" class="w-full text-left px-4 py-2 text-xs hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
+                                <button onclick="editCoffee('${c.id}');" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
                                     <i class="fa-solid fa-pencil text-blue-500 w-4"></i> Edit
                                 </button>
-                                <button onclick="duplicateCoffee('${c.id}');" class="w-full text-left px-4 py-2 text-xs hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
+                                <button onclick="duplicateCoffee('${c.id}');" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
                                     <i class="fa-regular fa-copy text-green-500 w-4"></i> Duplicate
                                 </button>
-                                <button onclick="toggleActive('${c.id}', event);" class="w-full text-left px-4 py-2 text-xs hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
+                                <button onclick="toggleActive('${c.id}', event);" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
                                     <i class="fa-solid ${pinIcon} w-4"></i> ${pinLabel}
                                 </button>
-                                <button onclick="openUploadModal('${c.id}');" class="w-full text-left px-4 py-2 text-xs hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
+                                <button onclick="openUploadModal('${c.id}');" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
                                     <i class="fa-solid fa-camera text-purple-500 w-4"></i> Upload Photo
                                 </button>
-                                <button onclick="shareCoffeeCard('${c.id}', event);" class="w-full text-left px-4 py-2 text-xs hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
+                                <button onclick="shareCoffeeCard('${c.id}', event);" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-3">
                                     <i class="fa-solid fa-share-nodes text-purple-500 w-4"></i> Share Card
                                 </button>
                                 <hr class="border-coffee-100 dark:border-[#44403c]">
-                                <button onclick="deleteCoffee('${c.id}', event);" class="w-full text-left px-4 py-2 text-xs hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-3">
+                                <button onclick="deleteCoffee('${c.id}', event);" class="w-full text-left px-4 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-3">
                                     <i class="fa-solid fa-trash w-4"></i> Delete
                                 </button>
                             </div>
