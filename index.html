@@ -149,7 +149,7 @@
                         </button>
                         <hr class="my-1 border-coffee-100 dark:border-[#44403c]">
                          <button onclick="openBeans(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center gap-2">
-                            <i class="fa-solid fa-jar"></i> <span>Beans</span>
+                            <i class="fa-solid fa-seedling"></i> <span>Beans</span>
                         </button>
                         <button onclick="openGallery(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center justify-between">
                             <div class="flex items-center gap-2">
@@ -231,10 +231,10 @@
                                     </button>
                                     <!-- AI Menu -->
                                     <div id="aiMenuDropdown" class="hidden absolute right-0 mt-2 w-40 bg-white dark:bg-[#292524] rounded-lg shadow-xl border border-coffee-200 dark:border-[#57534e] z-50 overflow-hidden">
-                                        <button onclick="triggerAIScan('camera')" class="w-full text-left px-4 py-2 text-xs hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-2 border-b border-coffee-100 dark:border-[#44403c]">
+                                        <button type="button" onclick="triggerAIScan('camera')" class="w-full text-left px-4 py-2 text-xs hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-2 border-b border-coffee-100 dark:border-[#44403c]">
                                             <i class="fa-solid fa-camera w-4"></i> Take Photo
                                         </button>
-                                        <button onclick="triggerAIScan('library')" class="w-full text-left px-4 py-2 text-xs hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-2">
+                                        <button type="button" onclick="triggerAIScan('library')" class="w-full text-left px-4 py-2 text-xs hover:bg-coffee-50 dark:hover:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] flex items-center gap-2">
                                             <i class="fa-solid fa-images w-4"></i> From Gallery
                                         </button>
                                     </div>
@@ -1219,30 +1219,41 @@
             }
             empty.classList.add('hidden');
 
-            // Sort beans by Created Date (or manually added date) descending
-            const sortedBeans = [...beans].sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
-            sortedBeans.forEach(bean => {
-                const tr = document.createElement('tr');
-                tr.className = "bg-white dark:bg-[#292524] border-b border-coffee-50 dark:border-[#34302e] hover:bg-coffee-50 dark:hover:bg-[#1c1917] transition-colors";
-                
-                // Calculate Stock Left
-                let stockLeft = '-';
+            // Map beans to include calculated remaining stock
+            const beansWithStock = beans.map(bean => {
+                let remaining = null;
                 if (bean.stock !== undefined && bean.stock !== null) {
                     const stockDate = bean.stockUpdatedAt ? new Date(bean.stockUpdatedAt) : new Date(0);
                     // Filter brews: match beanId, and created AFTER stock date
                     const usedAmount = coffees
                         .filter(c => c.beanId === bean.id && new Date(c.createdAt) > stockDate)
                         .reduce((sum, c) => sum + (c.weight || 0), 0);
-                    
-                    const remaining = parseFloat(bean.stock) - usedAmount;
-                    stockLeft = remaining.toFixed(1) + 'g';
+                    remaining = parseFloat(bean.stock) - usedAmount;
+                }
+                return { ...bean, calculatedStock: remaining };
+            });
+
+            // Split into In-Stock and Out-Of-Stock/Unspecified
+            const inStockBeans = beansWithStock
+                .filter(b => b.calculatedStock !== null && b.calculatedStock > 0)
+                .sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+            const otherBeans = beansWithStock
+                .filter(b => b.calculatedStock === null || b.calculatedStock <= 0)
+                .sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+            const createRow = (bean) => {
+                const tr = document.createElement('tr');
+                tr.className = "bg-white dark:bg-[#292524] border-b border-coffee-50 dark:border-[#34302e] hover:bg-coffee-50 dark:hover:bg-[#1c1917] transition-colors";
+                
+                let stockLeftDisplay = '-';
+                if (bean.calculatedStock !== null) {
+                     stockLeftDisplay = bean.calculatedStock.toFixed(1) + 'g';
                 }
 
                 const roaster = bean.roaster || 'Unknown';
                 const farmer = bean.farmer ? `<br><span class="text-xs text-coffee-500">${bean.farmer}</span>` : '';
                 const origin = bean.origin || '-';
-                const region = ''; // Add region field if available later
                 const process = bean.processing || '-';
                 const variety = bean.variety ? `<br><span class="text-xs text-coffee-500">${bean.variety}</span>` : '';
                 
@@ -1256,13 +1267,33 @@
                             onchange="saveBeanStock('${bean.id}', this.value)"
                             class="w-20 text-center text-sm border border-coffee-200 dark:border-[#44403c] rounded p-1 bg-coffee-50 dark:bg-[#1c1917] text-coffee-900 dark:text-white focus:ring-1 focus:ring-coffee-500" placeholder="-">
                     </td>
-                    <td class="px-4 py-3 text-center font-mono font-bold text-coffee-700 dark:text-[#d6ccc2]">${stockLeft}</td>
+                    <td class="px-4 py-3 text-center font-mono font-bold text-coffee-700 dark:text-[#d6ccc2]">${stockLeftDisplay}</td>
                     <td class="px-4 py-3 text-center">
                          <button onclick="deleteBean('${bean.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 `;
-                tbody.appendChild(tr);
-            });
+                return tr;
+            };
+
+            // Render In Stock Section
+            if (inStockBeans.length > 0) {
+                const headerRow = document.createElement('tr');
+                headerRow.className = "bg-green-50 dark:bg-green-900/20";
+                headerRow.innerHTML = `<td colspan="7" class="px-4 py-2 text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wide"><i class="fa-solid fa-box-open mr-2"></i>Open Bags</td>`;
+                tbody.appendChild(headerRow);
+                inStockBeans.forEach(bean => tbody.appendChild(createRow(bean)));
+            }
+
+            // Render Archive/Out of Stock Section
+            if (otherBeans.length > 0) {
+                 if(inStockBeans.length > 0) {
+                    const headerRow = document.createElement('tr');
+                    headerRow.className = "bg-gray-50 dark:bg-[#34302e]";
+                    headerRow.innerHTML = `<td colspan="7" class="px-4 py-2 text-xs font-bold text-gray-500 dark:text-[#a8a29e] uppercase tracking-wide"><i class="fa-solid fa-archive mr-2"></i>Finished / Archive</td>`;
+                    tbody.appendChild(headerRow);
+                 }
+                 otherBeans.forEach(bean => tbody.appendChild(createRow(bean)));
+            }
         };
 
         const saveBeanStock = async (beanId, amount) => {
@@ -2552,7 +2583,8 @@
             if(columnPreferences.variety !== false) rowHTML += `<td class="px-3 py-1 text-sm">${c.variety || '-'}</td>`;
             if(columnPreferences.processing !== false) rowHTML += `<td class="px-3 py-1 text-sm">${c.processing || '-'}</td>`;
             if(columnPreferences.roastType !== false) rowHTML += `<td class="px-3 py-1">${getRoastBadge(c.roastType)}</td>`;
-            if(columnPreferences.method !== false) rowHTML += `<td class="px-3 py-1"><span class="bg-coffee-100 dark:bg-[#44403c] text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method || '-'}</span></td>`;
+            if(columnPreferences.method !== false) rowHTML += `<td class="px-3 py-1"><span class="bg-coffee-100 dark:bg-[#44403c]
+            text-coffee-800 dark:text-[#d6ccc2] text-xs font-medium px-2.5 py-0.5 rounded border border-coffee-200 dark:border-[#57534e] pointer-events-none select-none">${c.method || '-'}</span></td>`;
             if(columnPreferences.grinder !== false) rowHTML += `<td class="px-3 py-1 text-sm">${c.grinder || '-'}</td>`;
             if(columnPreferences.grind !== false) rowHTML += `<td class="px-3 py-1 font-mono text-coffee-700 dark:text-[#d6ccc2]">${c.grind || '-'}</td>`;
             if(columnPreferences.recipe !== false) rowHTML += `<td class="px-3 py-1">${recipeCol}</td>`;
