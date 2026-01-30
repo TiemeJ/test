@@ -47,7 +47,7 @@
         th.filterable { position: relative; cursor: context-menu; touch-action: manipulation; }
         
         #filterDropdown, #mainMenuDropdown, #aiMenuDropdown, .action-menu { z-index: 50; animation: fadeIn 0.1s ease-out; }
-        #modalOverlay, #statsModal, #imageModalOverlay, #coffeeCardOverlay, #uploadPhotoModal, #galleryModal, #easterEggModal, #preferencesModal, #exportModal, #helpModal, #aboutModal { animation: fadeIn 0.2s ease-out; }
+        #modalOverlay, #statsModal, #imageModalOverlay, #coffeeCardOverlay, #uploadPhotoModal, #galleryModal, #easterEggModal, #preferencesModal, #exportModal, #helpModal, #aboutModal, #beansModal { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .chevron-rotate { transition: transform 0.3s ease; }
         .group[aria-expanded="true"] .chevron-rotate { transform: rotate(180deg); }
@@ -148,6 +148,9 @@
                             <i class="fa-solid fa-circle-info"></i> <span>About</span>
                         </button>
                         <hr class="my-1 border-coffee-100 dark:border-[#44403c]">
+                         <button onclick="openBeans(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center gap-2">
+                            <i class="fa-solid fa-jar"></i> <span>Beans</span>
+                        </button>
                         <button onclick="openGallery(); toggleMainMenu(null)" class="w-full text-left px-4 py-2 text-sm hover:bg-coffee-50 dark:hover:bg-[#44403c] text-coffee-900 dark:text-[#d6ccc2] flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-images"></i> <span>Photo Gallery</span>
@@ -454,6 +457,46 @@
             <span><i class="fa-solid fa-info-circle mr-1"></i> Drag Active Brews to reorder.</span>
         </div>
     </main>
+    
+    <!-- Beans Management Modal -->
+    <div id="beansModal" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col">
+            <div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center bg-coffee-50 dark:bg-[#1c1917]">
+                <h3 class="font-bold text-xl text-coffee-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-jar text-coffee-600 dark:text-[#d6ccc2]"></i> Coffee Beans
+                </h3>
+                <div class="flex items-center gap-2">
+                     <button onclick="syncLegacyBeans()" class="text-xs bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded font-bold transition-colors border border-indigo-200 dark:border-indigo-800">
+                        <i class="fa-solid fa-sync-alt mr-1"></i> Scan & Link Legacy Brews
+                    </button>
+                    <button onclick="closeBeans()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white ml-2">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 bg-white dark:bg-[#292524]">
+                 <div class="overflow-x-auto rounded-lg border border-coffee-200 dark:border-[#44403c]">
+                    <table class="w-full text-sm text-left text-coffee-900 dark:text-[#e7e5e4]">
+                        <thead class="text-xs text-coffee-700 dark:text-[#a8a29e] uppercase bg-coffee-100/50 dark:bg-[#1c1917] border-b border-coffee-200 dark:border-[#44403c]">
+                            <tr>
+                                <th class="px-4 py-3">Roaster / Farmer</th>
+                                <th class="px-4 py-3">Origin / Region</th>
+                                <th class="px-4 py-3">Process / Variety</th>
+                                <th class="px-4 py-3 text-center">Roast</th>
+                                <th class="px-4 py-3 text-center w-24">Stock (g)</th>
+                                <th class="px-4 py-3 text-center w-24">Stock Left</th>
+                                <th class="px-4 py-3 text-center w-20">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="beansTableBody" class="divide-y divide-coffee-50 dark:divide-[#1c1917]"></tbody>
+                    </table>
+                </div>
+                <div id="beansEmpty" class="hidden text-center py-8 text-coffee-400 dark:text-[#57534e]">
+                    <p>No beans saved yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Coffee Card Overlay -->
     <div id="coffeeCardOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onclick="closeCoffeeCard(event)">
@@ -749,8 +792,7 @@
         </div>
     </div>
 
-    <!-- Gallery, Preferences, Export, Help, About Modals (omitted for brevity but assumed present or unchanged from context) -->
-    <!-- Placeholders for existing modals to ensure code works if copied -->
+    <!-- Gallery, Preferences, Export, Help, About Modals -->
     <div id="galleryModal" class="hidden fixed inset-0 z-[75] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"><div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-coffee-200 dark:border-[#44403c] flex flex-col"><div class="flex border-b border-coffee-200 dark:border-[#44403c]"><button onclick="switchGalleryTab('mine')" id="tabGalleryMine" class="flex-1 py-3 text-sm font-semibold text-coffee-700 dark:text-[#d6ccc2] bg-coffee-50 dark:bg-[#1c1917]">My Photos</button><button onclick="switchGalleryTab('shared')" id="tabGalleryShared" class="flex-1 py-3 text-sm font-semibold text-coffee-500 dark:text-[#78716c] hover:bg-coffee-50 dark:hover:bg-[#1c1917]">Friends' Photos</button><button onclick="document.getElementById('galleryModal').classList.add('hidden')" class="px-4 text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button></div><div id="galleryContent" class="p-4 overflow-y-auto flex-1 bg-coffee-50 dark:bg-[#1c1917]"><div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div><div id="galleryLoadMore" class="text-center py-4 hidden"><button onclick="loadMoreGallery()" class="bg-coffee-100 dark:bg-[#34302e] text-coffee-700 dark:text-[#d6ccc2] px-6 py-2 rounded-full text-sm font-bold shadow-sm hover:bg-coffee-200 dark:hover:bg-[#44403c] transition-colors">Load More <i class="fa-solid fa-chevron-down ml-2"></i></button></div><div id="galleryEmpty" class="hidden text-center py-10 text-coffee-400 dark:text-[#57534e]"><i class="fa-solid fa-images text-4xl mb-2"></i><p>No photos found.</p></div></div></div></div>
     <div id="preferencesModal" class="hidden fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"><div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-coffee-200 dark:border-[#44403c]"><div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center"><h3 class="font-bold text-coffee-900 dark:text-white"><i class="fa-solid fa-sliders mr-2"></i>Table Preferences</h3><button onclick="document.getElementById('preferencesModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button></div><div class="p-6 max-h-[60vh] overflow-y-auto"><p class="text-xs text-coffee-500 dark:text-[#78716c] mb-4">Select the columns you want to see in your brew log.</p><div id="preferencesList" class="space-y-3"></div></div><div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end gap-2"><button onclick="document.getElementById('preferencesModal').classList.add('hidden')" class="px-4 py-2 rounded-lg text-sm text-coffee-600 dark:text-[#a8a29e] hover:bg-coffee-100 dark:hover:bg-[#34302e]">Cancel</button><button onclick="savePreferences()" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] text-white px-4 py-2 rounded-lg text-sm font-medium">Save Preferences</button></div></div></div>
     <div id="exportModal" class="hidden fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"><div class="bg-white dark:bg-[#292524] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-coffee-200 dark:border-[#44403c]"><div class="p-5 border-b border-coffee-200 dark:border-[#44403c] flex justify-between items-center"><h3 class="font-bold text-coffee-900 dark:text-white"><i class="fa-solid fa-file-csv mr-2"></i>Export Brew Log</h3><button onclick="closeExportModal()" class="text-gray-500 hover:text-gray-700 dark:text-[#78716c] dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button></div><div class="p-6 max-h-[60vh] overflow-y-auto"><p class="text-sm text-coffee-600 dark:text-[#a8a29e] mb-6">Choose your export options:</p><div class="space-y-4"><div><label class="block text-sm font-medium text-coffee-800 dark:text-white mb-2">Export Type</label><select id="exportType" class="w-full bg-white dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] text-coffee-900 dark:text-white text-sm rounded-lg p-2.5 shadow-sm"><option value="brews">Brews (Coffee Dial format)</option><option value="brews-beanconqueror">Brews (Bean Conqueror format)</option><option value="coffees">Coffee beans (Bean Conqueror format)</option></select></div><div><label class="block text-sm font-medium text-coffee-800 dark:text-white mb-2">Export Format</label><select id="exportFormat" class="w-full bg-white dark:bg-[#1c1917] border border-coffee-200 dark:border-[#44403c] text-coffee-900 dark:text-white text-sm rounded-lg p-2.5 shadow-sm"><option value="csv">CSV (.csv)</option><option value="json">JSON (.json)</option></select></div><div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/30 p-3 rounded-lg"><p class="text-xs text-blue-800 dark:text-blue-300"><i class="fa-solid fa-info-circle mr-1"></i>You have <span id="exportBrewCount">0</span> brews to export.</p></div></div></div><div class="bg-coffee-50 dark:bg-[#1c1917] px-6 py-3 flex justify-end gap-2"><button onclick="closeExportModal()" class="px-4 py-2 rounded-lg text-sm text-coffee-600 dark:text-[#a8a29e] hover:bg-coffee-100 dark:hover:bg-[#34302e]">Cancel</button><button onclick="performExport()" class="bg-coffee-700 hover:bg-coffee-800 dark:bg-[#57534e] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"><i class="fa-solid fa-download"></i> Export</button></div></div></div>
@@ -957,13 +999,17 @@
                 if(error.code === 'permission-denied') { alert("⚠️ Access Denied: This user's profile is private."); document.getElementById('viewSelect').value = 'mine'; changeView('mine'); }
             });
 
-            // Listen to Beans (Only for current user for Dropdown)
+            // Listen to Beans (Only for current user)
             if(isMine) {
                  const beanQ = collection(db, 'users', currentUser.uid, 'beans');
                  unsubscribeBeans = onSnapshot(beanQ, (snapshot) => {
                      beans = [];
                      snapshot.forEach(doc => beans.push({ id: doc.id, ...doc.data() }));
                      updateBeanDropdown();
+                     // If beans modal is open, refresh it
+                     if(!document.getElementById('beansModal').classList.contains('hidden')) {
+                         renderBeansTable();
+                     }
                  });
             }
         };
@@ -1041,6 +1087,9 @@
             const finalMethod = rawMethod === 'Other' ? (rawMethodOther || 'Other') : rawMethod;
             let newOrder = 0; if (coffees.length > 0) { const minOrder = Math.min(...coffees.map(c => c.customOrder || 0)); newOrder = minOrder - 1; }
             
+            // Selected Bean ID from dropdown
+            let selectedBeanId = document.getElementById('savedBeanSelect').value;
+
             // Brew Data
             const d = { 
                 roaster: f.get('roaster'), farmer: f.get('farmer'), origin: f.get('origin'), variety: f.get('variety'), processing: f.get('processing'),
@@ -1049,7 +1098,7 @@
                 improve: f.get('improve') || '', rating: parseInt(f.get('rating')) || 0, isActive: isActiveChecked, updatedAt: new Date().toISOString() 
             };
 
-            // Bean Data (Subset of Brew Data)
+            // Bean Data (for creating new or updating)
             const beanData = {
                 roaster: d.roaster,
                 farmer: d.farmer,
@@ -1061,20 +1110,47 @@
             };
 
             try {
-                // 1. Save Brew
+                // Handle Bean Logic
+                // 1. If user selected a bean from dropdown, use that ID.
+                // 2. If dropdown is empty (Create New), check if a bean with these attributes already exists in the local 'beans' array to avoid duplicates.
+                // 3. If not exists, create new doc with auto-ID.
+                
+                const clean = (s) => (s || '').toLowerCase().trim();
+                
+                if (!selectedBeanId) {
+                    // Check for existing bean with same signature in client cache to prevent duplicates
+                    const existingBean = beans.find(b => 
+                        clean(b.roaster) === clean(beanData.roaster) &&
+                        clean(b.farmer) === clean(beanData.farmer) &&
+                        clean(b.origin) === clean(beanData.origin) &&
+                        clean(b.processing) === clean(beanData.processing) &&
+                        clean(b.variety) === clean(beanData.variety) &&
+                        clean(b.roastType) === clean(beanData.roastType)
+                    );
+                    
+                    if (existingBean) {
+                        selectedBeanId = existingBean.id;
+                        // Optionally update updatedTimestamp
+                        await updateDoc(doc(db, 'users', currentUser.uid, 'beans', selectedBeanId), { updatedAt: beanData.updatedAt });
+                    } else {
+                        // Create New Bean with Auto-ID
+                        if (beanData.roaster || beanData.origin) { // Only create if minimal data exists
+                            beanData.createdAt = new Date().toISOString();
+                            const newBeanRef = await addDoc(collection(db, 'users', currentUser.uid, 'beans'), beanData);
+                            selectedBeanId = newBeanRef.id;
+                        }
+                    }
+                } else {
+                    // Update existing bean timestamp
+                     await updateDoc(doc(db, 'users', currentUser.uid, 'beans', selectedBeanId), { updatedAt: beanData.updatedAt });
+                }
+
+                // Add beanId to brew data
+                if (selectedBeanId) d.beanId = selectedBeanId;
+
+                // Save Brew
                 const col = collection(db, 'users', currentUser.uid, 'coffees');
                 if(eid) { await updateDoc(doc(col, eid), d); } else { d.customOrder = newOrder; d.createdAt = new Date().toISOString(); await addDoc(col, d); }
-
-                // 2. Save Bean Separately (Upsert)
-                // Generate a composite key or just add new. Let's use a composite key to avoid duplicates.
-                // Key: Roaster_Farmer_Origin_Process (cleaned)
-                const clean = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                const beanKey = `${clean(d.roaster)}_${clean(d.farmer)}_${clean(d.origin)}_${clean(d.processing)}`;
-                
-                if (beanKey.length > 3) { // Ensure there is actual data
-                    // We use the beanKey as ID to merge duplicates
-                    await setDoc(doc(db, 'users', currentUser.uid, 'beans', beanKey), beanData, { merge: true });
-                }
 
                 resetFormState(); toggleForm(false);
             } catch(err){ alert(err.message); }
@@ -1118,6 +1194,184 @@
                     }
                 });
                 sortableInstances.push(sortable);
+            }
+        };
+
+        // --- Beans Management Functions ---
+        const openBeans = () => {
+            if (!currentUser) return alert("Please sign in.");
+            document.getElementById('beansModal').classList.remove('hidden');
+            renderBeansTable();
+        };
+
+        const closeBeans = () => {
+            document.getElementById('beansModal').classList.add('hidden');
+        };
+
+        const renderBeansTable = () => {
+            const tbody = document.getElementById('beansTableBody');
+            const empty = document.getElementById('beansEmpty');
+            tbody.innerHTML = '';
+            
+            if (beans.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            // Sort beans by Created Date (or manually added date) descending
+            const sortedBeans = [...beans].sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+            sortedBeans.forEach(bean => {
+                const tr = document.createElement('tr');
+                tr.className = "bg-white dark:bg-[#292524] border-b border-coffee-50 dark:border-[#34302e] hover:bg-coffee-50 dark:hover:bg-[#1c1917] transition-colors";
+                
+                // Calculate Stock Left
+                let stockLeft = '-';
+                if (bean.stock !== undefined && bean.stock !== null) {
+                    const stockDate = bean.stockUpdatedAt ? new Date(bean.stockUpdatedAt) : new Date(0);
+                    // Filter brews: match beanId, and created AFTER stock date
+                    const usedAmount = coffees
+                        .filter(c => c.beanId === bean.id && new Date(c.createdAt) > stockDate)
+                        .reduce((sum, c) => sum + (c.weight || 0), 0);
+                    
+                    const remaining = parseFloat(bean.stock) - usedAmount;
+                    stockLeft = remaining.toFixed(1) + 'g';
+                }
+
+                const roaster = bean.roaster || 'Unknown';
+                const farmer = bean.farmer ? `<br><span class="text-xs text-coffee-500">${bean.farmer}</span>` : '';
+                const origin = bean.origin || '-';
+                const region = ''; // Add region field if available later
+                const process = bean.processing || '-';
+                const variety = bean.variety ? `<br><span class="text-xs text-coffee-500">${bean.variety}</span>` : '';
+                
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-medium text-coffee-900 dark:text-white">${roaster}${farmer}</td>
+                    <td class="px-4 py-3">${origin}</td>
+                    <td class="px-4 py-3">${process}${variety}</td>
+                    <td class="px-4 py-3 text-center">${getRoastBadge(bean.roastType)}</td>
+                    <td class="px-4 py-3 text-center">
+                        <input type="number" step="1" value="${bean.stock || ''}" 
+                            onchange="saveBeanStock('${bean.id}', this.value)"
+                            class="w-20 text-center text-sm border border-coffee-200 dark:border-[#44403c] rounded p-1 bg-coffee-50 dark:bg-[#1c1917] text-coffee-900 dark:text-white focus:ring-1 focus:ring-coffee-500" placeholder="-">
+                    </td>
+                    <td class="px-4 py-3 text-center font-mono font-bold text-coffee-700 dark:text-[#d6ccc2]">${stockLeft}</td>
+                    <td class="px-4 py-3 text-center">
+                         <button onclick="deleteBean('${bean.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        const saveBeanStock = async (beanId, amount) => {
+            if (!currentUser) return;
+            try {
+                const stockVal = amount === '' ? null : parseFloat(amount);
+                await updateDoc(doc(db, 'users', currentUser.uid, 'beans', beanId), {
+                    stock: stockVal,
+                    stockUpdatedAt: new Date().toISOString()
+                });
+                // Table will auto-refresh via snapshot listener
+            } catch (err) {
+                console.error("Error saving stock:", err);
+                alert("Failed to save stock.");
+            }
+        };
+
+        const deleteBean = async (beanId) => {
+            if(!confirm("Are you sure? This will not delete brews, but will unlink them from this bean.")) return;
+            try {
+                await deleteDoc(doc(db, 'users', currentUser.uid, 'beans', beanId));
+            } catch(e) { alert(e.message); }
+        };
+
+        const syncLegacyBeans = async () => {
+            if (!currentUser) return;
+            const btn = document.querySelector('#beansModal button i.fa-sync-alt').parentNode;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Scanning...';
+
+            try {
+                const batchLimit = 450;
+                let batches = [];
+                let currentBatch = writeBatch(db);
+                let opCount = 0;
+
+                const uniqueMap = new Map();
+                
+                // 1. Identify all unique beans from existing brews
+                coffees.forEach(c => {
+                    const clean = (s) => (s || '').toLowerCase().trim();
+                    // Create signature
+                    const key = `${clean(c.roaster)}|${clean(c.farmer)}|${clean(c.origin)}|${clean(c.processing)}|${clean(c.variety)}|${clean(c.roastType)}`;
+                    
+                    if (!uniqueMap.has(key)) {
+                        // Check if this bean already exists in the 'beans' collection
+                        const existingBean = beans.find(b => 
+                             clean(b.roaster) === clean(c.roaster) &&
+                             clean(b.farmer) === clean(c.farmer) &&
+                             clean(b.origin) === clean(c.origin) &&
+                             clean(b.processing) === clean(c.processing) &&
+                             clean(b.variety) === clean(c.variety) &&
+                             clean(b.roastType) === clean(c.roastType)
+                        );
+                        
+                        uniqueMap.set(key, {
+                            data: {
+                                roaster: c.roaster,
+                                farmer: c.farmer,
+                                origin: c.origin || c.beanType,
+                                variety: c.variety,
+                                processing: c.processing,
+                                roastType: c.roastType
+                            },
+                            id: existingBean ? existingBean.id : null,
+                            isNew: !existingBean
+                        });
+                    }
+                });
+
+                // 2. Create missing beans
+                for (const [key, val] of uniqueMap.entries()) {
+                    if (val.isNew && (val.data.roaster || val.data.origin)) {
+                        const newRef = doc(collection(db, 'users', currentUser.uid, 'beans'));
+                        val.id = newRef.id;
+                        currentBatch.set(newRef, { ...val.data, createdAt: new Date().toISOString() });
+                        opCount++;
+                        if (opCount >= batchLimit) { batches.push(currentBatch); currentBatch = writeBatch(db); opCount = 0; }
+                    }
+                }
+
+                // 3. Link brews to bean IDs
+                coffees.forEach(c => {
+                    if (!c.beanId) {
+                         const clean = (s) => (s || '').toLowerCase().trim();
+                         const key = `${clean(c.roaster)}|${clean(c.farmer)}|${clean(c.origin)}|${clean(c.processing)}|${clean(c.variety)}|${clean(c.roastType)}`;
+                         const mapEntry = uniqueMap.get(key);
+                         
+                         if (mapEntry && mapEntry.id) {
+                             const brewRef = doc(db, 'users', currentUser.uid, 'coffees', c.id);
+                             currentBatch.update(brewRef, { beanId: mapEntry.id });
+                             opCount++;
+                             if (opCount >= batchLimit) { batches.push(currentBatch); currentBatch = writeBatch(db); opCount = 0; }
+                         }
+                    }
+                });
+
+                batches.push(currentBatch);
+                
+                await Promise.all(batches.map(b => b.commit()));
+                alert("Legacy scan complete! Brews linked to Beans.");
+                
+            } catch (err) {
+                console.error(err);
+                alert("Scan failed: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         };
 
@@ -2081,7 +2335,13 @@
             else if (mVal) { document.getElementById('method').value = 'Other'; document.getElementById('methodOther').value = mVal; document.getElementById('methodOther').classList.remove('hidden'); } 
             else { document.getElementById('method').value = ""; document.getElementById('methodOther').classList.add('hidden'); }
             setRating(c.rating||0); setNotesMode('manual'); document.getElementById('isActiveToggle').checked = c.isActive || false; 
-            document.getElementById('savedBeanSelect').value = ""; // Reset saved bean dropdown on manual edit/populate
+            
+            // Set saved bean dropdown if beanId is present
+            if (c.beanId) {
+                document.getElementById('savedBeanSelect').value = c.beanId;
+            } else {
+                document.getElementById('savedBeanSelect').value = ""; 
+            }
         }
 
         const editCoffee = (id) => { const c=coffees.find(x=>x.id===id); if(!c)return; document.getElementById('editId').value=c.id; populateForm(c); document.getElementById('formContainer').classList.add('editing-mode'); toggleForm(true); document.getElementById('formTitle').innerHTML='<span class="text-orange-500">Edit Brew</span>'; document.getElementById('submitBtn').innerHTML='<span>Update</span>'; document.getElementById('submitBtn').className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"; document.getElementById('cancelEditBtn').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); };
@@ -2313,7 +2573,6 @@
             r.innerHTML = rowHTML;
             return r;
         };
-
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
@@ -2330,7 +2589,9 @@
         });
 
         Object.assign(window, { 
-            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, duplicateFromCard, fastDuplicateFromCard, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, getFilteredCoffees, setRating, exportCSV, openExportModal, closeExportModal, performExport, exportBrewsAsCSV, exportBrewsAsBeanconquerorCSV, exportCoffeesAsCSV, exportCoffeesAsJSON, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, toggleCardMode, triggerCardPhoto, handleCardPhoto, generateShareImage, resetCardPhotoState, updateBeanMeter, refreshTableData, fillBeanDetails
+            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, duplicateFromCard, fastDuplicateFromCard, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, initTheme, toggleTheme, getFilteredCoffees, setRating, exportCSV, openExportModal, closeExportModal, performExport, exportBrewsAsCSV, exportBrewsAsBeanconquerorCSV, exportCoffeesAsCSV, exportCoffeesAsJSON, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, toggleCardMode, triggerCardPhoto, handleCardPhoto, generateShareImage, resetCardPhotoState, updateBeanMeter, refreshTableData, fillBeanDetails,
+            // New Beans Functions
+            openBeans, closeBeans, saveBeanStock, deleteBean, syncLegacyBeans
         });
 
         initTheme();
