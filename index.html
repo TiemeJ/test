@@ -1,13 +1,3 @@
-Here is the updated file.
-
-**Changes made:**
-1.  **Help Modal Fixed:** Added **Section 3 (Bean Inventory)** and **Section 4 (Social & Stats)** to the Help/Tutorial modal so it is no longer cut off after point 2.
-2.  **Statistics Update:** In the `calculateStats` function, the logic for **Unique Coffees**, **Most Brewed**, and the **Leaderboard** now prioritizes the **`beanId`**.
-    *   *Logic:* It checks if a brew has a linked `beanId`. If yes, it groups by that ID. If no (legacy brews), it falls back to the old method (Roaster+Origin+Farmer string match). This ensures accuracy even if you change the spelling of a roaster on a specific brew, provided they share the same Bean ID.
-
-You can copy the entire code below:
-
-```html
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
