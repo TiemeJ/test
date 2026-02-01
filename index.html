@@ -1266,8 +1266,10 @@
                     dragClass: 'sortable-drag',
                     delay: 100,
                     delayOnTouchOnly: true,
-                    forceFallback: false, 
+                    forceFallback: false,
                     fallbackClass: 'sortable-drag',
+                    fallbackOnBody: true,
+                    swapThreshold: 0.65,
                     onEnd: async function(evt) {
                         if (evt.oldIndex === evt.newIndex) return;
                         const tiles = Array.from(pinnedGrid.children);
