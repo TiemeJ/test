@@ -693,10 +693,10 @@
                             <div class="flex-1">
                                 <p id="cardNotes" class="handwritten-notes min-h-[120px]"></p>
                             </div>
-                            <div class="flex-shrink-0 relative">
-                                <div class="polaroid-photo cursor-pointer w-32" onclick="showPhotoOptions()">
+                            <div class="flex-shrink-0 relative w-32">
+                                <div class="polaroid-photo cursor-pointer" onclick="showPhotoOptions()">
                                     <div class="relative w-28 h-28 bg-black overflow-hidden">
-                                        <img id="cardDisplayedPhoto" class="hidden w-full h-full object-cover" src="" alt="Brew Photo">
+                                        <img id="cardDisplayedPhoto" class="w-full h-full object-cover" style="display: none;" src="" alt="Brew Photo">
                                         <div id="cardPhotoPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center">
                                             <i class="fa-solid fa-camera text-3xl text-pink-400 mb-1"></i>
                                             <p class="text-[10px] text-pink-300 font-medium text-center px-1">Add photo</p>
@@ -2403,8 +2403,8 @@
              const cameraInput = document.getElementById('cardPhotoCameraInput');
              const uploadInput = document.getElementById('cardPhotoUploadInput');
              img.src = '';
-             img.classList.add('hidden');
-             ph.classList.remove('hidden');
+             img.style.display = 'none';
+             ph.style.display = 'flex';
              if(cameraInput) cameraInput.value = ''; 
              if(uploadInput) uploadInput.value = '';
         };
@@ -2470,8 +2470,8 @@
                     const ph = document.getElementById('cardPhotoPlaceholder');
                     
                     img.onload = () => {
-                        img.classList.remove('hidden');
-                        ph.classList.add('hidden');
+                        img.style.display = 'block';
+                        ph.style.display = 'none';
                     };
                     img.src = e.target.result;
                 };
