@@ -649,7 +649,7 @@
                 <button id="cardCloseBtn" onclick="closeCoffeeCard(null)" class="absolute top-6 right-6 z-10 text-cyan-400 hover:text-cyan-300 transition-colors bg-black rounded-full w-8 h-8 flex items-center justify-center border-2 border-cyan-400"><i class="fa-solid fa-xmark text-lg"></i></button>
                 
                 <!-- Inner Card Container -->
-                <div class="share-card-inner rounded-2xl p-6 pb-10 relative overflow-hidden">
+                <div class="share-card-inner rounded-2xl p-6 relative overflow-hidden">
                     <!-- Decorative Elements (removed blur for compatibility) -->
                     <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500 rounded-full opacity-10"></div>
                     <div class="absolute bottom-0 left-0 w-40 h-40 bg-pink-500 rounded-full opacity-10"></div>
@@ -693,7 +693,7 @@
                             <div class="flex-1">
                                 <p id="cardNotes" class="handwritten-notes min-h-[120px]"></p>
                             </div>
-                            <div class="flex-shrink-0 relative">
+                            <div class="flex-shrink-0 relative" id="cardPhotoContainer">
                                 <div class="polaroid-photo cursor-pointer w-32" onclick="showPhotoOptions()">
                                     <div class="relative w-28 h-28 bg-black overflow-hidden">
                                         <img id="cardDisplayedPhoto" class="hidden w-full h-full object-cover" src="" alt="Brew Photo">
@@ -714,11 +714,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Watermark - Moved up below Tasting Notes -->
-                    <div class="text-center text-xs text-cyan-400 relative z-10 mt-4">
-                        <span style="display: inline-block;">Made with Coffee Dial ☕ <span id="cardDate" class="font-mono"></span></span>
                     </div>
                 </div>
             </div>
@@ -2482,9 +2477,17 @@
             const content = document.getElementById('coffeeCardContent');
             const shareControls = document.getElementById('shareControls');
             const closeBtn = document.getElementById('cardCloseBtn'); 
+            const photoContainer = document.getElementById('cardPhotoContainer');
+            const displayedPhoto = document.getElementById('cardDisplayedPhoto');
             
             shareControls.classList.add('hidden');
             closeBtn.classList.add('hidden'); 
+            
+            // Hide photo container if no photo is uploaded
+            const photoHidden = displayedPhoto.classList.contains('hidden');
+            if (photoHidden) {
+                photoContainer.classList.add('hidden');
+            }
             
             const originalTransform = content.style.transform;
             content.style.transform = 'none';
@@ -2501,6 +2504,9 @@
                 
                 shareControls.classList.remove('hidden');
                 closeBtn.classList.remove('hidden'); 
+                if (photoHidden) {
+                    photoContainer.classList.remove('hidden');
+                }
                 content.style.transform = originalTransform;
 
                 canvas.toBlob(async (blob) => {
@@ -2543,6 +2549,9 @@
                 console.error("Card generation failed", err); 
                 shareControls.classList.remove('hidden');
                 closeBtn.classList.remove('hidden'); 
+                if (photoHidden) {
+                    photoContainer.classList.remove('hidden');
+                }
                 bottomBar.style.display = '';
                 content.style.transform = originalTransform;
                 if (wasImproveVisible) improveContainer.classList.remove('hidden');
