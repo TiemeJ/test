@@ -26,7 +26,6 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap');
         
         body { 
             font-family: 'Outfit', sans-serif; 
@@ -157,68 +156,6 @@
         .no-animations .boat-right,
         .no-animations .boat-left {
             display: none;
-        }
-
-        /* Cyberpunk Share Card Styles - Optimized for html2canvas */
-        .share-card-funky {
-            background: #0f0f23;
-            border: 3px solid #00fff9;
-        }
-        
-        .share-card-inner {
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            border: 2px solid #00fff9;
-        }
-        
-        .handwritten-notes {
-            font-family: 'Caveat', cursive;
-            font-size: 1.25rem;
-            line-height: 1.6;
-            color: #84cc16;
-        }
-        
-        .polaroid-photo {
-            background: #000000;
-            padding: 8px;
-            padding-bottom: 24px;
-            border: 3px solid #ff00ff;
-            transform: rotate(-3deg);
-            transition: transform 0.3s ease;
-        }
-        
-        .polaroid-photo:hover {
-            transform: rotate(3deg) scale(1.05);
-        }
-        
-        .funky-label {
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.1em;
-        }
-        
-        .funky-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-        
-        .share-card-content-box {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 1rem;
-            padding: 1.25rem;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .floating {
-            animation: float 3s ease-in-out infinite;
         }
     </style>
     <script>
@@ -634,93 +571,69 @@
 
     <!-- Coffee Card Overlay -->
     <div id="coffeeCardOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onclick="closeCoffeeCard(event)">
-        <!-- Funky Share Card -->
-        <div class="flex flex-col gap-2 w-full max-w-md">
+        <!-- Same as original -->
+        <div class="flex flex-col gap-2 w-full max-w-sm">
             <div id="shareControls" class="hidden bg-white dark:bg-[#292524] rounded-lg p-2 shadow-lg border border-coffee-200 dark:border-[#44403c] flex justify-between items-center transition-all animate-in fade-in zoom-in duration-200" onclick="event.stopPropagation()">
-                <div class="flex gap-2">
-                    <button onclick="showPhotoOptions()" id="btnUploadCardPhoto" class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-3 py-1.5 rounded text-xs font-bold transition-all shadow-md"><i class="fa-solid fa-camera mr-1"></i> Photo</button>
-                    <input type="file" id="cardPhotoCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleCardPhoto(event)">
-                    <input type="file" id="cardPhotoUploadInput" accept="image/*" class="hidden" onchange="handleCardPhoto(event)">
-                    <button onclick="generateShareImage()" class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-3 py-1.5 rounded text-xs font-bold shadow-md transition-all"><i class="fa-solid fa-share-nodes mr-1"></i> Share</button>
+                <div class="flex gap-2 bg-coffee-100 dark:bg-[#1c1917] rounded p-1">
+                    <button onclick="toggleCardMode('stats')" id="btnCardStats" class="px-3 py-1.5 text-xs font-bold rounded shadow-sm bg-white dark:bg-[#292524] text-coffee-800 dark:text-white transition-all">Stats</button>
+                    <button onclick="toggleCardMode('photo')" id="btnCardPhoto" class="px-3 py-1.5 text-xs font-bold rounded text-coffee-500 dark:text-[#78716c] hover:text-coffee-700 dark:hover:text-[#d6ccc2] transition-all">Photo</button>
+                </div>
+                 <div class="flex gap-2">
+                    <button onclick="triggerCardPhoto()" id="btnUploadCardPhoto" class="hidden bg-coffee-200 hover:bg-coffee-300 dark:bg-[#44403c] dark:hover:bg-[#57534e] text-coffee-800 dark:text-white px-3 py-1.5 rounded text-xs font-bold transition-colors"><i class="fa-solid fa-camera mr-1"></i> Select</button>
+                    <input type="file" id="cardPhotoInput" accept="image/*" class="hidden" onchange="handleCardPhoto(event)">
+                    <button onclick="generateShareImage()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-bold shadow-sm transition-colors"><i class="fa-solid fa-share-nodes mr-1"></i> Share</button>
                 </div>
             </div>
 
-            <div id="coffeeCardContent" class="share-card-funky w-full rounded-3xl overflow-hidden transform transition-all p-4 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
-                <button id="cardCloseBtn" onclick="closeCoffeeCard(null)" class="absolute top-6 right-6 z-10 text-cyan-400 hover:text-cyan-300 transition-colors bg-black rounded-full w-8 h-8 flex items-center justify-center border-2 border-cyan-400"><i class="fa-solid fa-xmark text-lg"></i></button>
-                
-                <!-- Inner Card Container -->
-                <div class="share-card-inner rounded-2xl p-6 relative overflow-hidden">
-                    <!-- Decorative Elements (removed blur for compatibility) -->
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500 rounded-full opacity-10"></div>
-                    <div class="absolute bottom-0 left-0 w-40 h-40 bg-pink-500 rounded-full opacity-10"></div>
-                    <div class="absolute top-1/2 left-1/2 w-36 h-36 bg-purple-500 rounded-full opacity-5"></div>
-                    
-                    <!-- Title Section -->
-                    <div class="text-center mb-6 relative z-10">
-                        <div class="inline-block text-cyan-400 px-6 py-3 mb-3 transform -rotate-1" style="line-height: 1;">
-                            <h3 class="text-2xl font-bold" style="line-height: 1; margin: 0; padding: 0;">⚡ BREW CARD ⚡</h3>
-                        </div>
-                        <div id="cardRating" class="text-2xl"></div>
+            <div id="coffeeCardContent" class="bg-white dark:bg-[#292524] w-full rounded-2xl shadow-2xl overflow-hidden transform transition-all border border-coffee-200 dark:border-[#44403c] flex flex-col max-h-[85vh]" onclick="event.stopPropagation()">
+                <div class="bg-coffee-100 dark:bg-[#1c1917] p-5 border-b border-coffee-200 dark:border-[#44403c] relative">
+                    <button id="cardCloseBtn" onclick="closeCoffeeCard(null)" class="absolute top-4 right-4 text-coffee-400 hover:text-coffee-800 dark:text-[#57534e] dark:hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <div class="pr-6"><h3 id="cardRoaster" class="text-xl font-bold text-coffee-900 dark:text-white leading-tight mb-1"></h3><div id="cardRating" class="text-sm"></div></div>
+                </div>
+                <div class="p-5 overflow-y-auto space-y-5">
+                    <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+                        <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Origin</span><span id="cardOrigin" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
+                        <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Blend/Farmer</span><span id="cardFarmer" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
+                        <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Process</span><span id="cardProcess" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
+                        <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Roast</span><span id="cardRoastType" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
+                        <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Drink</span><span id="cardDrink" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
+                        <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-0.5">Method</span><span id="cardMethod" class="font-medium text-coffee-800 dark:text-[#d6ccc2]"></span></div>
                     </div>
                     
-                    <!-- Main Info Grid -->
-                    <div class="grid grid-cols-2 gap-4 mb-6 relative z-10">
-                        <div class="bg-black rounded-sm p-3 border-3 border-pink-500">
-                            <div class="funky-label text-pink-400 mb-1">☕ ROASTER</div>
-                            <div id="cardOrigin" class="font-semibold text-pink-200 text-lg"></div>
+                    <div id="cardStatsSection" class="bg-coffee-50 dark:bg-[#1c1917] rounded-xl p-4 border border-coffee-100 dark:border-[#44403c]">
+                        <div class="flex justify-between items-center mb-3"><span class="text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase"><i class="fa-solid fa-flask mr-1"></i> Brew Stats</span></div>
+                        <div class="grid grid-cols-3 gap-2 text-center mb-3">
+                            <div class="bg-white dark:bg-[#292524] p-2 rounded border border-coffee-100 dark:border-[#44403c]"><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">In</div><div id="cardWeight" class="font-mono font-bold text-coffee-900 dark:text-white"></div></div>
+                            <div class="bg-white dark:bg-[#292524] p-2 rounded border border-coffee-100 dark:border-[#44403c]"><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Ratio</div><div id="cardRatio" class="font-mono font-bold text-coffee-900 dark:text-white"></div></div>
+                            <div class="bg-white dark:bg-[#292524] p-2 rounded border border-coffee-100 dark:border-[#44403c]"><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Out</div><div id="cardOut" class="font-mono font-bold text-coffee-900 dark:text-white"></div></div>
                         </div>
-                        <div class="bg-black rounded-sm p-3 border-3 border-purple-500">
-                            <div class="funky-label text-purple-400 mb-1">BLEND/FARMER</div>
-                            <div id="cardFarmer" class="font-semibold text-purple-200 text-lg"></div>
-                        </div>
-                        <div class="bg-black rounded-sm p-3 border-3 border-blue-500">
-                            <div class="funky-label text-blue-400 mb-1">🥤 DRINK</div>
-                            <div id="cardDrink" class="font-semibold text-blue-200 text-lg"></div>
-                        </div>
-                        <div class="bg-black rounded-sm p-3 border-3 border-cyan-500">
-                            <div class="funky-label text-cyan-400 mb-1">⚗️ METHOD</div>
-                            <div id="cardMethod" class="font-semibold text-cyan-200 text-lg"></div>
+                        <div class="grid grid-cols-3 gap-2 text-center border-t border-coffee-200 dark:border-[#44403c] pt-2">
+                            <div><div id="cardGrindTitle" class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase truncate px-1">Grind</div><div id="cardGrindValue" class="font-bold text-coffee-800 dark:text-[#d6ccc2]"></div></div>
+                            <div><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Time</div><div id="cardTime" class="font-bold text-coffee-800 dark:text-[#d6ccc2]"></div></div>
+                            <div><div class="text-[10px] text-coffee-400 dark:text-[#57534e] uppercase">Temp</div><div id="cardTemp" class="font-bold text-coffee-800 dark:text-[#d6ccc2]"></div></div>
                         </div>
                     </div>
-                    
-                    <!-- Notes Section (Emphasized) with Integrated Photo -->
-                    <div class="bg-black rounded-sm p-5 border-3 border-lime-400 mb-2 relative z-10 transform rotate-1">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-2xl">📝</span>
-                            <span class="funky-label text-lime-400 text-sm">TASTING NOTES</span>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="flex-1">
-                                <p id="cardNotes" class="handwritten-notes min-h-[120px]"></p>
-                            </div>
-                            <div class="flex-shrink-0 relative w-32">
-                                <div class="polaroid-photo cursor-pointer" onclick="showPhotoOptions()">
-                                    <div class="relative w-28 h-28 bg-black overflow-hidden">
-                                        <img id="cardDisplayedPhoto" class="w-full h-full object-cover" style="display: none;" src="" alt="Brew Photo">
-                                        <div id="cardPhotoPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center">
-                                            <i class="fa-solid fa-camera text-3xl text-pink-400 mb-1"></i>
-                                            <p class="text-[10px] text-pink-300 font-medium text-center px-1">Add photo</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Photo Options Menu -->
-                                <div id="photoOptionsMenu" class="hidden absolute bg-black border-2 border-cyan-400 rounded-sm p-2 z-50 bottom-full mb-2 right-0" style="min-width: 140px;">
-                                    <button onclick="takePhoto()" class="block w-full text-left px-3 py-2 text-sm text-cyan-300 hover:bg-cyan-900/30 rounded transition-colors mb-1">
-                                        <i class="fa-solid fa-camera mr-2"></i> Take Photo
-                                    </button>
-                                    <button onclick="uploadPhoto()" class="block w-full text-left px-3 py-2 text-sm text-pink-300 hover:bg-pink-900/30 rounded transition-colors">
-                                        <i class="fa-solid fa-upload mr-2"></i> Upload Photo
-                                    </button>
-                                </div>
-                            </div>
+
+                    <div id="cardPhotoSection" class="hidden relative h-64 bg-coffee-50 dark:bg-[#1c1917] rounded-xl overflow-hidden border border-coffee-100 dark:border-[#44403c] group cursor-pointer" onclick="triggerCardPhoto()">
+                        <img id="cardDisplayedPhoto" class="absolute hidden" src="" alt="Brew Photo" style="max-width: none;">
+                        <div id="cardPhotoPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center p-4">
+                            <i class="fa-solid fa-camera text-3xl text-coffee-200 dark:text-[#44403c] mb-2"></i>
+                            <p class="text-xs text-coffee-400 dark:text-[#57534e] font-medium">Tap to add brew photo</p>
                         </div>
                     </div>
-                    
-                    <!-- Bottom Watermark -->
-                    <div class="text-center text-sm text-cyan-400 relative z-10 mb-4">
-                        <span class="inline-block px-4 py-2" style="line-height: 1.2;">
-                            <span style="display: inline-block;">Made with Coffee Dial ☕ <span id="cardDate" class="font-mono"></span></span>
-                        </span>
+
+                    <div><span class="block text-xs font-bold text-coffee-500 dark:text-[#78716c] uppercase mb-1">Notes</span><p id="cardNotes" class="text-sm text-coffee-800 dark:text-[#d6ccc2] italic bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-lg border border-yellow-100 dark:border-yellow-900/20"></p></div>
+                    <div id="cardImproveContainer" class="hidden"><span class="block text-xs font-bold text-red-500 dark:text-red-400 uppercase mb-1">To Improve</span><p id="cardImprove" class="text-sm text-coffee-800 dark:text-[#d6ccc2] bg-red-50 dark:bg-red-900/10 p-2 rounded-lg border border-red-100 dark:border-red-900/20"></p></div>
+                </div>
+                <div id="cardBottomBar" class="bg-coffee-50 dark:bg-[#1c1917] p-4 border-t border-coffee-200 dark:border-[#44403c] flex justify-between items-center text-xs text-coffee-400 dark:text-[#57534e]">
+                    <span id="cardDate"></span>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-coffee-600 dark:text-[#a8a29e]">Duplicate:</span>
+                        <div class="flex gap-3 bg-coffee-100 dark:bg-[#44403c] rounded p-0.5">
+                             <button onclick="fastDuplicateFromCard()" class="px-2 py-0.5 text-xs font-bold text-coffee-700 dark:text-[#d6ccc2] hover:bg-white dark:hover:bg-[#292524] rounded transition-all shadow-sm">Fast</button>
+                             <div class="w-px bg-coffee-200 dark:bg-[#57534e] my-0.5"></div>
+                             <button onclick="duplicateFromCard()" class="px-2 py-0.5 text-xs font-bold text-coffee-700 dark:text-[#d6ccc2] hover:bg-white dark:hover:bg-[#292524] rounded transition-all shadow-sm">Adjust</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2189,7 +2102,12 @@
             const format = document.getElementById('exportFormat').value;
             const brews = getFilteredCoffees();
 
-            if (!brews.length) {
+            if (exportType === 'coffees') {
+                if (!beans.length) {
+                    alert("No data to export");
+                    return;
+                }
+            } else if (!brews.length) {
                 alert("No data to export");
                 return;
             }
@@ -2208,9 +2126,9 @@
                 }
             } else if (exportType === 'coffees') {
                 if (format === 'csv') {
-                    exportCoffeesAsCSV(brews);
+                    exportCoffeesAsCSV(beans);
                 } else if (format === 'json') {
-                    exportCoffeesAsJSON(brews);
+                    exportCoffeesAsJSON(beans);
                 }
             }
 
@@ -2319,21 +2237,14 @@
 
         const exportCoffeesAsCSV = (brews) => {
             const headers = ["Name", "Roaster", "Roast date", "Roast type", "Degree of Roast", "Custom degree of Roast", "Blend", "Weight", "Cost", "Flavour profile", "Cupping points", "Decaffeinated", "Website", "EAN / Articlenumber", "Notes", "Rating", "Archived", "Frozen Date", "Unfrozen Date", "Freezing Storage Type", "Frozen Note", "1. Country", "1. Region", "1. Farm", "1. Farmer", "1. Elevation", "1. Variety", "1. Processing", "1. Harvested", "1. Percentage", "1. Bean certification", "1. Fob Price", "1. Purchasing Price"];
-            const coffeeMap = new Map();
-            brews.forEach(brew => {
-                const key = `${brew.roaster || ''}|${brew.farmer || ''}|${brew.roastType || ''}|${brew.origin || ''}|${brew.variety || ''}|${brew.processing || ''}`;
-                if (!coffeeMap.has(key)) {
-                    coffeeMap.set(key, brew);
-                }
-            });
-            const uniqueCoffees = Array.from(coffeeMap.values());
+            const sourceBeans = beans;
             const esc = (t) => { 
                 if (t === null || t === undefined) return ''; 
                 const str = String(t); 
                 if (str.includes(';') || str.includes('"') || str.includes('\n')) return `"${str.replace(/"/g, '""')}"`; 
                 return str; 
             };
-            const rows = uniqueCoffees.map(coffee => [
+            const rows = sourceBeans.map(coffee => [
                 esc(coffee.farmer || ''), esc(coffee.roaster || ''), '', '', esc(coffee.roastType || ''), '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', esc(coffee.origin || ''), '', '', '', '', esc(coffee.variety || ''), esc(coffee.processing || ''), '', '', '', '', ''
             ]);
             const csvContent = "data:text/csv;charset=utf-8," + headers.join(";") + "\n" + rows.map(e => e.join(";")).join("\n");
@@ -2347,15 +2258,8 @@
         };
 
         const exportCoffeesAsJSON = (brews) => {
-            const coffeeMap = new Map();
-            brews.forEach(brew => {
-                const key = `${brew.roaster || ''}|${brew.farmer || ''}|${brew.roastType || ''}|${brew.origin || brew.beanType || ''}|${brew.variety || ''}|${brew.processing || ''}`;
-                if (!coffeeMap.has(key)) {
-                    coffeeMap.set(key, brew);
-                }
-            });
-            const uniqueCoffees = Array.from(coffeeMap.values());
-            const jsonContent = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(uniqueCoffees, null, 2));
+            const sourceBeans = beans;
+            const jsonContent = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sourceBeans, null, 2));
             const link = document.createElement("a");
             link.setAttribute("href", jsonContent);
             link.setAttribute("download", "coffee_beans.json");
@@ -2387,62 +2291,46 @@
         
         const populateCardData = (c) => {
             currentCardCoffee = c;
+            document.getElementById('cardRoaster').textContent = c.roaster || c.name || 'Unknown Roaster';
             document.getElementById('cardRating').innerHTML = getStarDisplay(c.rating || 0);
-            document.getElementById('cardOrigin').textContent = c.roaster || c.name || '-';
+            document.getElementById('cardOrigin').textContent = c.origin || c.beanType || '-';
             document.getElementById('cardFarmer').textContent = c.farmer || '-';
+            document.getElementById('cardProcess').textContent = c.processing || '-';
+            document.getElementById('cardRoastType').textContent = c.roastType || '-';
             document.getElementById('cardMethod').textContent = c.method || '-';
+            document.getElementById('cardWeight').textContent = (c.weight ? c.weight + 'g' : '-');
+            document.getElementById('cardRatio').textContent = (c.ratio ? '1:' + c.ratio : '-');
+            const outWeight = (c.weight && c.ratio) ? (c.weight * c.ratio).toFixed(1) : '-';
+            document.getElementById('cardOut').textContent = (outWeight !== '-' ? (outWeight.endsWith('.0') ? parseInt(outWeight) : outWeight) + 'g' : '-');
+            const grinderVal = c.grinder || ''; const grindVal = c.grind || '-';
+            const titleEl = document.getElementById('cardGrindTitle'); const valEl = document.getElementById('cardGrindValue');
+            if (grinderVal) titleEl.textContent = grinderVal; else titleEl.textContent = 'Grind';
+            valEl.textContent = grindVal;
+            document.getElementById('cardTime').textContent = formatTime(c.time);
+            document.getElementById('cardTemp').innerHTML = getTempBadge(c.temp);
             document.getElementById('cardDrink').textContent = c.drink || '-';
             const notesEl = document.getElementById('cardNotes');
-            if(c.notes) { notesEl.textContent = c.notes; } else { notesEl.textContent = 'No tasting notes yet...'; }
-            document.getElementById('cardDate').textContent = (c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-');
+            if(c.notes) { notesEl.textContent = '"' + c.notes + '"'; notesEl.classList.remove('hidden'); } else { notesEl.classList.add('hidden'); }
+            const improveEl = document.getElementById('cardImprove'); const improveCon = document.getElementById('cardImproveContainer');
+            if(c.improve) { improveEl.textContent = '"' + c.improve + '"'; improveCon.classList.remove('hidden'); } else { improveCon.classList.add('hidden'); }
+            document.getElementById('cardDate').textContent = 'Brewed: ' + (c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-');
         };
 
         const resetCardPhotoState = () => {
              const img = document.getElementById('cardDisplayedPhoto');
              const ph = document.getElementById('cardPhotoPlaceholder');
-             const cameraInput = document.getElementById('cardPhotoCameraInput');
-             const uploadInput = document.getElementById('cardPhotoUploadInput');
+             const input = document.getElementById('cardPhotoInput');
              img.src = '';
-             img.style.display = 'none';
-             ph.style.display = 'flex';
-             if(cameraInput) cameraInput.value = ''; 
-             if(uploadInput) uploadInput.value = '';
-        };
-
-        const showPhotoOptions = (e) => {
-            if(e) e.stopPropagation();
-            const menu = document.getElementById('photoOptionsMenu');
-            if(menu) {
-                menu.classList.toggle('hidden');
-                // Close menu when clicking outside
-                if(!menu.classList.contains('hidden')) {
-                    setTimeout(() => {
-                        const closeMenu = (evt) => {
-                            if(!menu.contains(evt.target) && !evt.target.closest('.polaroid-photo')) {
-                                menu.classList.add('hidden');
-                                document.removeEventListener('click', closeMenu);
-                            }
-                        };
-                        document.addEventListener('click', closeMenu);
-                    }, 100);
-                }
-            }
-        };
-
-        const takePhoto = () => {
-            document.getElementById('photoOptionsMenu').classList.add('hidden');
-            document.getElementById('cardPhotoCameraInput').click();
-        };
-
-        const uploadPhoto = () => {
-            document.getElementById('photoOptionsMenu').classList.add('hidden');
-            document.getElementById('cardPhotoUploadInput').click();
+             img.classList.add('hidden');
+             ph.classList.remove('hidden');
+             input.value = ''; 
         };
 
         const openCoffeeCard = (id, e) => {
             if(window.getSelection().toString().length > 0) return;
             const c = coffees.find(x => x.id === id); if(!c) return;
             resetCardPhotoState(); 
+            toggleCardMode('stats');
             document.getElementById('shareControls').classList.add('hidden');
             populateCardData(c); 
             document.getElementById('coffeeCardOverlay').classList.remove('hidden');
@@ -2454,12 +2342,38 @@
             // Close any open action menus
             document.querySelectorAll('.action-menu').forEach(el => el.classList.add('hidden'));
             resetCardPhotoState(); 
+            toggleCardMode('stats');
             document.getElementById('shareControls').classList.remove('hidden');
             populateCardData(c);
             document.getElementById('coffeeCardOverlay').classList.remove('hidden');
         };
 
+        const toggleCardMode = (mode) => {
+            currentShareMode = mode;
+            const btnStats = document.getElementById('btnCardStats');
+            const btnPhoto = document.getElementById('btnCardPhoto');
+            const btnUpload = document.getElementById('btnUploadCardPhoto');
+            const statsSection = document.getElementById('cardStatsSection');
+            const photoSection = document.getElementById('cardPhotoSection');
 
+            if(mode === 'stats') {
+                btnStats.className = "px-3 py-1.5 text-xs font-bold rounded shadow-sm bg-white dark:bg-[#292524] text-coffee-800 dark:text-white transition-all";
+                btnPhoto.className = "px-3 py-1.5 text-xs font-bold rounded text-coffee-500 dark:text-[#78716c] hover:text-coffee-700 dark:hover:text-[#d6ccc2] transition-all";
+                statsSection.classList.remove('hidden');
+                photoSection.classList.add('hidden');
+                btnUpload.classList.add('hidden');
+            } else {
+                btnPhoto.className = "px-3 py-1.5 text-xs font-bold rounded shadow-sm bg-white dark:bg-[#292524] text-coffee-800 dark:text-white transition-all";
+                btnStats.className = "px-3 py-1.5 text-xs font-bold rounded text-coffee-500 dark:text-[#78716c] hover:text-coffee-700 dark:hover:text-[#d6ccc2] transition-all";
+                photoSection.classList.remove('hidden');
+                statsSection.classList.add('hidden');
+                btnUpload.classList.remove('hidden');
+            }
+        };
+
+        const triggerCardPhoto = () => {
+             document.getElementById('cardPhotoInput').click();
+        };
 
         const handleCardPhoto = (event) => {
             const file = event.target.files[0];
@@ -2468,10 +2382,33 @@
                 reader.onload = (e) => {
                     const img = document.getElementById('cardDisplayedPhoto');
                     const ph = document.getElementById('cardPhotoPlaceholder');
+                    const container = document.getElementById('cardPhotoSection');
                     
                     img.onload = () => {
-                        img.style.display = 'block';
-                        ph.style.display = 'none';
+                        const containerW = container.offsetWidth;
+                        const containerH = container.offsetHeight;
+                        const imgW = img.naturalWidth;
+                        const imgH = img.naturalHeight;
+                        const containerRatio = containerW / containerH;
+                        const imgRatio = imgW / imgH;
+                        let finalW, finalH, finalTop, finalLeft;
+                        if (imgRatio > containerRatio) {
+                            finalH = containerH;
+                            finalW = imgW * (containerH / imgH);
+                            finalTop = 0;
+                            finalLeft = (containerW - finalW) / 2;
+                        } else {
+                            finalW = containerW;
+                            finalH = imgH * (containerW / imgW);
+                            finalLeft = 0;
+                            finalTop = (containerH - finalH) / 2;
+                        }
+                        img.style.width = `${finalW}px`;
+                        img.style.height = `${finalH}px`;
+                        img.style.top = `${finalTop}px`;
+                        img.style.left = `${finalLeft}px`;
+                        img.classList.remove('hidden');
+                        ph.classList.add('hidden');
                     };
                     img.src = e.target.result;
                 };
@@ -2484,9 +2421,14 @@
             const content = document.getElementById('coffeeCardContent');
             const shareControls = document.getElementById('shareControls');
             const closeBtn = document.getElementById('cardCloseBtn'); 
+            const bottomBar = document.getElementById('cardBottomBar');
+            const improveContainer = document.getElementById('cardImproveContainer');
             
             shareControls.classList.add('hidden');
             closeBtn.classList.add('hidden'); 
+            bottomBar.style.display = 'none';
+            const wasImproveVisible = !improveContainer.classList.contains('hidden');
+            if (wasImproveVisible) improveContainer.classList.add('hidden');
             
             const originalTransform = content.style.transform;
             content.style.transform = 'none';
@@ -2495,7 +2437,7 @@
                 await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
                 const canvas = await html2canvas(content, { 
                     scale: 2, 
-                    backgroundColor: null, 
+                    backgroundColor: getComputedStyle(content).backgroundColor, 
                     useCORS: true,
                     logging: false, 
                     allowTaint: false 
@@ -2503,11 +2445,13 @@
                 
                 shareControls.classList.remove('hidden');
                 closeBtn.classList.remove('hidden'); 
+                bottomBar.style.display = '';
                 content.style.transform = originalTransform;
+                if (wasImproveVisible) improveContainer.classList.remove('hidden');
 
                 canvas.toBlob(async (blob) => {
                     if (!blob) return alert('Failed to generate image data');
-                    const fileName = `brew_card_${Date.now()}.png`;
+                    const fileName = `brew_${(c.roaster || 'coffee').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${Date.now()}.png`;
                     const file = new File([blob], fileName, { type: 'image/png' });
 
                     if (navigator.share) {
@@ -2515,8 +2459,8 @@
                             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                                 await navigator.share({
                                     files: [file],
-                                    title: 'Coffee Dial Brew Card',
-                                    text: `Check out my brew card!`
+                                    title: 'Coffee Dial Brew',
+                                    text: `Check out this brew of ${c.roaster}!`
                                 });
                             } else {
                                 throw new Error('Device does not support file sharing.');
@@ -3595,7 +3539,7 @@
         });
 
         Object.assign(window, { 
-            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, duplicateFromCard, fastDuplicateFromCard, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, getFilteredCoffees, setRating, exportCSV, openExportModal, closeExportModal, performExport, exportBrewsAsCSV, exportBrewsAsBeanconquerorCSV, exportCoffeesAsCSV, exportCoffeesAsJSON, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, showPhotoOptions, takePhoto, uploadPhoto, handleCardPhoto, generateShareImage, resetCardPhotoState, updateBeanMeter, refreshTableData, fillBeanDetails, loadMoreBrews, toggleQuickFilter, openQuickFilterValues, applyFilterFromQuick,
+            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, duplicateFromCard, fastDuplicateFromCard, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, getFilteredCoffees, setRating, exportCSV, openExportModal, closeExportModal, performExport, exportBrewsAsCSV, exportBrewsAsBeanconquerorCSV, exportCoffeesAsCSV, exportCoffeesAsJSON, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, toggleCardMode, triggerCardPhoto, handleCardPhoto, generateShareImage, resetCardPhotoState, updateBeanMeter, refreshTableData, fillBeanDetails, loadMoreBrews, toggleQuickFilter, openQuickFilterValues, applyFilterFromQuick,
             // New Beans Functions
             openBeans, closeBeans, saveBeanStock, deleteBean, syncLegacyBeans
         });
