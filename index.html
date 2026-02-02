@@ -2518,11 +2518,18 @@
             try {
                 await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
                 const canvas = await html2canvas(content, { 
-                    scale: 2, 
+                    scale: 3, 
                     backgroundColor: null, 
                     useCORS: true,
                     logging: false, 
-                    allowTaint: false 
+                    allowTaint: true,
+                    foreignObjectRendering: true,
+                    imageTimeout: 0,
+                    removeContainer: true,
+                    width: content.offsetWidth,
+                    height: content.offsetHeight,
+                    windowWidth: content.offsetWidth,
+                    windowHeight: content.offsetHeight
                 });
                 
                 shareControls.classList.remove('hidden');
@@ -2564,14 +2571,12 @@
                         link.href = canvas.toDataURL(); 
                         link.click();
                     }
-                }, 'image/png', 0.9);
+                }, 'image/png', 1.0);
             } catch (err) {
                 console.error("Card generation failed", err); 
                 shareControls.classList.remove('hidden');
                 closeBtn.classList.remove('hidden'); 
-                bottomBar.style.display = '';
                 content.style.transform = originalTransform;
-                if (wasImproveVisible) improveContainer.classList.remove('hidden');
                 alert("Could not generate card image. Please try taking a screenshot.");
             }
         };
