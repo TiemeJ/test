@@ -662,8 +662,9 @@
         <div class="flex flex-col gap-2 w-full max-w-md">
             <div id="shareControls" class="hidden bg-white dark:bg-[#292524] rounded-lg p-2 shadow-lg border border-coffee-200 dark:border-[#44403c] flex justify-between items-center transition-all animate-in fade-in zoom-in duration-200" onclick="event.stopPropagation()">
                 <div class="flex gap-2">
-                    <button onclick="triggerCardPhoto()" id="btnUploadCardPhoto" class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-3 py-1.5 rounded text-xs font-bold transition-all shadow-md"><i class="fa-solid fa-camera mr-1"></i> Photo</button>
-                    <input type="file" id="cardPhotoInput" accept="image/*" capture="environment" class="hidden" onchange="handleCardPhoto(event)">
+                    <button onclick="showPhotoOptions()" id="btnUploadCardPhoto" class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-3 py-1.5 rounded text-xs font-bold transition-all shadow-md"><i class="fa-solid fa-camera mr-1"></i> Photo</button>
+                    <input type="file" id="cardPhotoCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleCardPhoto(event)">
+                    <input type="file" id="cardPhotoUploadInput" accept="image/*" class="hidden" onchange="handleCardPhoto(event)">
                     <button onclick="generateShareImage()" class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-3 py-1.5 rounded text-xs font-bold shadow-md transition-all"><i class="fa-solid fa-share-nodes mr-1"></i> Share</button>
                 </div>
             </div>
@@ -716,8 +717,8 @@
                             <div class="flex-1">
                                 <p id="cardNotes" class="handwritten-notes min-h-[120px]"></p>
                             </div>
-                            <div class="flex-shrink-0">
-                                <div class="polaroid-photo cursor-pointer w-32" onclick="triggerCardPhoto()">
+                            <div class="flex-shrink-0 relative">
+                                <div class="polaroid-photo cursor-pointer w-32" onclick="showPhotoOptions()">
                                     <div class="relative w-28 h-28 bg-black overflow-hidden">
                                         <img id="cardDisplayedPhoto" class="hidden w-full h-full object-cover" src="" alt="Brew Photo">
                                         <div id="cardPhotoPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center">
@@ -725,6 +726,15 @@
                                             <p class="text-[10px] text-pink-300 font-medium text-center px-1">Add photo</p>
                                         </div>
                                     </div>
+                                </div>
+                                <!-- Photo Options Menu -->
+                                <div id="photoOptionsMenu" class="hidden absolute bg-black/95 border-2 border-cyan-400 rounded-sm shadow-lg p-2 z-50 bottom-full mb-2 right-0" style="box-shadow: 0 0 20px rgba(0, 255, 249, 0.5); min-width: 140px;">
+                                    <button onclick="takePhoto()" class="block w-full text-left px-3 py-2 text-sm text-cyan-300 hover:bg-cyan-900/30 rounded transition-colors mb-1" style="text-shadow: 0 0 5px #00fff9;">
+                                        <i class="fa-solid fa-camera mr-2"></i> Take Photo
+                                    </button>
+                                    <button onclick="uploadPhoto()" class="block w-full text-left px-3 py-2 text-sm text-pink-300 hover:bg-pink-900/30 rounded transition-colors" style="text-shadow: 0 0 5px #ff00ff;">
+                                        <i class="fa-solid fa-upload mr-2"></i> Upload Photo
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2414,11 +2424,43 @@
         const resetCardPhotoState = () => {
              const img = document.getElementById('cardDisplayedPhoto');
              const ph = document.getElementById('cardPhotoPlaceholder');
-             const input = document.getElementById('cardPhotoInput');
+             const cameraInput = document.getElementById('cardPhotoCameraInput');
+             const uploadInput = document.getElementById('cardPhotoUploadInput');
              img.src = '';
              img.classList.add('hidden');
              ph.classList.remove('hidden');
-             input.value = ''; 
+             if(cameraInput) cameraInput.value = ''; 
+             if(uploadInput) uploadInput.value = '';
+        };
+
+        const showPhotoOptions = (e) => {
+            if(e) e.stopPropagation();
+            const menu = document.getElementById('photoOptionsMenu');
+            if(menu) {
+                menu.classList.toggle('hidden');
+                // Close menu when clicking outside
+                if(!menu.classList.contains('hidden')) {
+                    setTimeout(() => {
+                        const closeMenu = (evt) => {
+                            if(!menu.contains(evt.target) && !evt.target.closest('.polaroid-photo')) {
+                                menu.classList.add('hidden');
+                                document.removeEventListener('click', closeMenu);
+                            }
+                        };
+                        document.addEventListener('click', closeMenu);
+                    }, 100);
+                }
+            }
+        };
+
+        const takePhoto = () => {
+            document.getElementById('photoOptionsMenu').classList.add('hidden');
+            document.getElementById('cardPhotoCameraInput').click();
+        };
+
+        const uploadPhoto = () => {
+            document.getElementById('photoOptionsMenu').classList.add('hidden');
+            document.getElementById('cardPhotoUploadInput').click();
         };
 
         const openCoffeeCard = (id, e) => {
@@ -2442,10 +2484,6 @@
         };
 
 
-
-        const triggerCardPhoto = () => {
-             document.getElementById('cardPhotoInput').click();
-        };
 
         const handleCardPhoto = (event) => {
             const file = event.target.files[0];
@@ -3581,7 +3619,7 @@
         });
 
         Object.assign(window, { 
-            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, duplicateFromCard, fastDuplicateFromCard, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, getFilteredCoffees, setRating, exportCSV, openExportModal, closeExportModal, performExport, exportBrewsAsCSV, exportBrewsAsBeanconquerorCSV, exportCoffeesAsCSV, exportCoffeesAsJSON, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, triggerCardPhoto, handleCardPhoto, generateShareImage, resetCardPhotoState, updateBeanMeter, refreshTableData, fillBeanDetails, loadMoreBrews, toggleQuickFilter, openQuickFilterValues, applyFilterFromQuick,
+            triggerAIScan, handleAIFile, toggleAiMenu, triggerAIProfile, googleLogin, googleLogout, openFriendsModal, closeModal, switchGalleryTab, switchModalTab, togglePublicProfile, copyShareId, followUser, unfollowUser, changeView, toggleForm, resetFormState, handleFormSubmit, handleRecipeInput, setTempMode, setNotesMode, resetSca, addScaToNotes, editCoffee, duplicateCoffee, duplicateFromCard, fastDuplicateFromCard, cloneBrew, deleteCoffee, discardForm, toggleActive, sortBy, openFilterMenu, applyFilter, clearAllFilters, closeMenus, getFilteredCoffees, setRating, exportCSV, openExportModal, closeExportModal, performExport, exportBrewsAsCSV, exportBrewsAsBeanconquerorCSV, exportCoffeesAsCSV, exportCoffeesAsJSON, openImageModal, closeImageModal, openCoffeeCard, closeCoffeeCard, toggleMainMenu, openUploadModal, closeUploadModal, handlePhotoSubmit, openGallery, deletePhoto, openEasterEgg, closeEasterEgg, openPreferences, savePreferences, clearSearch, toggleDrinkOther, toggleMethodOther, openHelp, closeHelp, openAbout, closeAbout, toggleAllFriends, loadMoreGallery, resetZoom, openStats, closeStats, changeStatsView, toggleStatsUniqueTable, toggleActionMenu, shareCoffeeCard, showPhotoOptions, takePhoto, uploadPhoto, handleCardPhoto, generateShareImage, resetCardPhotoState, updateBeanMeter, refreshTableData, fillBeanDetails, loadMoreBrews, toggleQuickFilter, openQuickFilterValues, applyFilterFromQuick,
             // New Beans Functions
             openBeans, closeBeans, saveBeanStock, deleteBean, syncLegacyBeans
         });
