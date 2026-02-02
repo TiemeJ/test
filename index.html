@@ -159,47 +159,35 @@
             display: none;
         }
 
-        /* Cyberpunk Share Card Styles */
+        /* Cyberpunk Share Card Styles - Optimized for html2canvas */
         .share-card-funky {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
-            background-size: 400% 400%;
-            animation: gradient-shift 15s ease infinite;
-            border: 2px solid #00fff9;
-            box-shadow: 0 0 30px rgba(0, 255, 249, 0.3), inset 0 0 30px rgba(0, 255, 249, 0.1);
-        }
-        
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            background: #0f0f23;
+            border: 3px solid #00fff9;
         }
         
         .share-card-inner {
-            background: linear-gradient(to bottom right, #16213e, #0f3460, #1a1a2e);
-            border: 1px solid rgba(0, 255, 249, 0.3);
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border: 2px solid #00fff9;
         }
         
         .handwritten-notes {
             font-family: 'Caveat', cursive;
             font-size: 1.25rem;
             line-height: 1.6;
-            color: #00fff9;
-            text-shadow: 0 0 10px rgba(0, 255, 249, 0.5);
+            color: #84cc16;
         }
         
         .polaroid-photo {
-            background: #0a0a0a;
+            background: #000000;
             padding: 8px;
             padding-bottom: 24px;
-            box-shadow: 0 0 20px rgba(255, 0, 255, 0.4), 0 4px 6px rgba(0, 0, 0, 0.5);
-            border: 2px solid #ff00ff;
+            border: 3px solid #ff00ff;
             transform: rotate(-3deg);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease;
         }
         
         .polaroid-photo:hover {
             transform: rotate(3deg) scale(1.05);
-            box-shadow: 0 0 30px rgba(255, 0, 255, 0.8), 0 4px 6px rgba(0, 0, 0, 0.5);
         }
         
         .funky-label {
@@ -207,7 +195,6 @@
             text-transform: uppercase;
             font-size: 0.75rem;
             letter-spacing: 0.1em;
-            text-shadow: 0 0 10px currentColor;
         }
         
         .funky-badge {
@@ -216,7 +203,6 @@
             border-radius: 9999px;
             font-weight: 600;
             font-size: 0.875rem;
-            box-shadow: 0 0 15px currentColor;
         }
         
         .share-card-content-box {
@@ -224,7 +210,6 @@
             backdrop-filter: blur(10px);
             border-radius: 1rem;
             padding: 1.25rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 249, 0.2);
         }
         
         @keyframes float {
@@ -234,15 +219,6 @@
         
         .floating {
             animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes neon-pulse {
-            0%, 100% { box-shadow: 0 0 10px currentColor, inset 0 0 10px currentColor; }
-            50% { box-shadow: 0 0 20px currentColor, inset 0 0 15px currentColor; }
-        }
-        
-        .neon-border {
-            animation: neon-pulse 2s ease-in-out infinite;
         }
     </style>
     <script>
@@ -669,46 +645,46 @@
                 </div>
             </div>
 
-            <div id="coffeeCardContent" class="share-card-funky w-full rounded-3xl shadow-2xl overflow-hidden transform transition-all p-4 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
-                <button id="cardCloseBtn" onclick="closeCoffeeCard(null)" class="absolute top-6 right-6 z-10 text-cyan-400 hover:text-cyan-300 transition-colors bg-black/60 rounded-full w-8 h-8 flex items-center justify-center border border-cyan-400" style="box-shadow: 0 0 15px rgba(0, 255, 249, 0.6);"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div id="coffeeCardContent" class="share-card-funky w-full rounded-3xl overflow-hidden transform transition-all p-4 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
+                <button id="cardCloseBtn" onclick="closeCoffeeCard(null)" class="absolute top-6 right-6 z-10 text-cyan-400 hover:text-cyan-300 transition-colors bg-black rounded-full w-8 h-8 flex items-center justify-center border-2 border-cyan-400"><i class="fa-solid fa-xmark text-lg"></i></button>
                 
                 <!-- Inner Card Container -->
                 <div class="share-card-inner rounded-2xl p-6 relative overflow-hidden">
-                    <!-- Decorative Neon Elements -->
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500 rounded-full opacity-20 blur-3xl"></div>
-                    <div class="absolute bottom-0 left-0 w-40 h-40 bg-pink-500 rounded-full opacity-20 blur-3xl"></div>
-                    <div class="absolute top-1/2 left-1/2 w-36 h-36 bg-purple-500 rounded-full opacity-10 blur-3xl"></div>
+                    <!-- Decorative Elements (removed blur for compatibility) -->
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500 rounded-full opacity-10"></div>
+                    <div class="absolute bottom-0 left-0 w-40 h-40 bg-pink-500 rounded-full opacity-10"></div>
+                    <div class="absolute top-1/2 left-1/2 w-36 h-36 bg-purple-500 rounded-full opacity-5"></div>
                     
                     <!-- Title Section -->
                     <div class="text-center mb-6 relative z-10">
-                        <div class="inline-block bg-black/80 border-2 border-cyan-400 text-cyan-400 px-6 py-2 rounded-sm shadow-lg mb-3 transform -rotate-1 neon-border" style="box-shadow: 0 0 20px rgba(0, 255, 249, 0.6), inset 0 0 20px rgba(0, 255, 249, 0.1);">
-                            <h3 class="text-2xl font-bold" style="text-shadow: 0 0 10px #00fff9, 0 0 20px #00fff9;">⚡ BREW CARD ⚡</h3>
+                        <div class="inline-block bg-black border-3 border-cyan-400 text-cyan-400 px-6 py-2 rounded-sm mb-3 transform -rotate-1">
+                            <h3 class="text-2xl font-bold">⚡ BREW CARD ⚡</h3>
                         </div>
                         <div id="cardRating" class="text-2xl"></div>
                     </div>
                     
                     <!-- Main Info Grid -->
                     <div class="grid grid-cols-2 gap-4 mb-6 relative z-10">
-                        <div class="bg-black/60 rounded-sm p-3 border-2 border-pink-500" style="box-shadow: 0 0 15px rgba(255, 0, 255, 0.4), inset 0 0 10px rgba(255, 0, 255, 0.1);">
-                            <div class="funky-label text-pink-400 mb-1">☕ ORIGIN</div>
+                        <div class="bg-black rounded-sm p-3 border-3 border-pink-500">
+                            <div class="funky-label text-pink-400 mb-1">☕ ROASTER</div>
                             <div id="cardOrigin" class="font-semibold text-pink-200 text-lg"></div>
                         </div>
-                        <div class="bg-black/60 rounded-sm p-3 border-2 border-purple-500" style="box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 10px rgba(168, 85, 247, 0.1);">
+                        <div class="bg-black rounded-sm p-3 border-3 border-purple-500">
                             <div class="funky-label text-purple-400 mb-1">🌱 BLEND/FARMER</div>
                             <div id="cardFarmer" class="font-semibold text-purple-200 text-lg"></div>
                         </div>
-                        <div class="bg-black/60 rounded-sm p-3 border-2 border-blue-500" style="box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(59, 130, 246, 0.1);">
+                        <div class="bg-black rounded-sm p-3 border-3 border-blue-500">
                             <div class="funky-label text-blue-400 mb-1">🥤 DRINK</div>
                             <div id="cardDrink" class="font-semibold text-blue-200 text-lg"></div>
                         </div>
-                        <div class="bg-black/60 rounded-sm p-3 border-2 border-cyan-500" style="box-shadow: 0 0 15px rgba(0, 255, 249, 0.4), inset 0 0 10px rgba(0, 255, 249, 0.1);">
+                        <div class="bg-black rounded-sm p-3 border-3 border-cyan-500">
                             <div class="funky-label text-cyan-400 mb-1">⚗️ METHOD</div>
                             <div id="cardMethod" class="font-semibold text-cyan-200 text-lg"></div>
                         </div>
                     </div>
                     
                     <!-- Notes Section (Emphasized) with Integrated Photo -->
-                    <div class="bg-black/70 rounded-sm p-5 border-2 border-lime-400 mb-4 relative z-10 transform rotate-1" style="box-shadow: 0 0 25px rgba(132, 204, 22, 0.5), inset 0 0 15px rgba(132, 204, 22, 0.1);">
+                    <div class="bg-black rounded-sm p-5 border-3 border-lime-400 mb-4 relative z-10 transform rotate-1">
                         <div class="flex items-center gap-2 mb-3">
                             <span class="text-2xl">📝</span>
                             <span class="funky-label text-lime-400 text-sm">TASTING NOTES</span>
@@ -722,17 +698,17 @@
                                     <div class="relative w-28 h-28 bg-black overflow-hidden">
                                         <img id="cardDisplayedPhoto" class="hidden w-full h-full object-cover" src="" alt="Brew Photo">
                                         <div id="cardPhotoPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center">
-                                            <i class="fa-solid fa-camera text-3xl text-pink-400 mb-1" style="text-shadow: 0 0 10px #ff00ff;"></i>
+                                            <i class="fa-solid fa-camera text-3xl text-pink-400 mb-1"></i>
                                             <p class="text-[10px] text-pink-300 font-medium text-center px-1">Add photo</p>
                                         </div>
                                     </div>
                                 </div>
                                 <!-- Photo Options Menu -->
-                                <div id="photoOptionsMenu" class="hidden absolute bg-black/95 border-2 border-cyan-400 rounded-sm shadow-lg p-2 z-50 bottom-full mb-2 right-0" style="box-shadow: 0 0 20px rgba(0, 255, 249, 0.5); min-width: 140px;">
-                                    <button onclick="takePhoto()" class="block w-full text-left px-3 py-2 text-sm text-cyan-300 hover:bg-cyan-900/30 rounded transition-colors mb-1" style="text-shadow: 0 0 5px #00fff9;">
+                                <div id="photoOptionsMenu" class="hidden absolute bg-black border-2 border-cyan-400 rounded-sm p-2 z-50 bottom-full mb-2 right-0" style="min-width: 140px;">
+                                    <button onclick="takePhoto()" class="block w-full text-left px-3 py-2 text-sm text-cyan-300 hover:bg-cyan-900/30 rounded transition-colors mb-1">
                                         <i class="fa-solid fa-camera mr-2"></i> Take Photo
                                     </button>
-                                    <button onclick="uploadPhoto()" class="block w-full text-left px-3 py-2 text-sm text-pink-300 hover:bg-pink-900/30 rounded transition-colors" style="text-shadow: 0 0 5px #ff00ff;">
+                                    <button onclick="uploadPhoto()" class="block w-full text-left px-3 py-2 text-sm text-pink-300 hover:bg-pink-900/30 rounded transition-colors">
                                         <i class="fa-solid fa-upload mr-2"></i> Upload Photo
                                     </button>
                                 </div>
@@ -742,8 +718,8 @@
                     
                     <!-- Bottom Watermark -->
                     <div class="text-center text-sm text-cyan-400 relative z-10">
-                        <span class="inline-block bg-black/80 px-4 py-1 rounded-sm border border-cyan-400/50" style="box-shadow: 0 0 10px rgba(0, 255, 249, 0.3);">
-                            <span style="text-shadow: 0 0 5px #00fff9;">Made with Coffee Dial ☕ <span id="cardDate" class="font-mono"></span></span>
+                        <span class="inline-block bg-black px-4 py-1 rounded-sm border-2 border-cyan-400">
+                            Made with Coffee Dial ☕ <span id="cardDate" class="font-mono"></span>
                         </span>
                     </div>
                 </div>
@@ -2412,7 +2388,7 @@
         const populateCardData = (c) => {
             currentCardCoffee = c;
             document.getElementById('cardRating').innerHTML = getStarDisplay(c.rating || 0);
-            document.getElementById('cardOrigin').textContent = c.origin || c.beanType || '-';
+            document.getElementById('cardOrigin').textContent = c.roaster || c.name || '-';
             document.getElementById('cardFarmer').textContent = c.farmer || '-';
             document.getElementById('cardMethod').textContent = c.method || '-';
             document.getElementById('cardDrink').textContent = c.drink || '-';
@@ -2518,18 +2494,11 @@
             try {
                 await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
                 const canvas = await html2canvas(content, { 
-                    scale: 3, 
+                    scale: 2, 
                     backgroundColor: null, 
                     useCORS: true,
                     logging: false, 
-                    allowTaint: true,
-                    foreignObjectRendering: true,
-                    imageTimeout: 0,
-                    removeContainer: true,
-                    width: content.offsetWidth,
-                    height: content.offsetHeight,
-                    windowWidth: content.offsetWidth,
-                    windowHeight: content.offsetHeight
+                    allowTaint: false 
                 });
                 
                 shareControls.classList.remove('hidden');
@@ -2571,12 +2540,14 @@
                         link.href = canvas.toDataURL(); 
                         link.click();
                     }
-                }, 'image/png', 1.0);
+                }, 'image/png', 0.9);
             } catch (err) {
                 console.error("Card generation failed", err); 
                 shareControls.classList.remove('hidden');
                 closeBtn.classList.remove('hidden'); 
+                bottomBar.style.display = '';
                 content.style.transform = originalTransform;
+                if (wasImproveVisible) improveContainer.classList.remove('hidden');
                 alert("Could not generate card image. Please try taking a screenshot.");
             }
         };
