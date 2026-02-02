@@ -5,6 +5,9 @@ export function initCoffeeScale() {
   const timerBtn = document.getElementById("timer");
   const resetTimerBtn = document.getElementById("resetTimer");
   const connectBtn = document.getElementById("connect");
+  const headerTimerReadout = document.getElementById("brewTimerReadout");
+  const headerTimerValue = document.getElementById("brewTimerValue");
+  const headerWeightValue = document.getElementById("brewWeightValue");
 
   if (!statusEl || !weightEl || !tareBtn || !timerBtn || !resetTimerBtn || !connectBtn) {
     return;
@@ -22,6 +25,12 @@ export function initCoffeeScale() {
   let acaiaBuffer = new Uint8Array(0);
   let writeQueue = Promise.resolve();
   let writeInProgress = false;
+  let lastWeight = null;
+  let isConnected = false;
+  let lastFocusedField = null;
+  let headerTimerInterval = null;
+  let headerStartAt = null;
+  let headerElapsedMs = 0;
 
   /* ---- Acaia/Bookoo UUIDs (Beanconqueror-compatible) ---- */
   const ACAIA_SERVICE_UUID = "00001820-0000-1000-8000-00805f9b34fb";
@@ -58,6 +67,79 @@ export function initCoffeeScale() {
 
   function setWeight(value) {
     weightEl.textContent = value.toFixed(1) + " g";
+    lastWeight = value;
+    updateHeaderWeight(value);
+  }
+
+  function updateHeaderWeight(value) {
+    if (!headerWeightValue) return;
+    if (!Number.isFinite(value)) {
+      headerWeightValue.textContent = "--.-";
+      return;
+    }
+    headerWeightValue.textContent = value.toFixed(1);
+  }
+
+  function formatHeaderTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }
+
+  function updateHeaderTime() {
+    if (!headerTimerValue) return;
+    const now = Date.now();
+    const elapsed = headerElapsedMs + (headerStartAt ? (now - headerStartAt) : 0);
+    headerTimerValue.textContent = formatHeaderTime(elapsed);
+  }
+
+  function getHeaderDisplayedSeconds() {
+    if (!headerTimerValue) return null;
+    const text = headerTimerValue.textContent || "";
+    const parts = text.split(":");
+    if (parts.length !== 2) return null;
+    const minutes = parseInt(parts[0], 10);
+    const seconds = parseInt(parts[1], 10);
+    if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
+    return minutes * 60 + seconds;
+  }
+
+  function startHeaderTimer() {
+    if (!headerTimerReadout) return;
+    headerTimerReadout.classList.remove("hidden");
+    headerTimerReadout.classList.add("flex");
+    headerStartAt = Date.now();
+    updateHeaderTime();
+    if (headerTimerInterval) clearInterval(headerTimerInterval);
+    headerTimerInterval = setInterval(updateHeaderTime, 250);
+  }
+
+  function stopHeaderTimer() {
+    if (!headerTimerReadout) return;
+    if (headerTimerInterval) {
+      clearInterval(headerTimerInterval);
+      headerTimerInterval = null;
+    }
+    if (headerStartAt) {
+      headerElapsedMs += Date.now() - headerStartAt;
+      headerStartAt = null;
+    }
+    updateHeaderTime();
+  }
+
+  function resetHeaderTimer() {
+    if (!headerTimerReadout) return;
+    headerElapsedMs = 0;
+    headerStartAt = null;
+    if (headerTimerInterval) {
+      clearInterval(headerTimerInterval);
+      headerTimerInterval = null;
+    }
+    headerTimerValue.textContent = "0:00";
+    headerTimerReadout.classList.add("hidden");
+    headerTimerReadout.classList.remove("flex");
+    updateHeaderWeight(null);
   }
 
   function enqueueWrite(data) {
@@ -154,6 +236,12 @@ export function initCoffeeScale() {
   function setTimerRunningState(running) {
     timerRunning = running;
     timerBtn.textContent = timerRunning ? "Stop Timer" : "Start Timer";
+    updateTimerIcon();
+    if (timerRunning) {
+      startHeaderTimer();
+    } else {
+      stopHeaderTimer();
+    }
   }
 
   function handleAcaiaTimerEvent(data) {
@@ -281,6 +369,7 @@ export function initCoffeeScale() {
       startHeartbeat();
     }
 
+    isConnected = true;
     setStatus(`Connected to ${device.name} (${scaleType})`);
   }
 
@@ -345,6 +434,12 @@ export function initCoffeeScale() {
 
       timerRunning = !timerRunning;
       timerBtn.textContent = timerRunning ? "Stop Timer" : "Start Timer";
+      updateTimerIcon();
+      if (timerRunning) {
+        startHeaderTimer();
+      } else {
+        stopHeaderTimer();
+      }
     } catch (err) {
       console.warn("Timer command failed", err);
     }
@@ -365,6 +460,8 @@ export function initCoffeeScale() {
 
       timerRunning = false;
       timerBtn.textContent = "Start Timer";
+      updateTimerIcon();
+      resetHeaderTimer();
     } catch (err) {
       console.warn("Reset timer failed", err);
     }
@@ -378,6 +475,9 @@ export function initCoffeeScale() {
     resetTimerBtn.disabled = true;
     timerBtn.textContent = "Start Timer";
     timerRunning = false;
+    isConnected = false;
+    updateTimerIcon();
+    resetHeaderTimer();
     weightEl.textContent = "--.- g";
     stopHeartbeat();
   }
@@ -405,4 +505,155 @@ export function initCoffeeScale() {
       heartbeatTimer = null;
     }
   }
+
+  function handleWeighClick() {
+    if (!isConnected) {
+      if (typeof window.openCoffeeScaleModal === "function") {
+        window.openCoffeeScaleModal();
+      }
+      return;
+    }
+
+    if (!Number.isFinite(lastWeight)) {
+      return;
+    }
+
+    const outField = document.getElementById("inputYield");
+    const inField = document.getElementById("inputWeight");
+    if (lastFocusedField === "out" || document.activeElement === outField) {
+      outField.value = lastWeight.toFixed(1);
+      outField.dispatchEvent(new Event("input", { bubbles: true }));
+      return;
+    }
+
+    if (inField) {
+      inField.value = lastWeight.toFixed(1);
+      inField.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+
+  async function handleResetScaleClick() {
+    if (!isConnected) {
+      if (typeof window.openCoffeeScaleModal === "function") {
+        window.openCoffeeScaleModal();
+      }
+      return;
+    }
+
+    if (!writeChar) return;
+
+    try {
+      await enqueueWrite(scaleType === "GENERIC" ? TARE_GENERIC : TARE_ACAIA);
+      if (scaleType === "OLD" || scaleType === "NEW") {
+        await enqueueWrite(RESET_TIMER_ACAIA);
+      } else if (scaleType === "GENERIC") {
+        await enqueueWrite(RESET_TIMER_BOOKOO);
+      }
+
+      timerRunning = false;
+      timerBtn.textContent = "Start Timer";
+      updateTimerIcon();
+      resetHeaderTimer();
+    } catch (err) {
+      console.warn("Reset scale failed", err);
+    }
+  }
+
+  async function handleTimerIconClick() {
+    if (!isConnected) {
+      if (typeof window.openCoffeeScaleModal === "function") {
+        window.openCoffeeScaleModal();
+      }
+      return;
+    }
+
+    if (!writeChar) return;
+
+    try {
+      if (scaleType === "OLD" || scaleType === "NEW") {
+        await enqueueWrite(timerRunning ? STOP_TIMER_ACAIA : START_TIMER_ACAIA);
+      } else if (scaleType === "GENERIC") {
+        await enqueueWrite(timerRunning ? STOP_TIMER_BOOKOO : START_TIMER_BOOKOO);
+      } else {
+        return;
+      }
+
+      const wasRunning = timerRunning;
+      timerRunning = !timerRunning;
+      timerBtn.textContent = timerRunning ? "Stop Timer" : "Start Timer";
+      updateTimerIcon();
+      if (timerRunning) {
+        startHeaderTimer();
+      } else {
+        stopHeaderTimer();
+      }
+
+      if (wasRunning && !timerRunning && Number.isFinite(lastWeight)) {
+        const outField = document.getElementById("inputYield");
+        if (outField) {
+          outField.value = lastWeight.toFixed(1);
+          outField.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      }
+
+      if (wasRunning && !timerRunning) {
+        const timeField = document.getElementById("time");
+        const headerSeconds = getHeaderDisplayedSeconds();
+        if (timeField && headerSeconds !== null) {
+          timeField.value = headerSeconds;
+          timeField.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      }
+    } catch (err) {
+      console.warn("Timer icon command failed", err);
+    }
+  }
+
+  function updateTimerIcon() {
+    const timerIcon = document.querySelector("#brewTimerBtn i");
+    const timerButton = document.getElementById("brewTimerBtn");
+    if (!timerIcon || !timerButton) return;
+    if (timerRunning) {
+      timerIcon.classList.remove("fa-play");
+      timerIcon.classList.add("fa-pause");
+      timerButton.title = "Stop timer";
+    } else {
+      timerIcon.classList.remove("fa-pause");
+      timerIcon.classList.add("fa-play");
+      timerButton.title = "Start timer";
+    }
+  }
+
+  const weighBtn = document.getElementById("brewWeighBtn");
+  if (weighBtn) {
+    weighBtn.addEventListener("click", handleWeighClick);
+  }
+
+  const resetScaleBtn = document.getElementById("brewResetScaleBtn");
+  if (resetScaleBtn) {
+    resetScaleBtn.addEventListener("click", handleResetScaleClick);
+  }
+
+  const timerIconBtn = document.getElementById("brewTimerBtn");
+  if (timerIconBtn) {
+    timerIconBtn.addEventListener("click", handleTimerIconClick);
+  }
+
+  const inField = document.getElementById("inputWeight");
+  const outField = document.getElementById("inputYield");
+  if (inField) {
+    inField.addEventListener("focus", () => {
+      lastFocusedField = "in";
+    });
+  }
+  if (outField) {
+    outField.addEventListener("focus", () => {
+      lastFocusedField = "out";
+    });
+  }
+
+  window.coffeeScale = {
+    isConnected: () => isConnected,
+    getLastWeight: () => lastWeight
+  };
 }
