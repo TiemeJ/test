@@ -693,7 +693,7 @@
                             <div class="flex-1">
                                 <p id="cardNotes" class="handwritten-notes min-h-[120px]"></p>
                             </div>
-                            <div class="flex-shrink-0 relative" id="cardPhotoContainer">
+                            <div class="flex-shrink-0 relative">
                                 <div class="polaroid-photo cursor-pointer w-32" onclick="showPhotoOptions()">
                                     <div class="relative w-28 h-28 bg-black overflow-hidden">
                                         <img id="cardDisplayedPhoto" class="hidden w-full h-full object-cover" src="" alt="Brew Photo">
@@ -714,6 +714,13 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- Bottom Watermark -->
+                    <div class="text-center text-sm text-cyan-400 relative z-10">
+                        <span class="inline-block px-4 py-2" style="line-height: 1.2;">
+                            <span style="display: inline-block;">Made with Coffee Dial ☕ <span id="cardDate" class="font-mono"></span></span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -2477,17 +2484,9 @@
             const content = document.getElementById('coffeeCardContent');
             const shareControls = document.getElementById('shareControls');
             const closeBtn = document.getElementById('cardCloseBtn'); 
-            const photoContainer = document.getElementById('cardPhotoContainer');
-            const displayedPhoto = document.getElementById('cardDisplayedPhoto');
             
             shareControls.classList.add('hidden');
             closeBtn.classList.add('hidden'); 
-            
-            // Hide photo container if no photo is uploaded
-            const photoHidden = displayedPhoto.classList.contains('hidden');
-            if (photoHidden) {
-                photoContainer.classList.add('hidden');
-            }
             
             const originalTransform = content.style.transform;
             content.style.transform = 'none';
@@ -2504,9 +2503,6 @@
                 
                 shareControls.classList.remove('hidden');
                 closeBtn.classList.remove('hidden'); 
-                if (photoHidden) {
-                    photoContainer.classList.remove('hidden');
-                }
                 content.style.transform = originalTransform;
 
                 canvas.toBlob(async (blob) => {
@@ -2549,9 +2545,6 @@
                 console.error("Card generation failed", err); 
                 shareControls.classList.remove('hidden');
                 closeBtn.classList.remove('hidden'); 
-                if (photoHidden) {
-                    photoContainer.classList.remove('hidden');
-                }
                 bottomBar.style.display = '';
                 content.style.transform = originalTransform;
                 if (wasImproveVisible) improveContainer.classList.remove('hidden');
